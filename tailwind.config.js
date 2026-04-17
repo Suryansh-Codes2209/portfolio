@@ -10,6 +10,20 @@ module.exports = {
 
 	theme: {
 		extend: {
+			colors: {
+				claude: {
+					50:  "#FCF3EE",
+					100: "#F8E3D7",
+					200: "#F2C7AF",
+					300: "#EBA687",
+					400: "#E28968",
+					500: "#D97757",
+					600: "#C15F3C",
+					700: "#9E4B2E",
+					800: "#793826",
+					900: "#52261B",
+				},
+			},
 			typography: {
 				DEFAULT: {
 					css: {

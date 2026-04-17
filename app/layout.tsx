@@ -4,6 +4,9 @@ import { Inter } from "@next/font/google";
 import LocalFont from "@next/font/local";
 import type { Metadata } from "next";
 import { Analytics } from "./components/analytics";
+import { ScrollProgress } from "./components/scroll-progress";
+import { CursorGlow } from "./components/cursor-glow";
+import { BackToTop } from "./components/back-to-top";
 
 export const metadata: Metadata = {
   title: {
@@ -123,7 +126,10 @@ export default function RootLayout({
           process.env.NODE_ENV === "development" ? "debug-screens" : undefined
         }`}
       >
+        <ScrollProgress />
+        <CursorGlow />
         {children}
+        <BackToTop />
       </body>
     </html>
   );

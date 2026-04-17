@@ -16,55 +16,24 @@ const computedFields = {
 	},
 };
 
-export const Project = defineDocumentType(() => ({
-	name: "Project",
-	filePathPattern: "./projects/**/*.mdx",
-	contentType: "mdx",
-
-	fields: {
-		published: {
-			type: "boolean",
-		},
-		title: {
-			type: "string",
-			required: true,
-		},
-		description: {
-			type: "string",
-			required: true,
-		},
-		date: {
-			type: "date",
-		},
-		url: {
-			type: "string",
-		},
-		repository: {
-			type: "string",
-		},
-	},
-	computedFields,
-}));
-
-export const Page = defineDocumentType(() => ({
-	name: "Page",
-	filePathPattern: "pages/**/*.mdx",
+export const Blog = defineDocumentType(() => ({
+	name: "Blog",
+	filePathPattern: "./blog/**/*.mdx",
 	contentType: "mdx",
 	fields: {
-		title: {
-			type: "string",
-			required: true,
-		},
-		description: {
-			type: "string",
-		},
+		published: { type: "boolean" },
+		title: { type: "string", required: true },
+		description: { type: "string", required: true },
+		date: { type: "date", required: true },
+		tags: { type: "list", of: { type: "string" } },
+		readingTime: { type: "number" },
 	},
 	computedFields,
 }));
 
 export default makeSource({
 	contentDirPath: "./content",
-	documentTypes: [Page, Project],
+	documentTypes: [Blog],
 	mdx: {
 		remarkPlugins: [remarkGfm],
 		rehypePlugins: [

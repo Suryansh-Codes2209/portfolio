@@ -1,0 +1,137 @@
+---
+title: "Building Scalable REST APIs with Node.js"
+description: "Architecture patterns, middleware design, error handling, and performance strategies I use to build Node.js APIs that hold up in production."
+date: "2024-01-25"
+tags: ["Node.js", "Backend", "API", "Architecture"]
+published: true
+readingTime: 7
+---
+
+Building a REST API that works in development is easy. Building one that holds up in production — handles thousands of requests, fails gracefully, and is easy to extend — requires deliberate architecture decisions.
+
+## Project Structure That Scales
+
+Flat folder structures break down fast. Instead, group by **feature/domain**, not by file type:
+
+```
+src/
+  users/
+    users.router.ts
+    users.service.ts
+    users.schema.ts
+  posts/
+    posts.router.ts
+    posts.service.ts
+  shared/
+    middleware/
+    utils/
+    types/
+  app.ts
+  server.ts
+```
+
+Each domain owns its routes, business logic, and validation. Adding a new feature means adding a new folder, not touching five existing ones.
+
+## Middleware That Actually Helps
+
+Keep middleware focused on exactly one concern:
+
+```ts
+// Error handler — always last middleware
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  if (err instanceof AppError) {
+    return res.status(err.statusCode).json({
+      status: "error",
+      message: err.message,
+      code: err.code,
+    });
+  }
+
+  console.error(err);
+  res.status(500).json({ status: "error", message: "Internal server error" });
+});
+```
+
+Define a custom `AppError` class:
+
+```ts
+export class AppError extends Error {
+  constructor(
+    public message: string,
+    public statusCode: number = 400,
+    public code: string = "BAD_REQUEST",
+  ) {
+    super(message);
+    this.name = "AppError";
+  }
+}
+```
+
+Now any controller can `throw new AppError("User not found", 404, "NOT_FOUND")` and the error handler takes care of the rest.
+
+## Input Validation with Zod
+
+Never trust incoming data. Validate at the boundary with Zod:
+
+```ts
+import { z } from "zod";
+
+const createUserSchema = z.object({
+  name: z.string().min(2).max(100),
+  email: z.string().email(),
+  age: z.number().int().min(18).optional(),
+});
+
+// Middleware that validates and types the body
+export function validate(schema: z.ZodSchema) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const result = schema.safeParse(req.body);
+    if (!result.success) {
+      return res.status(400).json({ errors: result.error.flatten() });
+    }
+    req.body = result.data; // now fully typed
+    next();
+  };
+}
+
+router.post("/users", validate(createUserSchema), createUser);
+```
+
+## Rate Limiting and Security
+
+These should be on by default, not an afterthought:
+
+```ts
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
+
+app.use(helmet()); // sets secure HTTP headers
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  standardHeaders: true,
+}));
+```
+
+## Database Queries: N+1 Is Always Lurking
+
+The most common performance issue in REST APIs:
+
+```ts
+// ❌ N+1 — one query per post to get author
+const posts = await Post.findAll();
+const withAuthors = await Promise.all(
+  posts.map(post => post.getAuthor())
+);
+
+// ✅ Single query with join
+const posts = await Post.findAll({
+  include: [{ model: User, as: "author" }],
+});
+```
+
+## Conclusion
+
+A scalable Node.js API isn't about the framework — it's about discipline. Keep concerns separated, validate everything at the edge, handle errors uniformly, and measure before you optimize.
+
+The best architecture is one your team can understand and extend without reading your mind.

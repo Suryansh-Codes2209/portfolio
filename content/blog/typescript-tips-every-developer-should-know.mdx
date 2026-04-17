@@ -1,0 +1,126 @@
+---
+title: "TypeScript Tips Every Developer Should Know"
+description: "Practical TypeScript patterns I use in every project — from strict type narrowing to utility types that eliminate boilerplate."
+date: "2024-02-18"
+tags: ["TypeScript", "JavaScript", "Best Practices"]
+published: true
+readingTime: 6
+---
+
+After writing TypeScript daily for two years across frontend, backend, and full-stack projects, these are the patterns that genuinely improve my code — not just make it look type-safe.
+
+## 1. Discriminated Unions Beat Optional Properties
+
+The moment you have optional properties that depend on each other, reach for discriminated unions.
+
+```ts
+// ❌ Hard to reason about
+type Response = {
+  success: boolean;
+  data?: User;
+  error?: string;
+};
+
+// ✅ TypeScript narrows this automatically
+type Response =
+  | { success: true; data: User }
+  | { success: false; error: string };
+
+function handle(res: Response) {
+  if (res.success) {
+    console.log(res.data.name); // TypeScript knows data exists
+  } else {
+    console.log(res.error); // TypeScript knows error exists
+  }
+}
+```
+
+## 2. `satisfies` for Config Objects
+
+The `satisfies` keyword (TypeScript 4.9+) lets you validate a value against a type while keeping the most specific inferred type.
+
+```ts
+const palette = {
+  red: [255, 0, 0],
+  green: "#00ff00",
+} satisfies Record<string, string | number[]>;
+
+// TypeScript knows palette.red is number[], not string | number[]
+palette.red.map(v => v * 2); // ✅ Works
+```
+
+## 3. Template Literal Types for String APIs
+
+Perfect for building type-safe event systems or API route validators.
+
+```ts
+type HTTPMethod = "GET" | "POST" | "PUT" | "DELETE";
+type Route = "/users" | "/posts" | "/comments";
+type Endpoint = `${HTTPMethod} ${Route}`;
+
+// Valid: "GET /users", "POST /posts"
+// Invalid: "PATCH /users", "GET /invalid"
+function request(endpoint: Endpoint) { /* ... */ }
+```
+
+## 4. Utility Types You Should Use Daily
+
+```ts
+// Pick specific fields
+type UserPreview = Pick<User, "id" | "name" | "avatar">;
+
+// Make everything optional (great for PATCH endpoints)
+type UpdateUser = Partial<User>;
+
+// Make everything required (great for validated forms)
+type RequiredUser = Required<User>;
+
+// Strip null and undefined
+type NonNullUser = NonNullable<User | null | undefined>;
+
+// Return type of a function
+type FetchResult = Awaited<ReturnType<typeof fetchUser>>;
+```
+
+## 5. Strict Mode Is Non-Negotiable
+
+In `tsconfig.json`, always enable strict mode:
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true
+  }
+}
+```
+
+`noUncheckedIndexedAccess` is particularly underrated — it forces you to handle the case where an array index is out of bounds.
+
+## 6. Type Guards Over Type Assertions
+
+```ts
+// ❌ Lying to TypeScript
+const user = data as User;
+
+// ✅ Proving it to TypeScript
+function isUser(value: unknown): value is User {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    "name" in value
+  );
+}
+
+if (isUser(data)) {
+  console.log(data.name); // safely narrowed
+}
+```
+
+## Conclusion
+
+TypeScript's value isn't just catching bugs — it's making your code self-documenting and refactorable. These patterns will save you hours of debugging and make your APIs a joy to consume.
+
+Start with strict mode, embrace discriminated unions, and let the compiler guide you.

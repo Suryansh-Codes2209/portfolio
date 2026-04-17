@@ -1,0 +1,83 @@
+---
+title: "Getting Started with Next.js 14 App Router"
+description: "A practical guide to building with the Next.js App Router — layouts, server components, data fetching, and everything you need to ship fast."
+date: "2024-03-10"
+tags: ["Next.js", "React", "TypeScript"]
+published: true
+readingTime: 5
+---
+
+The Next.js App Router, introduced in Next.js 13 and stabilized in 14, fundamentally changes how you think about building React applications. After using it in production for a year, here's what actually matters.
+
+## Why App Router Changes Everything
+
+The Pages Router had one mental model: every file in `/pages` is a route. Simple, but limiting. The App Router flips the default — **everything is a server component** unless you opt into the client.
+
+This means your components can:
+- Fetch data directly, no `getServerSideProps` boilerplate
+- Access server-only APIs (databases, secrets) directly
+- Ship zero JS to the browser by default
+
+```tsx
+// This runs on the server — no useEffect, no loading state
+export default async function Page() {
+  const data = await db.query("SELECT * FROM posts");
+  return <PostList posts={data} />;
+}
+```
+
+## Layouts That Actually Work
+
+One of the most underrated features: **nested layouts**. You define a `layout.tsx` at any level of your folder structure and it wraps every route inside that folder — without re-rendering on navigation.
+
+```
+app/
+  layout.tsx          ← root layout (always rendered)
+  dashboard/
+    layout.tsx        ← dashboard layout (sidebar, nav)
+    page.tsx          ← /dashboard
+    settings/
+      page.tsx        ← /dashboard/settings (inherits dashboard layout)
+```
+
+This pattern eliminated entire categories of state management problems in my projects.
+
+## Data Fetching Patterns
+
+With server components, the recommended pattern is simple:
+
+```tsx
+// Fetch data close to where it's used
+async function UserCard({ userId }: { userId: string }) {
+  const user = await fetchUser(userId); // runs server-side
+  return <div>{user.name}</div>;
+}
+```
+
+For client-side data (real-time, user interactions), reach for SWR or React Query. The rule of thumb: **static or one-time data → server component, dynamic or interactive → client component**.
+
+## When to Use `"use client"`
+
+A common mistake is marking too many components as client components. The boundary should be as **low in the tree as possible**.
+
+```tsx
+// ❌ Whole page becomes client
+"use client";
+export default function Page() { /* ... */ }
+
+// ✅ Only the interactive part is client
+export default function Page() {
+  return (
+    <div>
+      <StaticContent /> {/* server */}
+      <InteractiveWidget /> {/* client — add "use client" here */}
+    </div>
+  );
+}
+```
+
+## Conclusion
+
+The App Router requires a mental shift, but once it clicks, you'll never want to go back. Start with server components everywhere, add `"use client"` only where you need interactivity, and let the framework handle the rest.
+
+The performance gains alone are worth the learning curve.

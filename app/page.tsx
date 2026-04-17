@@ -1,62 +1,787 @@
-import Link from "next/link";
-import React from "react";
-import Particles from "./components/particles";
-import Image from "next/image";
-import { Download } from "lucide-react";
+"use client";
 
-const navigation = [
-  // { name: "Projects", href: "/projects" },
-  { name: "Contact", href: "/contact" },
+import { allBlogs } from "contentlayer/generated";
+import { projects } from "./data/projects";
+import { motion, useInView } from "framer-motion";
+import {
+  ArrowDown, ArrowRight, Cloud, Code2, Cpu,
+  Database, Download, ExternalLink, Github, Layers,
+  Linkedin, Mail, Menu, Server, Twitter, X,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { Card } from "./components/card";
+import Particles from "./components/particles";
+import { HeroIntro } from "./components/hero-intro";
+import { ShineText } from "./components/shine-text";
+import { GestureScroll } from "./components/gesture-scroll";
+
+// ─── typing animation hook ────────────────────────────────────────────────────
+function useTyping(words: string[], speed = 80, pause = 2400) {
+  const [idx, setIdx] = useState(0);
+  const [text, setText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    const word = words[idx];
+    const timeout = setTimeout(
+      () => {
+        if (!deleting && text === word) {
+          setTimeout(() => setDeleting(true), pause);
+          return;
+        }
+        if (deleting && text === "") {
+          setDeleting(false);
+          setIdx((i) => (i + 1) % words.length);
+          return;
+        }
+        setText(deleting ? word.slice(0, text.length - 1) : word.slice(0, text.length + 1));
+      },
+      deleting ? speed / 2 : speed,
+    );
+    return () => clearTimeout(timeout);
+  }, [text, deleting, idx, words, speed, pause]);
+
+  return text;
+}
+
+// ─── animated counter ─────────────────────────────────────────────────────────
+function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true });
+
+  useEffect(() => {
+    if (!inView) return;
+    const start = Date.now();
+    const duration = 1400;
+    const frame = () => {
+      const p = Math.min((Date.now() - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setCount(Math.floor(eased * target));
+      if (p < 1) requestAnimationFrame(frame);
+      else setCount(target);
+    };
+    requestAnimationFrame(frame);
+  }, [inView, target]);
+
+  return <span ref={ref}>{count}{suffix}</span>;
+}
+
+// ─── data ─────────────────────────────────────────────────────────────────────
+const roles = [
+  "Full Stack AI Engineer",
+  "AI Agent Builder",
+  "LangGraph + LangChain Developer",
+  "Financial AI Engineer",
 ];
 
-export default function Home() {
-  return (
-    <div className="flex flex-col items-center justify-center w-screen h-screen overflow-hidden bg-gradient-to-tl from-black via-zinc-600/20 to-black">
-      <nav className="my-16 animate-fade-in">
-        <ul className="flex items-center justify-center gap-4">
-          {navigation.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="text-sm duration-500 text-zinc-500 hover:text-zinc-300"
-            >
-              {item.name}
-            </Link>
-          ))}
-          <a
-            href="suryansh.pdf"
-            download
-            className="flex items-center gap-1 text-sm duration-500 text-zinc-500 hover:text-zinc-300"
-          >
-            Resume <Download size={16} />
-          </a>
-        </ul>
-      </nav>
-      <div className="hidden w-screen h-px animate-glow md:block animate-fade-left bg-gradient-to-r from-zinc-300/0 via-zinc-300/50 to-zinc-300/0" />
-      <Particles
-        className="absolute inset-0 -z-10 animate-fade-in"
-        quantity={100}
-      />
-       {/* Profile Image */}
-       <Image 
-        src="/Profile.png" 
-        alt="Suryansh Chaudhary" 
-        width={200} 
-        height={200} 
-        className="rounded-full duration-1000 animate-title  text-edge-outline mb-4"
-        priority={true}
-      />
-      <h1 className="py-3.5 px-0.5 z-10 text-4xl text-transparent duration-1000 bg-white cursor-default text-edge-outline animate-title font-display sm:text-6xl md:text-9xl whitespace-nowrap bg-clip-text ">
-        Suryansh Chaudhary
-      </h1>
+const navLinks = [
+  { label: "About",    href: "#about"    },
+  { label: "Stack",    href: "#stack"    },
+  { label: "Projects", href: "#projects" },
+  { label: "Blog",     href: "#blog"     },
+  { label: "Resume",   href: "#resume"   },
+  { label: "Contact",  href: "#contact"  },
+];
 
-      <div className="hidden w-screen h-px animate-glow md:block animate-fade-right bg-gradient-to-r from-zinc-300/0 via-zinc-300/50 to-zinc-300/0" />
-      <div className="my-16 text-center animate-fade-in">
-        <h2 className="text-lg text-zinc-500 ">
-          Full Stack Developer | Freelancer{" "}@upwork
-        </h2>
-      </div>
+const techCategories = [
+  { icon: <Cpu className="w-3.5 h-3.5" />,       label: "AI & Agents",      items: ["LangGraph", "LangChain", "Gemini API", "OpenAI API", "RAG / Vector Search", "Prompt Engineering"] },
+  { icon: <Server className="w-3.5 h-3.5" />,    label: "Backend",          items: ["Python", "FastAPI", "Django", "Node.js", "REST APIs", "GraphQL"] },
+  { icon: <Layers className="w-3.5 h-3.5" />,    label: "Frontend",         items: ["React", "Next.js", "TypeScript", "Tailwind CSS", "Framer Motion"] },
+  { icon: <Database className="w-3.5 h-3.5" />,  label: "Database",         items: ["PostgreSQL", "MongoDB", "Redis"] },
+  { icon: <Cloud className="w-3.5 h-3.5" />,     label: "DevOps & Cloud",   items: ["Google Cloud Run", "Docker", "AWS", "CI/CD", "GitHub Actions"] },
+  { icon: <Code2 className="w-3.5 h-3.5" />,     label: "Tools",            items: ["Git", "VS Code", "Postman", "Linux", "Figma"] },
+];
+
+const recommendations = [
+  {
+    name: "Prem Ranjan",
+    initials: "PR",
+    tagline: "Developer · Mentor · Interviewer · Java · React · Microservices · AWS · Python · AI/ML · LLM",
+    relation: "Worked with Suryansh on the same team",
+    date: "January 16, 2025",
+    source: "LinkedIn",
+    sourceUrl: "https://www.linkedin.com/in/suryansh-chaudhary-2209/details/recommendations/",
+    paragraphs: [
+      "I had the privilege of mentoring Suryansh, and I've been genuinely impressed by his technical expertise and problem-solving abilities. He's highly skilled in web development, with a strong grasp of Next.js, React.js, and JavaScript frameworks, and he has hands-on experience working with OpenAI technologies and AI/ML applications.",
+      "Suryansh approaches challenges with a clear, analytical mindset, consistently delivering thoughtful and effective solutions. His dedication to learning, coupled with his ability to share knowledge and collaborate, makes him a standout professional. I'm confident he'll excel in any role he takes on.",
+    ],
+  },
+];
+
+const experience = [
+  {
+    role: "Full Stack AI Engineer",
+    company: "Spiral Kite Labs",
+    period: "2024 – Present",
+    type: "Full-time",
+    desc: "Own the full product stack of an early-stage AI startup — LangGraph agent architecture, LangChain tool integrations, FastAPI backend, Google Cloud Run infrastructure, and the React frontend. Building a financial research AI agent that autonomously retrieves market data, reasons across sources, and produces structured analyst-grade reports.",
+    tech: ["LangGraph", "LangChain", "FastAPI", "Python", "React", "Google Cloud Run", "Docker"],
+  },
+  {
+    role: "Software Developer",
+    company: "AutoText",
+    period: "2023 – 2024",
+    type: "Full-time",
+    desc: "Shipped production features across the full stack — React frontend, Django / FastAPI backend, PostgreSQL. Owned API integrations and refactored the core data pipeline for high-frequency workloads.",
+    tech: ["Django", "FastAPI", "React", "PostgreSQL", "REST APIs"],
+  },
+  {
+    role: "Intern — Databases & Algorithms",
+    company: "NITI Aayog (Government of India)",
+    period: "2022 – 2023",
+    type: "Part-time · 1.5 yrs",
+    desc: "Worked on data pipelines and database systems supporting policy research. Applied algorithms and data-structure techniques to large-scale government datasets.",
+    tech: ["Python", "Databases", "Algorithms", "Data Analysis"],
+  },
+  {
+    role: "Summer Intern",
+    company: "OnGraph Technologies",
+    period: "2021",
+    type: "Internship",
+    desc: "Contributed to product work using NoSQL databases, wrote technical documentation, and participated in agile sprints and code reviews.",
+    tech: ["NoSQL", "Technical Writing", "Agile"],
+  },
+];
+
+const education = [
+  {
+    degree: "B.Tech — Computer Science (AI)",
+    institution: "Poornima Group",
+    period: "2019 – 2023",
+  },
+];
+
+const socials = [
+  { icon: <Github className="w-4 h-4" />, label: "GitHub",     handle: "Suryansh-Codes2209",         href: "https://github.com/Suryansh-Codes2209" },
+  { icon: <Twitter className="w-4 h-4" />, label: "Twitter",   handle: "@Suryansh_2001",               href: "https://x.com/Suryansh_2001" },
+  { icon: <Linkedin className="w-4 h-4" />, label: "LinkedIn", handle: "suryansh-chaudhary-2209",      href: "https://www.linkedin.com/in/suryansh-chaudhary-2209/" },
+  { icon: <Mail className="w-4 h-4" />, label: "Email",        handle: "suryansh.codes2001@gmail.com", href: "mailto:suryansh.codes2001@gmail.com" },
+];
+
+// ─── animation helper ─────────────────────────────────────────────────────────
+const fadeUp = (delay = 0) => ({
+  initial: { opacity: 0, y: 20 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-60px" } as const,
+  transition: { duration: 0.45, delay, ease: "easeOut" as const },
+});
+
+// ─── page ─────────────────────────────────────────────────────────────────────
+export default function Home() {
+  const featured = projects.slice(0, 3);
+  const latestPosts = allBlogs
+    .filter((p) => p.published)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 3);
+
+  // mobile menu
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // contact form
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [sent, setSent] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const subject = encodeURIComponent(`Portfolio enquiry from ${form.name}`);
+    const body = encodeURIComponent(`Name: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}`);
+    window.open(`mailto:suryansh.codes2001@gmail.com?subject=${subject}&body=${body}`);
+    setSent(true);
+    setTimeout(() => setSent(false), 4000);
+  };
+
+  // typing role
+  const role = useTyping(roles);
+
+  return (
+    <div className="bg-black text-zinc-100 overflow-x-hidden">
+      <HeroIntro />
+      {/* ── Sticky nav ─────────────────────────────────────────────────────── */}
+      <nav className="fixed inset-x-0 top-0 z-50 backdrop-blur-md border-b border-claude-500/10 bg-black/80">
+        <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
+          <Link href="/" className="font-display text-sm text-zinc-200 hover:text-white transition-colors">
+            Suryansh.
+          </Link>
+
+          {/* desktop links */}
+          <div className="hidden lg:flex items-center gap-6">
+            {navLinks.map((l) => (
+              <a key={l.href} href={l.href} className="text-xs text-zinc-500 hover:text-zinc-100 transition-colors duration-150">
+                {l.label}
+              </a>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <GestureScroll className="hidden sm:flex" />
+            <a
+              href="/suryansh.pdf"
+              download
+              className="hidden sm:flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-200 transition-all duration-150"
+            >
+              <Download className="w-3 h-3" /> Resume
+            </a>
+            {/* hamburger */}
+            <button
+              onClick={() => setMenuOpen((o) => !o)}
+              className="lg:hidden flex items-center justify-center w-8 h-8 text-zinc-400 hover:text-zinc-100 transition-colors"
+              aria-label="Toggle menu"
+            >
+              {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+
+        {/* mobile menu */}
+        <motion.div
+          initial={false}
+          animate={{ height: menuOpen ? "auto" : 0, opacity: menuOpen ? 1 : 0 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+          className="overflow-hidden lg:hidden border-t border-zinc-800/50"
+        >
+          <div className="max-w-5xl mx-auto px-5 py-4 flex flex-col gap-1">
+            {navLinks.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={() => setMenuOpen(false)}
+                className="text-sm text-zinc-400 hover:text-zinc-100 py-2 transition-colors"
+              >
+                {l.label}
+              </a>
+            ))}
+            <a
+              href="/suryansh.pdf"
+              download
+              className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-100 py-2 transition-colors"
+            >
+              <Download className="w-3.5 h-3.5" /> Download Resume
+            </a>
+          </div>
+        </motion.div>
+      </nav>
+
+      {/* ── Hero ─────────────────────────────────────────────────────────────── */}
+      <section className="relative flex flex-col items-center justify-center min-h-dvh text-center px-4 pt-14">
+        <Particles className="absolute inset-0 -z-10" quantity={100} />
+
+        {/* orbs */}
+        <div className="absolute top-1/4 left-1/4 w-80 h-80 rounded-full bg-claude-600/10 blur-[80px] pointer-events-none" />
+        <div className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-claude-700/10 blur-[80px] pointer-events-none" />
+        <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-60 h-60 rounded-full bg-claude-600/[0.07] blur-[80px] pointer-events-none" />
+
+        <div className="hidden w-screen h-px md:block animate-glow animate-fade-left bg-gradient-to-r from-claude-500/0 via-claude-500/40 to-claude-500/0 absolute top-[38%]" />
+        <div className="hidden w-screen h-px md:block animate-glow animate-fade-right bg-gradient-to-r from-claude-600/0 via-claude-600/30 to-claude-600/0 absolute top-[62%]" />
+
+        {/* available badge */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05, duration: 0.4 }}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-claude-500/30 bg-claude-500/10 mb-6"
+        >
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-claude-300 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-claude-500" />
+          </span>
+          <span className="text-xs text-claude-300 font-medium">Available for work</span>
+        </motion.div>
+
+        {/* profile */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.88 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="mb-7"
+        >
+          <div className="w-24 h-24 rounded-full ring-1 ring-claude-500/40 ring-offset-2 ring-offset-black overflow-hidden mx-auto shadow-[0_0_30px_rgba(217,119,87,0.2)]">
+            <Image src="/Profile.png" alt="Suryansh Chaudhary" width={96} height={96} className="object-cover w-full h-full" priority />
+          </div>
+        </motion.div>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12, duration: 0.55, ease: "easeOut" }}
+          className="py-1 text-5xl sm:text-7xl md:text-8xl font-display text-transparent bg-white bg-clip-text text-edge-outline mb-3"
+        >
+          Suryansh Chaudhary
+        </motion.h1>
+
+        {/* typing role */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.25, duration: 0.4 }}
+          className="h-7 flex items-center justify-center mb-1.5"
+        >
+          <p className="text-base sm:text-lg text-zinc-400">
+            {role}
+            <span className="inline-block w-0.5 h-4 bg-claude-400 ml-0.5 animate-pulse" />
+          </p>
+        </motion.div>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.32, duration: 0.4 }}
+          className="text-xs text-zinc-600 tracking-wider mb-10"
+        >
+          LangGraph · LangChain · FastAPI · Cloud Run
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.42, duration: 0.45, ease: "easeOut" }}
+          className="flex flex-wrap items-center justify-center gap-2.5"
+        >
+          <a href="#projects" className="px-6 py-2.5 rounded-full bg-gradient-to-r from-claude-600 to-claude-600 text-white text-sm font-medium hover:from-claude-500 hover:to-claude-400 transition-all duration-200 cursor-pointer shadow-[0_0_20px_rgba(217,119,87,0.35)]">
+            View My Work
+          </a>
+          <a href="#contact" className="px-6 py-2.5 rounded-full border border-zinc-700 text-zinc-300 text-sm hover:border-zinc-500 hover:text-white transition-all duration-150 cursor-pointer">
+            Contact Me
+          </a>
+          <a href="/suryansh.pdf" download className="flex items-center gap-1.5 px-6 py-2.5 rounded-full border border-zinc-700 text-zinc-300 text-sm hover:border-zinc-500 hover:text-white transition-all duration-150 cursor-pointer">
+            <Download className="w-3.5 h-3.5" /> Resume
+          </a>
+        </motion.div>
+
+        <motion.a
+          href="#about"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.1, duration: 0.4 }}
+          className="absolute bottom-8 text-zinc-700 hover:text-zinc-400 transition-colors cursor-pointer"
+          aria-label="Scroll to About"
+        >
+          <ArrowDown className="w-5 h-5 animate-bounce" />
+        </motion.a>
+      </section>
+
+      {/* ── About ───────────────────────────────────────────────────────────── */}
+      <section id="about" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
+        <div className="absolute -bottom-20 -left-32 w-[500px] h-[500px] rounded-full bg-claude-500/10 blur-[100px] pointer-events-none" />
+        <div className="absolute top-10 right-0 w-72 h-72 rounded-full bg-claude-500/[0.07] blur-[80px] pointer-events-none" />
+
+        <div className="max-w-5xl mx-auto relative">
+          <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">About Me</motion.p>
+          <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display mb-12"><ShineText>Building AI agents that actually ship</ShineText></motion.h2>
+
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 mb-14">
+            <motion.div {...fadeUp(0.08)} className="lg:col-span-3 space-y-4 text-[15px] text-zinc-400 leading-relaxed">
+              <p>
+                I&apos;m a <strong className="text-zinc-300 font-medium">Full Stack AI Engineer</strong> building financial research AI agents — production systems that pull live market data, reason through financials, and generate analyst-grade reports, fully automated.
+              </p>
+              <p>
+                Currently at <strong className="text-zinc-300 font-medium">Spiral Kite Labs</strong>, I own the full stack: LangGraph agent architecture, LangChain tool integrations, FastAPI backend, Google Cloud Run infrastructure, and the React frontend that makes it usable.
+              </p>
+              <p>When you&apos;re the AI + DevOps + backend + frontend person at a startup, you stop thinking in layers and start thinking in outcomes.</p>
+            </motion.div>
+
+            {/* animated stat cards */}
+            <motion.div {...fadeUp(0.12)} className="lg:col-span-2 grid grid-cols-2 gap-3">
+              {[
+                { label: "Experience",     target: 2,  suffix: "+ yr" },
+                { label: "AI Agents",      target: 3,  suffix: "+" },
+                { label: "LLM APIs",       target: 4,  suffix: "+" },
+                { label: "Technologies",   target: 20, suffix: "+" },
+              ].map((s) => (
+                <div key={s.label} className="p-5 rounded-xl border border-zinc-800/70 bg-zinc-900/30">
+                  <p className="text-xl font-display text-zinc-100">
+                    <Counter target={s.target} suffix={s.suffix} />
+                  </p>
+                  <p className="text-[11px] text-zinc-600 mt-1">{s.label}</p>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { icon: <Cpu className="w-4 h-4 text-claude-400" />, title: "AI Engineering", desc: "LangGraph + LangChain agents with conditional routing, tool orchestration, and grounded financial reasoning." },
+              { icon: <Server className="w-4 h-4 text-claude-300" />, title: "Full Stack Ownership", desc: "FastAPI + React, streaming LLM responses, TypeScript SDKs, and agent state management end-to-end." },
+              { icon: <Cloud className="w-4 h-4 text-claude-400" />, title: "Cloud & DevOps", desc: "Docker, Google Cloud Run, CI/CD, and cost-optimised inference routing for AI workloads in production." },
+            ].map((item, i) => (
+              <motion.div
+                key={item.title}
+                {...fadeUp(i * 0.07)}
+                className="p-5 rounded-xl border border-zinc-800/70 bg-zinc-900/30 hover:border-zinc-700 transition-colors duration-200"
+              >
+                <div className="mb-3">{item.icon}</div>
+                <h3 className="text-sm font-medium text-zinc-200 mb-1.5">{item.title}</h3>
+                <p className="text-xs text-zinc-500 leading-relaxed">{item.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Tech Stack ──────────────────────────────────────────────────────── */}
+      <section id="stack" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
+        <div className="absolute -top-24 right-0 w-[480px] h-[480px] rounded-full bg-claude-500/10 blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-0 left-1/4 w-80 h-80 rounded-full bg-claude-600/[0.07] blur-[80px] pointer-events-none" />
+
+        <div className="max-w-5xl mx-auto relative">
+          <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Technologies</motion.p>
+          <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display mb-12"><ShineText>Tech I work with</ShineText></motion.h2>
+
+          <div className="space-y-7">
+            {techCategories.map((cat, ci) => (
+              <motion.div key={cat.label} {...fadeUp(ci * 0.06)}>
+                <div className="flex items-center gap-2 text-zinc-600 mb-3">
+                  {cat.icon}
+                  <span className="text-[10px] uppercase tracking-widest">{cat.label}</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {cat.items.map((item) => (
+                    <span key={item} className="px-3 py-1.5 text-xs rounded-full border border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200 transition-colors duration-150 cursor-default">
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Projects ────────────────────────────────────────────────────────── */}
+      <section id="projects" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
+        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-72 rounded-full bg-claude-500/[0.07] blur-[100px] pointer-events-none" />
+        <div className="absolute -bottom-10 -right-20 w-96 h-96 rounded-full bg-claude-500/[0.06] blur-[90px] pointer-events-none" />
+
+        <div className="max-w-5xl mx-auto relative">
+          <div className="flex items-end justify-between mb-12">
+            <div>
+              <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Work</motion.p>
+              <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display"><ShineText>Featured Projects</ShineText></motion.h2>
+            </div>
+            <motion.div {...fadeUp(0.05)}>
+              <Link href="/projects" className="hidden sm:flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-200 transition-colors duration-150">
+                View all <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </motion.div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {featured.map((project, i) => (
+              <motion.div key={project.title} {...fadeUp(i * 0.08)}>
+                <Card>
+                  <div className="block p-6">
+                    <div className="flex items-start justify-between gap-2 mb-3">
+                      <h3 className="text-sm font-medium text-zinc-200 group-hover:text-white transition-colors leading-snug">{project.title}</h3>
+                      <div className="flex items-center gap-1.5 flex-shrink-0 mt-0.5">
+                        {project.github && (
+                          <a href={project.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                            <Github className="w-3.5 h-3.5 text-zinc-700 hover:text-zinc-400 transition-colors" />
+                          </a>
+                        )}
+                        {project.url && (
+                          <a href={project.url} target="_blank" rel="noopener noreferrer" aria-label="Live site">
+                            <ExternalLink className="w-3.5 h-3.5 text-zinc-700 hover:text-zinc-400 transition-colors" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-xs text-zinc-500 leading-relaxed line-clamp-3">{project.description}</p>
+                    <div className="flex flex-wrap gap-1.5 mt-4">
+                      {project.tags.slice(0, 3).map((tag) => (
+                        <span key={tag} className="text-[10px] px-2 py-0.5 rounded border border-zinc-800 text-zinc-600">{tag}</span>
+                      ))}
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div {...fadeUp(0.28)} className="mt-8 sm:hidden">
+            <Link href="/projects" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-200 transition-colors duration-150">
+              View all projects <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── Recommendation ──────────────────────────────────────────────────── */}
+      <section id="testimonials" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
+        <div className="absolute top-10 left-0 w-96 h-96 rounded-full bg-claude-600/[0.06] blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full bg-claude-500/[0.06] blur-[80px] pointer-events-none" />
+
+        <div className="max-w-3xl mx-auto relative">
+          <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Recommendation</motion.p>
+          <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display mb-3"><ShineText>What people say</ShineText></motion.h2>
+          <motion.p {...fadeUp(0.08)} className="text-sm text-zinc-500 mb-12 max-w-md">A word from someone I&apos;ve built with.</motion.p>
+
+          <div className="space-y-6">
+            {recommendations.map((r, i) => (
+              <motion.div key={r.name} {...fadeUp(i * 0.08)}>
+                <Card>
+                  <div className="relative p-8 sm:p-10">
+                    {/* decorative quote mark */}
+                    <span
+                      aria-hidden
+                      className="absolute -top-2 left-6 font-display text-[80px] leading-none text-claude-500/20 select-none"
+                    >
+                      &ldquo;
+                    </span>
+
+                    <div className="flex items-center justify-between mb-6">
+                      <a
+                        href={r.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-[10px] tracking-[0.25em] uppercase text-claude-300 border border-claude-500/30 bg-claude-500/10 px-2.5 py-1 rounded-full hover:border-claude-400/60 hover:text-claude-200 transition-colors"
+                      >
+                        <Linkedin className="w-3 h-3" /> via {r.source}
+                      </a>
+                      <span className="text-[10px] text-zinc-600">{r.date}</span>
+                    </div>
+
+                    <div className="space-y-4 text-[15px] text-zinc-300 leading-relaxed mb-8">
+                      {r.paragraphs.map((p, j) => (
+                        <p key={j}>{p}</p>
+                      ))}
+                    </div>
+
+                    <div className="flex items-start gap-4 pt-6 border-t border-zinc-800/70">
+                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-claude-500 to-claude-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+                        {r.initials}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-zinc-200">{r.name}</p>
+                        <p className="text-[11px] text-zinc-500 leading-relaxed">{r.tagline}</p>
+                        <p className="text-[10px] text-zinc-600 mt-1">{r.relation}</p>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Blog ────────────────────────────────────────────────────────────── */}
+      <section id="blog" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
+        <div className="absolute top-0 right-0 w-[500px] h-72 rounded-full bg-claude-600/[0.07] blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-claude-700/[0.05] blur-[80px] pointer-events-none" />
+
+        <div className="max-w-5xl mx-auto relative">
+          <div className="flex items-end justify-between mb-12">
+            <div>
+              <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Writing</motion.p>
+              <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display"><ShineText>Latest Posts</ShineText></motion.h2>
+            </div>
+            <motion.div {...fadeUp(0.05)}>
+              <Link href="/blog" className="hidden sm:flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-200 transition-colors">
+                All posts <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </motion.div>
+          </div>
+
+          <div className="space-y-3">
+            {latestPosts.map((post, i) => (
+              <motion.div key={post.slug} {...fadeUp(i * 0.07)}>
+                <Card>
+                  <Link href={`/blog/${post.slug}`} className="flex items-center justify-between gap-4 p-5 group">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                        {post.tags?.slice(0, 2).map((tag) => (
+                          <span key={tag} className="text-[10px] text-claude-400/70 border border-claude-500/20 bg-claude-500/[0.07] px-2 py-0.5 rounded-full">{tag}</span>
+                        ))}
+                      </div>
+                      <h3 className="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors truncate">{post.title}</h3>
+                      <p className="text-xs text-zinc-600 mt-0.5 truncate">{post.description}</p>
+                    </div>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <span className="hidden sm:block text-[11px] text-zinc-700">
+                        {new Date(post.date).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                      </span>
+                      <ArrowRight className="w-3.5 h-3.5 text-zinc-700 group-hover:text-claude-400 group-hover:translate-x-0.5 transition-all duration-150" />
+                    </div>
+                  </Link>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Resume ──────────────────────────────────────────────────────────── */}
+      <section id="resume" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
+        <div className="absolute -top-20 right-0 w-[500px] h-[500px] rounded-full bg-claude-600/10 blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-0 -left-20 w-80 h-80 rounded-full bg-claude-500/[0.08] blur-[80px] pointer-events-none" />
+
+        <div className="max-w-5xl mx-auto relative">
+          <div className="flex items-end justify-between mb-12">
+            <div>
+              <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-claude-400/70 mb-2">Career</motion.p>
+              <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display"><ShineText>Resume</ShineText></motion.h2>
+            </div>
+            <motion.a
+              {...fadeUp(0.05)}
+              href="/suryansh.pdf"
+              download
+              className="flex items-center gap-1.5 text-xs px-4 py-2 rounded-full bg-gradient-to-r from-claude-600/20 to-claude-700/20 border border-claude-500/30 text-claude-300 hover:from-claude-600/30 hover:to-claude-700/30 hover:border-claude-400/50 hover:text-claude-200 transition-all duration-200"
+            >
+              <Download className="w-3.5 h-3.5" /> Download CV
+            </motion.a>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14">
+            <motion.div {...fadeUp(0.08)}>
+              <p className="text-[10px] uppercase tracking-widest text-claude-400/60 mb-7">Experience</p>
+              <div className="space-y-9">
+                {experience.map((exp, i) => (
+                  <div key={i} className="relative pl-5 border-l-2 border-claude-500/20">
+                    <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-claude-500/80 shadow-[0_0_8px_rgba(217,119,87,0.7)]" />
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-0.5">
+                      <h4 className="text-sm font-medium text-zinc-200">{exp.role}</h4>
+                      <span className="text-[10px] text-claude-300/70 border border-claude-500/20 bg-claude-500/10 px-2 py-0.5 rounded-full">{exp.type}</span>
+                    </div>
+                    <p className="text-xs text-zinc-400 mb-0.5">{exp.company}</p>
+                    <p className="text-[11px] text-zinc-600 mb-3">{exp.period}</p>
+                    <p className="text-xs text-zinc-500 leading-relaxed mb-3">{exp.desc}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {exp.tech.map((t) => (
+                        <span key={t} className="text-[10px] px-2 py-0.5 border border-claude-600/20 bg-claude-600/[0.07] rounded text-claude-300/60">{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div {...fadeUp(0.12)}>
+              <p className="text-[10px] uppercase tracking-widest text-claude-400/60 mb-7">Education</p>
+              <div className="space-y-9 mb-10">
+                {education.map((edu, i) => (
+                  <div key={i} className="relative pl-5 border-l-2 border-claude-600/20">
+                    <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-claude-600/80 shadow-[0_0_8px_rgba(193,95,60,0.6)]" />
+                    <h4 className="text-sm font-medium text-zinc-200 mb-0.5">{edu.degree}</h4>
+                    <p className="text-xs text-zinc-400 mb-0.5">{edu.institution}</p>
+                    <p className="text-[11px] text-zinc-600">{edu.period}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="p-5 rounded-xl border border-claude-500/15 bg-gradient-to-br from-claude-500/[0.06] to-claude-600/[0.04]">
+                <p className="text-[10px] uppercase tracking-widest text-claude-400/60 mb-4">Core Strengths</p>
+                <div className="flex flex-wrap gap-2">
+                  {["System Design", "API Architecture", "Performance Optimisation", "TypeScript", "CI/CD", "Agile / Scrum"].map((s) => (
+                    <span key={s} className="text-xs px-3 py-1 rounded-full border border-claude-500/20 bg-claude-500/[0.07] text-claude-300/70">{s}</span>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Contact ─────────────────────────────────────────────────────────── */}
+      <section id="contact" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
+        <div className="absolute -top-10 -right-20 w-[450px] h-[450px] rounded-full bg-claude-500/[0.08] blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-10 left-0 w-72 h-72 rounded-full bg-claude-600/[0.06] blur-[80px] pointer-events-none" />
+
+        <div className="max-w-5xl mx-auto relative">
+          <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Say Hello</motion.p>
+          <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display mb-3"><ShineText>Get in Touch</ShineText></motion.h2>
+          <motion.p {...fadeUp(0.08)} className="text-sm text-zinc-500 mb-12 max-w-md leading-relaxed">
+            Open to new opportunities, freelance projects, and interesting collaborations. Fill the form or reach me directly.
+          </motion.p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            {/* contact form */}
+            <motion.div {...fadeUp(0.1)}>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs text-zinc-500 mb-1.5" htmlFor="name">Name</label>
+                  <input
+                    id="name" type="text" required
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    placeholder="Your name"
+                    className="w-full px-4 py-2.5 rounded-xl border border-zinc-800 bg-zinc-900/50 text-sm text-zinc-200 placeholder:text-zinc-700 focus:outline-none focus:border-claude-500/50 focus:ring-1 focus:ring-claude-500/30 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-zinc-500 mb-1.5" htmlFor="email">Email</label>
+                  <input
+                    id="email" type="email" required
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    placeholder="your@email.com"
+                    className="w-full px-4 py-2.5 rounded-xl border border-zinc-800 bg-zinc-900/50 text-sm text-zinc-200 placeholder:text-zinc-700 focus:outline-none focus:border-claude-500/50 focus:ring-1 focus:ring-claude-500/30 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-zinc-500 mb-1.5" htmlFor="message">Message</label>
+                  <textarea
+                    id="message" required rows={4}
+                    value={form.message}
+                    onChange={(e) => setForm({ ...form, message: e.target.value })}
+                    placeholder="Tell me about your project..."
+                    className="w-full px-4 py-2.5 rounded-xl border border-zinc-800 bg-zinc-900/50 text-sm text-zinc-200 placeholder:text-zinc-700 focus:outline-none focus:border-claude-500/50 focus:ring-1 focus:ring-claude-500/30 transition-all resize-none"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-claude-600 to-claude-600 text-white text-sm font-medium hover:from-claude-500 hover:to-claude-400 transition-all duration-200 shadow-[0_0_20px_rgba(217,119,87,0.25)]"
+                >
+                  {sent ? "✓ Opening your email client..." : "Send Message"}
+                </button>
+              </form>
+            </motion.div>
+
+            {/* socials */}
+            <motion.div {...fadeUp(0.15)} className="grid grid-cols-2 gap-3 content-start">
+              {socials.map((s) => (
+                <Card key={s.label}>
+                  <a
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col gap-3 p-5 group cursor-pointer"
+                  >
+                    <span className="flex items-center justify-center w-9 h-9 rounded-full border border-zinc-800 text-zinc-500 group-hover:border-claude-500/40 group-hover:text-claude-300 group-hover:shadow-[0_0_10px_rgba(217,119,87,0.2)] transition-all duration-200">
+                      {s.icon}
+                    </span>
+                    <div>
+                      <p className="text-xs font-medium text-zinc-400 group-hover:text-zinc-200 transition-colors">{s.label}</p>
+                      <p className="text-[10px] text-zinc-700 mt-0.5 truncate">{s.handle}</p>
+                    </div>
+                  </a>
+                </Card>
+              ))}
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Footer ──────────────────────────────────────────────────────────── */}
+      <footer className="border-t border-claude-500/10 py-8 px-4">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p className="text-[11px] text-zinc-700">© {new Date().getFullYear()} Suryansh Chaudhary</p>
+          <div className="flex items-center gap-4">
+            {socials.map((s) => (
+              <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="text-zinc-700 hover:text-zinc-400 transition-colors">
+                {s.icon}
+              </a>
+            ))}
+          </div>
+          <p className="text-[11px] text-zinc-600">
+            Typed by me <span className="text-claude-400">·</span> Paired with{" "}
+            <span className="text-claude-400 font-medium">Claude</span>{" "}
+            <span className="text-claude-400">·</span> Deployed at{" "}
+            <span className="text-claude-300 font-medium">3am</span>
+          </p>
+        </div>
+      </footer>
     </div>
   );
-
 }
