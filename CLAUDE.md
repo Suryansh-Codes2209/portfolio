@@ -15,34 +15,34 @@ There are no tests in this project.
 
 ## Architecture
 
-This is a Next.js 14 personal portfolio site using the App Router. Key architectural decisions:
+Next.js 14 personal portfolio site using the App Router.
 
-**Content Management via Contentlayer:** All project content lives as MDX files in `content/projects/`. Contentlayer processes these at build time into typed TypeScript objects (imported as `allProjects` from `"contentlayer/generated"`). The config in `contentlayer.config.js` defines `Project` and `Page` document types with fields like `published`, `title`, `description`, `date`, `url`, and `repository`. Only projects with `published: true` appear in listings.
+**Project data — static:** Projects live as a typed array in `app/data/projects.ts` (no MDX, no Redis, no view counts). Edit that file to add/remove projects.
 
-**Page View Tracking with Upstash Redis:** The `/projects` page and individual project pages fetch real-time view counts from Upstash Redis. Views are incremented via `pages/api/incr.ts` (Edge runtime), which deduplicates by hashed IP per slug with a 24-hour TTL. Redis keys follow the pattern `pageviews:projects:{slug}`. Requires `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` environment variables.
+**Blog content — Contentlayer:** Blog posts are MDX files in `content/blog/` processed by `contentlayer.config.js` (uses the `contentlayer2` fork aliased as `contentlayer` for Next 14 compatibility). The `Blog` document type defines fields `published`, `title`, `description`, `date`, `tags`, `readingTime`. Only posts with `published: true` are listed. Imported as `allBlogs` from `"contentlayer/generated"`.
 
-**Routing structure:**
-- `/` — Home page with particle animation and profile
-- `/projects` — Grid listing of all published projects (ISR with 60s revalidation)
-- `/projects/[slug]` — Individual project page rendered from MDX
+**Routing:**
+- `/` — Single-page scroll site (hero, about, stack, projects, recommendations, blog, resume, contact). Includes the `HeroIntro` 3D scroll-driven intro.
+- `/projects` — Grid listing of all projects from static data
+- `/blog` — Blog index
+- `/blog/[slug]` — MDX blog post
 - `/contact` — Contact page
-- `pages/api/incr.ts` — Edge API route for view counting (uses Pages Router, not App Router)
 
-**Fonts:** Two custom fonts loaded via `@next/font` — Inter (variable `--font-inter`) and CalSans SemiBold (variable `--font-calsans`, used as `font-display` in Tailwind).
+**Fonts:** Inter (Google) and a local CalSans SemiBold loaded via `next/font`. CSS variables `--font-inter` and `--font-calsans` (the latter mapped to Tailwind's `font-display`).
 
-**Featured projects:** The `/projects` page hardcodes specific slugs (`unkey`, `planetfall`, `highstorm`) as featured/top positions. When adding new featured projects, update those references in `app/projects/page.tsx`.
+**Sounds:** `public/sounds/` holds audio clips wired into interactive components — `fahhh.mp3` plays at the end of the hero intro, `fuckyou.mp3` plays when the camera-based hand-scroll detects a middle finger. Audio is unlocked by a "Click to begin" gate on the intro (Chrome autoplay policy requires user activation).
 
-## Adding a New Project
+## Adding a Blog Post
 
-Create `content/projects/{slug}.mdx` with frontmatter:
+Create `content/blog/{slug}.mdx`:
+
 ```mdx
 ---
 published: true
-title: "Project Title"
+title: "Post title"
 description: "Short description"
-date: 2024-01-01
-url: https://example.com
-repository: owner/repo
+date: 2026-01-01
+tags: ["nextjs", "react"]
 ---
 
 Content here...

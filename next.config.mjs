@@ -2,9 +2,18 @@ import { withContentlayer } from "next-contentlayer";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-	pageExtensions: ["js", "jsx", "ts", "tsx", "md", "mdx"],
-	experimental: {
-		mdxRs: true,
+	webpack: (config) => {
+		config.ignoreWarnings = [
+			...(config.ignoreWarnings || []),
+			{ module: /@react-three\/fiber/, message: /unstable_act/ },
+			{ module: /@contentlayer2\/core/, message: /Critical dependency|build dependencies/ },
+			{ message: /Parsing of .* for build dependencies failed/ },
+		];
+		config.infrastructureLogging = {
+			...(config.infrastructureLogging || {}),
+			level: "error",
+		};
+		return config;
 	},
 };
 

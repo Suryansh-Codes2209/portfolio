@@ -20,6 +20,9 @@ export function GestureScroll({ className = "" }: { className?: string }) {
   const landmarkerRef = useRef<any>(null);
   const rafRef = useRef<number>(0);
   const smoothYRef = useRef(0.5);
+  const fuAudioRef = useRef<HTMLAudioElement | null>(null);
+  const fuLastPlayedRef = useRef(0);
+  const fuFramesRef = useRef(0);
 
   const stop = useCallback(() => {
     cancelAnimationFrame(rafRef.current);
@@ -103,6 +106,13 @@ export function GestureScroll({ className = "" }: { className?: string }) {
     setStatus("running");
     setHint("Raise your hand to scroll up, lower it to scroll down.");
 
+    if (!fuAudioRef.current) {
+      const a = new Audio("/sounds/fuckyou.mp3");
+      a.preload = "auto";
+      a.volume = 0.8;
+      fuAudioRef.current = a;
+    }
+
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d") ?? null;
     smoothYRef.current = 0.5;
@@ -129,11 +139,36 @@ export function GestureScroll({ className = "" }: { className?: string }) {
       if (hands.length > 0) {
         lastHandSeen = now;
         const hand = hands[0];
-        const wristY = hand[0].y;
+        const wrist = hand[0];
+        const wristY = wrist.y;
         smoothYRef.current = smoothYRef.current * (1 - EMA_ALPHA) + wristY * EMA_ALPHA;
 
+        const dist = (a: any, b: any) => Math.hypot(a.x - b.x, a.y - b.y);
+        const extended = (tip: number, mcp: number) =>
+          dist(hand[tip], wrist) > dist(hand[mcp], wrist) * 1.5;
+
+        const middleExt = extended(12, 9);
+        const indexExt = extended(8, 5);
+        const ringExt = extended(16, 13);
+        const pinkyExt = extended(20, 17);
+        const isMiddleFinger = middleExt && !indexExt && !ringExt && !pinkyExt;
+
+        if (isMiddleFinger) {
+          fuFramesRef.current += 1;
+          if (fuFramesRef.current >= 5 && now - fuLastPlayedRef.current > 3000) {
+            fuLastPlayedRef.current = now;
+            const a = fuAudioRef.current;
+            if (a) {
+              a.currentTime = 0;
+              a.play().catch(() => {});
+            }
+          }
+        } else {
+          fuFramesRef.current = 0;
+        }
+
         if (ctx && canvas) {
-          ctx.fillStyle = "#D97757";
+          ctx.fillStyle = isMiddleFinger ? "#ef4444" : "#D97757";
           for (const pt of hand) {
             ctx.beginPath();
             ctx.arc((1 - pt.x) * canvas.width, pt.y * canvas.height, 2.2, 0, Math.PI * 2);
@@ -141,14 +176,17 @@ export function GestureScroll({ className = "" }: { className?: string }) {
           }
         }
 
-        const norm = (smoothYRef.current - 0.5) * 2;
-        const signed = Math.abs(norm) < DEAD_ZONE ? 0 : norm - Math.sign(norm) * DEAD_ZONE;
-        const velocity = signed * MAX_SCROLL_PER_FRAME * 1.3;
-        if (velocity !== 0) {
-          window.scrollBy({ top: velocity, behavior: "instant" as ScrollBehavior });
+        if (!isMiddleFinger) {
+          const norm = (smoothYRef.current - 0.5) * 2;
+          const signed = Math.abs(norm) < DEAD_ZONE ? 0 : norm - Math.sign(norm) * DEAD_ZONE;
+          const velocity = signed * MAX_SCROLL_PER_FRAME * 1.3;
+          if (velocity !== 0) {
+            window.scrollBy({ top: velocity, behavior: "instant" as ScrollBehavior });
+          }
         }
       } else if (now - lastHandSeen > 600) {
         smoothYRef.current = 0.5;
+        fuFramesRef.current = 0;
       }
 
       rafRef.current = requestAnimationFrame(loop);

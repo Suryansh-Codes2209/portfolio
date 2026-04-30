@@ -3,7 +3,7 @@ import { ArrowLeft, Clock, Tag } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Mdx } from "@/app/components/mdx";
-import "../../projects/[slug]/mdx.css";
+import "./mdx.css";
 
 export const revalidate = 60;
 

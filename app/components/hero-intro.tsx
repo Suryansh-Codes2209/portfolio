@@ -97,8 +97,12 @@ export function HeroIntro() {
   const progressRef = useRef(0);
   const targetRef = useRef(0);
   const rafRef = useRef<number>(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playedRef = useRef(false);
+  const primedRef = useRef(false);
   const [mounted, setMounted] = useState(false);
   const [active, setActive] = useState(false);
+  const [started, setStarted] = useState(false);
   const [done, setDone] = useState(false);
 
   useEffect(() => {
@@ -111,10 +115,15 @@ export function HeroIntro() {
       return;
     }
     setActive(true);
+    const audio = new Audio("/sounds/fahhh.mp3");
+    audio.preload = "auto";
+    audio.volume = 0.7;
+    audio.load();
+    audioRef.current = audio;
   }, []);
 
   useEffect(() => {
-    if (!active) return;
+    if (!active || !started) return;
 
     const prevOverflow = document.documentElement.style.overflow;
     const prevBodyOverflow = document.body.style.overflow;
@@ -163,6 +172,13 @@ export function HeroIntro() {
       progressRef.current = cur + (tgt - cur) * 0.085;
       if (tgt >= 0.999 && progressRef.current > 0.985) {
         sessionStorage.setItem(STORAGE_KEY, "1");
+        if (!playedRef.current && audioRef.current) {
+          playedRef.current = true;
+          audioRef.current.currentTime = 0;
+          audioRef.current.play().catch((err) => {
+            console.warn("[hero-intro] audio play failed:", err);
+          });
+        }
         setDone(true);
         setActive(false);
         return;
@@ -180,10 +196,31 @@ export function HeroIntro() {
       document.documentElement.style.overflow = prevOverflow;
       document.body.style.overflow = prevBodyOverflow;
     };
-  }, [active]);
+  }, [active, started]);
 
   const skip = () => {
+    handleBegin();
     targetRef.current = 1;
+  };
+
+  const handleBegin = () => {
+    if (!primedRef.current && audioRef.current) {
+      const a = audioRef.current;
+      primedRef.current = true;
+      a.muted = true;
+      a.play()
+        .then(() => {
+          a.pause();
+          a.currentTime = 0;
+          a.muted = false;
+        })
+        .catch((err) => {
+          primedRef.current = false;
+          a.muted = false;
+          console.warn("[hero-intro] audio prime failed:", err);
+        });
+    }
+    setStarted(true);
   };
 
   if (!mounted) return null;
@@ -245,6 +282,28 @@ export function HeroIntro() {
           <div className="pointer-events-none absolute bottom-6 right-6 text-[10px] tracking-[0.3em] text-zinc-600 uppercase">
             Suryansh · 2026
           </div>
+
+          <AnimatePresence>
+            {!started && (
+              <motion.button
+                key="begin-gate"
+                type="button"
+                onClick={handleBegin}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, transition: { duration: 0.5 } }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-5 bg-black/85 backdrop-blur-sm cursor-pointer"
+              >
+                <span className="relative flex h-16 w-16 items-center justify-center">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-claude-500/40" />
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-claude-500 shadow-[0_0_24px_rgba(217,119,87,0.8)]" />
+                </span>
+                <span className="font-display text-2xl text-zinc-100 tracking-tight">Click to begin</span>
+                <span className="text-[10px] tracking-[0.3em] uppercase text-zinc-500">Sound on · Scroll to advance</span>
+              </motion.button>
+            )}
+          </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>
