@@ -10,6 +10,7 @@ import {
 	Globe,
 	Package,
 	PauseCircle,
+	Puzzle,
 	ShieldCheck,
 	Youtube,
 } from "lucide-react";
@@ -22,6 +23,8 @@ import { ShineText } from "../components/shine-text";
 const DMG_URL =
 	"https://github.com/Suryansh-Codes2209/Macget/releases/latest/download/Macget.dmg";
 const REPO_URL = "https://github.com/Suryansh-Codes2209/Macget";
+const EXTENSION_URL =
+	"https://chromewebstore.google.com/detail/ldmhmgglgemkoogpokfcgplbpfokcejl";
 
 // ─── animation helper (mirrors app/page.tsx) ──────────────────────────────────
 const fadeUp = (delay = 0) => ({
@@ -47,6 +50,7 @@ const features = [
 		icon: <Globe className="w-4 h-4 text-claude-400" />,
 		title: "Browser capture",
 		desc: "A companion extension hands your browser downloads to Macget — cookies and headers included, so logged-in downloads just work.",
+		link: { href: EXTENSION_URL, label: "Add to Chrome" },
 	},
 	{
 		icon: <PauseCircle className="w-4 h-4 text-claude-300" />,
@@ -231,11 +235,64 @@ export default function MacgetPage() {
 										<p className="text-xs text-zinc-500 leading-relaxed">
 											{f.desc}
 										</p>
+										{f.link && (
+											<a
+												href={f.link.href}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-claude-300 hover:text-claude-200 transition-colors"
+											>
+												{f.link.label}
+												<ArrowRight className="w-3 h-3" />
+											</a>
+										)}
 									</div>
 								</Card>
 							</motion.div>
 						))}
 					</div>
+				</div>
+			</section>
+
+			{/* ── Browser extension ──────────────────────────────────────────────── */}
+			<section className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
+				<div className="absolute top-1/2 right-0 -translate-y-1/2 w-[480px] h-80 rounded-full bg-claude-500/[0.07] blur-[100px] pointer-events-none" />
+
+				<div className="max-w-5xl mx-auto relative">
+					<motion.p
+						{...fadeUp(0)}
+						className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2"
+					>
+						Browser extension
+					</motion.p>
+					<motion.h2
+						{...fadeUp(0.05)}
+						className="text-3xl sm:text-4xl font-display mb-5"
+					>
+						<ShineText>Send downloads straight from your browser</ShineText>
+					</motion.h2>
+
+					<motion.p
+						{...fadeUp(0.1)}
+						className="text-sm text-zinc-400 max-w-2xl leading-relaxed mb-8"
+					>
+						The companion Chrome extension hands your browser downloads to
+						Macget — cookies and headers included, so logged-in and
+						gated downloads just work. Installed automatically the first time
+						you open Macget, or grab it from the Chrome Web Store.
+					</motion.p>
+
+					<motion.div {...fadeUp(0.16)}>
+						<a
+							href={EXTENSION_URL}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-gradient-to-r from-claude-600 to-claude-600 text-white text-sm font-medium hover:from-claude-500 hover:to-claude-400 transition-all duration-200 shadow-[0_0_20px_rgba(217,119,87,0.35)]"
+						>
+							<Puzzle className="w-4 h-4" /> Add to Chrome
+							<ArrowRight className="w-4 h-4" />
+						</a>
+					</motion.div>
 				</div>
 			</section>
 
