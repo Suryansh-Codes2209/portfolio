@@ -27,6 +27,7 @@ export const Blog = defineDocumentType(() => ({
 		date: { type: "date", required: true },
 		tags: { type: "list", of: { type: "string" } },
 		readingTime: { type: "number" },
+		image: { type: "string" },
 	},
 	computedFields,
 }));

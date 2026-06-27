@@ -1,4 +1,5 @@
 import { allBlogs } from "contentlayer/generated";
+import type { Metadata } from "next";
 import { ArrowLeft, Clock, Tag } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -13,12 +14,68 @@ export async function generateStaticParams(): Promise<Props["params"][]> {
   return allBlogs.filter((p) => p.published).map((p) => ({ slug: p.slug }));
 }
 
+export function generateMetadata({ params }: Props): Metadata {
+  const post = allBlogs.find((p) => p.slug === params.slug);
+  if (!post) return {};
+
+  const url = `https://suryansh.work/blog/${post.slug}`;
+  const image = post.image ?? "/og.png";
+  return {
+    title: post.title,
+    description: post.description,
+    keywords: post.tags,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article",
+      title: post.title,
+      description: post.description,
+      url,
+      publishedTime: new Date(post.date).toISOString(),
+      authors: ["Suryansh Chaudhary"],
+      tags: post.tags,
+      images: [image],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.description,
+      creator: "@Suryansh_2001",
+      images: [image],
+    },
+  };
+}
+
 export default function BlogPostPage({ params }: Props) {
   const post = allBlogs.find((p) => p.slug === params.slug);
   if (!post) notFound();
 
+  const url = `https://suryansh.work/blog/${post.slug}`;
+  const image = `https://suryansh.work${post.image ?? "/og.png"}`;
+
   return (
     <div className="bg-black text-zinc-100 min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BlogPosting",
+            headline: post.title,
+            description: post.description,
+            image,
+            datePublished: new Date(post.date).toISOString(),
+            dateModified: new Date(post.date).toISOString(),
+            keywords: post.tags?.join(", "),
+            url,
+            mainEntityOfPage: url,
+            author: {
+              "@type": "Person",
+              name: "Suryansh Chaudhary",
+              url: "https://suryansh.work",
+            },
+          }),
+        }}
+      />
       {/* ambient */}
       <div className="pointer-events-none fixed inset-0 z-0">
         <div className="absolute top-0 right-1/3 w-[500px] h-[500px] rounded-full bg-claude-600/[0.05] blur-[120px]" />

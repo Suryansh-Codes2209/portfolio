@@ -9,29 +9,30 @@ import { CursorGlow } from "./components/cursor-glow";
 import { BackToTop } from "./components/back-to-top";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://suryansh.work"),
   title: {
-    default: "Suryansh Chaudhary | Full Stack Developer",
-    template: "%s | Suryansh Chaudhary - Full Stack Developer",
+    default: "Suryansh Chaudhary | Builds & ships products in public",
+    template: "%s | Suryansh Chaudhary",
   },
   description:
-    "Full Stack Developer with 1+ year of startup experience, specializing in modern web development with React, Node.js, and cloud technologies. Open to new opportunities and collaborations.",
+    "Suryansh Chaudhary builds and ships products in public — creator of MacGet (open-source macOS download manager) and AI agents in production.",
   keywords: [
     "Suryansh Chaudhary",
-    "Full Stack Developer",
-    "Web Developer",
-    "Software Engineer",
-    "React Developer",
-    "Node.js Developer",
-    "JavaScript Developer",
-    "TypeScript",
-    "Frontend Development",
-    "Backend Development",
+    "build in public",
+    "MacGet",
+    "macOS download manager",
+    "open source",
+    "indie hacker",
+    "AI agents",
+    "LangGraph",
+    "Full Stack AI Engineer",
+    "yt-dlp GUI Mac",
   ],
   creator: "Suryansh Chaudhary",
   openGraph: {
-    title: "Suryansh Chaudhary | Full Stack Developer",
+    title: "Suryansh Chaudhary | Builds & ships products in public",
     description:
-      "Full Stack Developer with 1+ year of startup experience, specializing in modern web development with Nextjs, Node.js, and cloud technologies. Open to new opportunities and collaborations.",
+      "Suryansh Chaudhary builds and ships products in public — creator of MacGet (open-source macOS download manager) and AI agents in production.",
     url: "https://suryansh.work",
     siteName: "Suryansh Chaudhary's Portfolio",
     images: [
@@ -39,7 +40,7 @@ export const metadata: Metadata = {
         url: "https://suryansh.work/og.png",
         width: 1920,
         height: 1080,
-        alt: "Suryansh Chaudhary - Full Stack Developer Portfolio",
+        alt: "Suryansh Chaudhary — builds and ships products in public",
       },
     ],
     locale: "en-US",
@@ -57,12 +58,12 @@ export const metadata: Metadata = {
     },
   },
   twitter: {
-    title: "Suryansh Chaudhary - Full Stack Developer",
+    title: "Suryansh Chaudhary | Builds & ships products in public",
     card: "summary_large_image",
     description:
-      "Full Stack Developer specializing in modern web technologies. View my portfolio and let's connect!",
+      "Creator of MacGet (open-source macOS download manager). I build and ship products in public — open-source tools + AI systems.",
     images: ["https://suryansh.work/og.png"],
-    creator: "@Suryansh_2001", 
+    creator: "@Suryansh_2001",
   },
   icons: {
     shortcut: "/favicon.png",
@@ -100,22 +101,22 @@ export default function RootLayout({
               "@type": "Person",
               name: "Suryansh Chaudhary",
               url: "https://suryansh.work",
-              jobTitle: "Full Stack Developer",
+              jobTitle: "Software Engineer & Indie Builder",
               description:
-                "Full Stack Developer with expertise in modern web technologies",
+                "Builds and ships products in public — creator of MacGet (open-source macOS download manager) and AI agents in production.",
               sameAs: [
                 "https://github.com/Suryansh-Codes2209",
                 "https://www.linkedin.com/in/suryansh-chaudhary-2209/",
                 "https://x.com/Suryansh_2001",
               ],
-              skills: [
-                "React",
-                "Node.js",
-                "TypeScript",
-                "JavaScript",
+              knowsAbout: [
+                "Build in Public",
+                "Open Source Software",
+                "macOS Development",
+                "Swift",
+                "AI Agents",
+                "LangGraph",
                 "Full Stack Development",
-                "Web Development",
-                "Cloud Technologies",
               ],
             }),
           }}

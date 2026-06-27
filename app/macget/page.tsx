@@ -368,6 +368,12 @@ export default function MacgetPage() {
 					>
 						<ArrowLeft className="w-3 h-3" /> Back to portfolio
 					</Link>
+					<Link
+						href="/blog/building-macget-download-engine"
+						className="flex items-center gap-1.5 text-[11px] text-zinc-600 hover:text-claude-300 transition-colors"
+					>
+						Read the build log <ArrowRight className="w-3 h-3" />
+					</Link>
 					<a
 						href={REPO_URL}
 						target="_blank"

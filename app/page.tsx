@@ -2,11 +2,11 @@
 
 import { allBlogs } from "contentlayer/generated";
 import { projects } from "./data/projects";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 import {
   ArrowDown, ArrowRight, Cloud, Code2, Cpu,
   Database, Download, ExternalLink, Github, Layers,
-  Linkedin, Mail, Menu, Server, Twitter, X,
+  Linkedin, Mail, Menu, Server, Twitter, X, Zap,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -71,13 +71,14 @@ function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
 
 // ─── data ─────────────────────────────────────────────────────────────────────
 const roles = [
+  "Builder in Public",
+  "Creator of MacGet",
   "Full Stack AI Engineer",
-  "AI Agent Builder",
-  "LangGraph + LangChain Developer",
-  "Financial AI Engineer",
+  "Ships open-source tools",
 ];
 
 const navLinks = [
+  { label: "Now",      href: "#now"      },
   { label: "About",    href: "#about"    },
   { label: "Stack",    href: "#stack"    },
   { label: "Projects", href: "#projects" },
@@ -169,9 +170,13 @@ const fadeUp = (delay = 0) => ({
   transition: { duration: 0.45, delay, ease: "easeOut" as const },
 });
 
+const MACGET_DMG_URL =
+  "https://github.com/Suryansh-Codes2209/Macget/releases/latest/download/Macget.dmg";
+
 // ─── page ─────────────────────────────────────────────────────────────────────
 export default function Home() {
-  const featured = projects.slice(0, 3);
+  const reduceMotion = useReducedMotion();
+  const [heroProject, ...restProjects] = projects;
   const latestPosts = allBlogs
     .filter((p) => p.published)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -287,7 +292,7 @@ export default function Home() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-claude-300 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-claude-500" />
           </span>
-          <span className="text-xs text-claude-300 font-medium">Available for work</span>
+          <span className="text-xs text-claude-300 font-medium">Building in public</span>
         </motion.div>
 
         {/* profile */}
@@ -328,9 +333,9 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.32, duration: 0.4 }}
-          className="text-xs text-zinc-600 tracking-wider mb-10"
+          className="text-sm text-zinc-400 max-w-md mb-10 leading-relaxed"
         >
-          LangGraph · LangChain · FastAPI · Cloud Run
+          I build and ship products in public. Open-source tools + AI systems.
         </motion.p>
 
         <motion.div
@@ -340,7 +345,7 @@ export default function Home() {
           className="flex flex-wrap items-center justify-center gap-2.5"
         >
           <a href="#projects" className="px-6 py-2.5 rounded-full bg-gradient-to-r from-claude-600 to-claude-600 text-white text-sm font-medium hover:from-claude-500 hover:to-claude-400 transition-all duration-200 cursor-pointer shadow-[0_0_20px_rgba(217,119,87,0.35)]">
-            View My Work
+            See what I&apos;m building
           </a>
           <a href="#contact" className="px-6 py-2.5 rounded-full border border-zinc-700 text-zinc-300 text-sm hover:border-zinc-500 hover:text-white transition-all duration-150 cursor-pointer">
             Contact Me
@@ -360,6 +365,48 @@ export default function Home() {
         >
           <ArrowDown className="w-5 h-5 animate-bounce" />
         </motion.a>
+      </section>
+
+      {/* ── Now / Building ──────────────────────────────────────────────────── */}
+      <section id="now" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
+        <div className="absolute -top-16 right-1/4 w-[480px] h-80 rounded-full bg-claude-500/[0.08] blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-0 -left-20 w-72 h-72 rounded-full bg-claude-600/[0.06] blur-[80px] pointer-events-none" />
+
+        <div className="max-w-5xl mx-auto relative">
+          <motion.p {...fadeUp(0)} className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-600 mb-2">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-claude-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-claude-500" />
+            </span>
+            Now
+          </motion.p>
+          <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display mb-3"><ShineText>What I&apos;m building</ShineText></motion.h2>
+          <motion.p {...fadeUp(0.08)} className="text-sm text-zinc-500 mb-10 max-w-xl leading-relaxed">
+            A live snapshot of what I&apos;m shipping right now — updated as things move.
+          </motion.p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { icon: <Zap className="w-4 h-4 text-claude-400" />, title: "Shipping MacGet 1.2", desc: "YouTube & HLS video downloads, browser-capture, and signed auto-updates for the macOS download manager." },
+              { icon: <Code2 className="w-4 h-4 text-claude-300" />, title: "Writing build logs", desc: "Documenting how the download engine, actor concurrency, and AI agents actually get built — in public." },
+              { icon: <Cpu className="w-4 h-4 text-claude-400" />, title: "AI agents in production", desc: "Financial research agents at Spiral Kite Labs — live market data, grounded reasoning, analyst-grade reports." },
+            ].map((item, i) => (
+              <motion.div
+                key={item.title}
+                {...fadeUp(i * 0.07)}
+                className="p-5 rounded-xl border border-zinc-800/70 bg-zinc-900/30 hover:border-claude-500/30 transition-colors duration-200"
+              >
+                <div className="mb-3">{item.icon}</div>
+                <h3 className="text-sm font-medium text-zinc-200 mb-1.5">{item.title}</h3>
+                <p className="text-xs text-zinc-500 leading-relaxed">{item.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.p {...fadeUp(0.2)} className="text-[11px] text-zinc-700 mt-6">
+            Last updated June 2026
+          </motion.p>
+        </div>
       </section>
 
       {/* ── About ───────────────────────────────────────────────────────────── */}
@@ -385,10 +432,10 @@ export default function Home() {
             {/* animated stat cards */}
             <motion.div {...fadeUp(0.12)} className="lg:col-span-2 grid grid-cols-2 gap-3">
               {[
-                { label: "Experience",     target: 2,  suffix: "+ yr" },
-                { label: "AI Agents",      target: 3,  suffix: "+" },
-                { label: "LLM APIs",       target: 4,  suffix: "+" },
-                { label: "Technologies",   target: 20, suffix: "+" },
+                { label: "Building",       target: 3,  suffix: "+ yr" },
+                { label: "AI Agents",      target: 5,  suffix: "+" },
+                { label: "LLM APIs",       target: 6,  suffix: "+" },
+                { label: "Technologies",   target: 25, suffix: "+" },
               ].map((s) => (
                 <div key={s.label} className="p-5 rounded-xl border border-zinc-800/70 bg-zinc-900/30">
                   <p className="text-xl font-display text-zinc-100">
@@ -467,8 +514,72 @@ export default function Home() {
             </motion.div>
           </div>
 
+          {/* featured MacGet block */}
+          <motion.div {...fadeUp(0.08)} className="mb-6">
+            <Card>
+              <div className="grid lg:grid-cols-2">
+                {/* info */}
+                <div className="relative z-20 p-7 sm:p-8 flex flex-col justify-center">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Image src="/macget-icon.png" alt="MacGet" width={52} height={52} className="rounded-[14px] shadow-[0_0_24px_rgba(217,119,87,0.25)]" />
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-claude-400/80">Flagship · Open source</p>
+                      <h3 className="text-xl font-display text-zinc-100 leading-tight">MacGet</h3>
+                    </div>
+                  </div>
+                  <p className="text-sm text-zinc-400 leading-relaxed mb-4 max-w-sm">
+                    A fast, multi-threaded download manager for macOS — chunked HTTP downloads, browser-extension capture, and YouTube/HLS video via bundled yt-dlp. SwiftUI + an actor-based engine.
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {["Free", "Open source", "macOS 26+"].map((b) => (
+                      <span key={b} className="text-[11px] px-2.5 py-1 rounded-full border border-claude-500/30 bg-claude-500/10 text-claude-300">{b}</span>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <a href={MACGET_DMG_URL} download className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-claude-600 to-claude-600 text-white text-sm font-medium hover:from-claude-500 hover:to-claude-400 transition-all duration-200 shadow-[0_0_20px_rgba(217,119,87,0.35)]">
+                      <Download className="w-4 h-4" /> Download
+                    </a>
+                    {heroProject.github && (
+                      <a href={heroProject.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-zinc-700 text-zinc-300 text-sm hover:border-zinc-500 hover:text-white transition-all duration-150">
+                        <Github className="w-4 h-4" /> GitHub
+                      </a>
+                    )}
+                    <Link href="/macget" className="flex items-center gap-1.5 px-3 py-2.5 text-sm text-zinc-400 hover:text-claude-300 transition-colors">
+                      Learn more <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                </div>
+
+                {/* media frame */}
+                <div className="relative z-20 p-7 sm:p-8 lg:pl-0 flex items-center">
+                  <div className="w-full rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900/60 shadow-[0_0_40px_rgba(0,0,0,0.45)]">
+                    <div className="flex items-center gap-1.5 px-3 py-2 border-b border-zinc-800 bg-zinc-900/80">
+                      <span className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+                    </div>
+                    <div className="relative aspect-video bg-black">
+                      <video
+                        src="/macget-demo.mp4"
+                        poster="/macget-icon.png"
+                        muted
+                        loop
+                        playsInline
+                        autoPlay={!reduceMotion}
+                        controls={!!reduceMotion}
+                        preload="none"
+                        aria-label="MacGet demo"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {featured.map((project, i) => (
+            {restProjects.map((project, i) => (
               <motion.div key={project.title} {...fadeUp(i * 0.08)}>
                 <Card>
                   <div className="block p-6">
@@ -692,7 +803,7 @@ export default function Home() {
           <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Say Hello</motion.p>
           <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display mb-3"><ShineText>Get in Touch</ShineText></motion.h2>
           <motion.p {...fadeUp(0.08)} className="text-sm text-zinc-500 mb-12 max-w-md leading-relaxed">
-            Open to new opportunities, freelance projects, and interesting collaborations. Fill the form or reach me directly.
+            I build in public. Got a project, a bug report, or just want to talk shop? Reach out — fill the form or hit me up directly.
           </motion.p>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
@@ -766,7 +877,11 @@ export default function Home() {
       {/* ── Footer ──────────────────────────────────────────────────────────── */}
       <footer className="border-t border-claude-500/10 py-8 px-4">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p className="text-[11px] text-zinc-700">© {new Date().getFullYear()} Suryansh Chaudhary</p>
+          <p className="text-[11px] text-zinc-700">
+            © {new Date().getFullYear()} Suryansh Chaudhary
+            <span className="text-zinc-800"> · </span>
+            <span className="text-zinc-600">Open to interesting collaborations</span>
+          </p>
           <div className="flex items-center gap-4">
             {socials.map((s) => (
               <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="text-zinc-700 hover:text-zinc-400 transition-colors">

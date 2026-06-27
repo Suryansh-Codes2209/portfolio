@@ -49,7 +49,7 @@ export default function BlogPage() {
           <ShineText>Blog</ShineText>
         </motion.h1>
         <motion.p {...fadeUp(0.08)} className="text-sm text-zinc-500 mb-12 max-w-md">
-          Thoughts on full-stack development, TypeScript, cloud architecture, and building things that last.
+          Build logs from shipping MacGet and AI systems in public — the engineering, the trade-offs, and what broke along the way.
         </motion.p>
 
         <div className="space-y-4">
