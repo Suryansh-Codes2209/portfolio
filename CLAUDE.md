@@ -22,7 +22,7 @@ Next.js 14 personal portfolio site using the App Router.
 **Blog content — Contentlayer:** Blog posts are MDX files in `content/blog/` processed by `contentlayer.config.js` (uses the `contentlayer2` fork aliased as `contentlayer` for Next 14 compatibility). The `Blog` document type defines fields `published`, `title`, `description`, `date`, `tags`, `readingTime`. Only posts with `published: true` are listed. Imported as `allBlogs` from `"contentlayer/generated"`.
 
 **Routing:**
-- `/` — Single-page scroll site (hero, about, stack, projects, recommendations, blog, resume, contact). Includes the `HeroIntro` 3D scroll-driven intro.
+- `/` — Single-page scroll site (hero, about, stack, projects, recommendations, blog, resume, contact). Includes the `HeroIntro` cinematic terminal intro (auto-types a build prompt, streams a fake build log, boom flash, then reveals the site).
 - `/projects` — Grid listing of all projects from static data
 - `/blog` — Blog index
 - `/blog/[slug]` — MDX blog post
@@ -30,7 +30,7 @@ Next.js 14 personal portfolio site using the App Router.
 
 **Fonts:** Inter (Google) and a local CalSans SemiBold loaded via `next/font`. CSS variables `--font-inter` and `--font-calsans` (the latter mapped to Tailwind's `font-display`).
 
-**Sounds:** `public/sounds/` holds audio clips wired into interactive components — `fahhh.mp3` plays at the end of the hero intro, `fuckyou.mp3` plays when the camera-based hand-scroll detects a middle finger. Audio is unlocked by a "Click to begin" gate on the intro (Chrome autoplay policy requires user activation).
+**Sounds:** `public/sounds/` holds audio clips wired into interactive components — `fahhh.mp3` plays on the hero intro's boom flash, `fuckyou.mp3` plays when the camera-based hand-scroll detects a middle finger. The intro auto-plays (no click gate), so `fahhh.mp3` is unlocked by priming on the visitor's first gesture (pointermove/scroll/click/key); a fully idle first load stays silent (Chrome autoplay policy requires user activation).
 
 ## Adding a Blog Post
 

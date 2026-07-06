@@ -1,110 +1,66 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
-
-const IntroScene = dynamic(
-  () => import("./intro-scene").then((m) => m.IntroScene),
-  { ssr: false, loading: () => null },
-);
 
 const STORAGE_KEY = "claude-intro-seen";
 
-const PHASES = [
-  { name: "Form", range: [0.0, 0.25] as const },
-  { name: "Morph", range: [0.25, 0.55] as const },
-  { name: "Build", range: [0.55, 0.82] as const },
-  { name: "Emit", range: [0.82, 1.0] as const },
+const PROMPT = "build suryansh's portfolio --public";
+
+type Step = { pending?: string; done: string; deploy?: boolean };
+
+const LOG: Step[] = [
+  { pending: "installing dependencies…", done: "next.js + tailwind ready" },
+  { done: "hero" },
+  { done: "#now — what i'm building" },
+  { done: "projects · macget" },
+  { done: "blog · build logs" },
+  { done: "contact" },
+  { pending: "deploying to production…", done: "live in 3.2s ⚡", deploy: true },
 ];
 
-function currentPhase(p: number) {
-  for (let i = PHASES.length - 1; i >= 0; i--) {
-    if (p >= PHASES[i].range[0]) return i;
-  }
-  return 0;
+type Line = { text: string; done: boolean; deploy: boolean };
+
+const SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+
+function Spinner() {
+  const [frame, setFrame] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setFrame((f) => (f + 1) % SPINNER.length);
+    }, 80);
+    return () => window.clearInterval(id);
+  }, []);
+  return <span className="text-claude-400">{SPINNER[frame]}</span>;
 }
 
-function FlashLayer({ progressRef }: { progressRef: React.MutableRefObject<number> }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    let raf = 0;
-    const tick = () => {
-      const el = ref.current;
-      if (el) {
-        const p = progressRef.current;
-        const flash = p > 0.78 ? Math.min(1, (p - 0.78) / 0.18) : 0;
-        el.style.opacity = String(Math.pow(flash, 0.8) * 0.95);
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [progressRef]);
+function FlashLayer({ trigger }: { trigger: boolean }) {
   return (
-    <div
-      ref={ref}
+    <motion.div
       className="pointer-events-none absolute inset-0"
       style={{
         background:
           "radial-gradient(circle at 50% 50%, #FFE5CF 0%, #D97757 18%, #C15F3C 35%, rgba(193,95,60,0.12) 55%, transparent 75%)",
         mixBlendMode: "screen",
-        opacity: 0,
       }}
+      initial={{ opacity: 0 }}
+      animate={trigger ? { opacity: [0, 0.95, 0.7] } : { opacity: 0 }}
+      transition={{ duration: 0.7, ease: "easeOut", times: [0, 0.4, 1] }}
     />
   );
 }
 
-function ProgressBar({ progressRef }: { progressRef: React.MutableRefObject<number> }) {
-  const barRef = useRef<HTMLDivElement>(null);
-  const labelRef = useRef<HTMLSpanElement>(null);
-  const phaseRef = useRef<HTMLSpanElement>(null);
-  useEffect(() => {
-    let raf = 0;
-    const tick = () => {
-      const p = progressRef.current;
-      if (barRef.current) barRef.current.style.transform = `scaleX(${p})`;
-      if (labelRef.current) {
-        labelRef.current.textContent = Math.round(p * 100).toString().padStart(3, "0");
-      }
-      if (phaseRef.current) {
-        const idx = currentPhase(p);
-        phaseRef.current.textContent = `${idx + 1}/${PHASES.length} · ${PHASES[idx].name}`;
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [progressRef]);
-  return (
-    <div className="w-[260px] flex flex-col gap-2">
-      <div className="flex items-center justify-between text-[9px] tracking-[0.3em] uppercase text-zinc-500">
-        <span ref={phaseRef}>1/4 · Form</span>
-        <span ref={labelRef} className="font-mono text-claude-400/80">000</span>
-      </div>
-      <div className="relative h-[2px] w-full bg-zinc-900 overflow-hidden">
-        <div
-          ref={barRef}
-          className="absolute inset-0 origin-left bg-gradient-to-r from-claude-500 to-claude-300"
-          style={{ transform: "scaleX(0)" }}
-        />
-      </div>
-    </div>
-  );
-}
-
 export function HeroIntro() {
-  const progressRef = useRef(0);
-  const targetRef = useRef(0);
-  const rafRef = useRef<number>(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const playedRef = useRef(false);
   const primedRef = useRef(false);
   const [mounted, setMounted] = useState(false);
   const [active, setActive] = useState(false);
-  const [started, setStarted] = useState(false);
   const [done, setDone] = useState(false);
+  const [typed, setTyped] = useState("");
+  const [lines, setLines] = useState<Line[]>([]);
+  const [flash, setFlash] = useState(false);
 
+  // Mount gate + audio setup + gesture-priming (browsers block audio without a user gesture).
   useEffect(() => {
     setMounted(true);
     if (typeof window === "undefined") return;
@@ -115,115 +71,116 @@ export function HeroIntro() {
       return;
     }
     setActive(true);
+
     const audio = new Audio("/sounds/fahhh.mp3");
     audio.preload = "auto";
     audio.volume = 0.7;
     audio.load();
     audioRef.current = audio;
+
+    const events = ["pointerdown", "pointermove", "scroll", "keydown", "touchstart"];
+    const cleanup = () => events.forEach((e) => window.removeEventListener(e, prime));
+    const prime = () => {
+      if (primedRef.current) return;
+      primedRef.current = true;
+      audio.muted = true;
+      audio
+        .play()
+        .then(() => {
+          audio.pause();
+          audio.currentTime = 0;
+          audio.muted = false;
+        })
+        .catch(() => {
+          primedRef.current = false;
+          audio.muted = false;
+        });
+      cleanup();
+    };
+    events.forEach((e) => window.addEventListener(e, prime, { once: true, passive: true }));
+    return cleanup;
   }, []);
 
+  // Lock page scroll while the intro plays.
   useEffect(() => {
-    if (!active || !started) return;
-
-    const prevOverflow = document.documentElement.style.overflow;
-    const prevBodyOverflow = document.body.style.overflow;
+    if (!active || done) return;
+    const prevHtml = document.documentElement.style.overflow;
+    const prevBody = document.body.style.overflow;
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
     window.scrollTo(0, 0);
-
-    const clamp = (n: number) => Math.max(0, Math.min(1, n));
-
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      targetRef.current = clamp(targetRef.current + e.deltaY * 0.0012);
+    return () => {
+      document.documentElement.style.overflow = prevHtml;
+      document.body.style.overflow = prevBody;
     };
+  }, [active, done]);
 
-    let lastY = 0;
-    const onTouchStart = (e: TouchEvent) => {
-      lastY = e.touches[0].clientY;
-    };
-    const onTouchMove = (e: TouchEvent) => {
-      e.preventDefault();
-      const y = e.touches[0].clientY;
-      targetRef.current = clamp(targetRef.current + (lastY - y) * 0.0025);
-      lastY = y;
-    };
+  // The cinematic sequence: type the prompt → stream the build log → boom → reveal.
+  useEffect(() => {
+    if (!active || done) return;
+    let cancelled = false;
+    const timeouts: number[] = [];
+    const delay = (ms: number) =>
+      new Promise<void>((resolve) => {
+        timeouts.push(window.setTimeout(resolve, ms));
+      });
 
-    const onKey = (e: KeyboardEvent) => {
-      if (["ArrowDown", " ", "PageDown", "End"].includes(e.key)) {
-        e.preventDefault();
-        targetRef.current = clamp(targetRef.current + (e.key === "End" ? 1 : 0.1));
-      } else if (["ArrowUp", "PageUp", "Home"].includes(e.key)) {
-        e.preventDefault();
-        targetRef.current = clamp(targetRef.current - (e.key === "Home" ? 1 : 0.1));
-      } else if (e.key === "Escape") {
-        targetRef.current = 1;
+    const run = async () => {
+      await delay(600);
+
+      for (let i = 1; i <= PROMPT.length; i++) {
+        if (cancelled) return;
+        setTyped(PROMPT.slice(0, i));
+        await delay(34);
       }
-    };
+      await delay(480);
 
-    window.addEventListener("wheel", onWheel, { passive: false });
-    window.addEventListener("touchstart", onTouchStart, { passive: true });
-    window.addEventListener("touchmove", onTouchMove, { passive: false });
-    window.addEventListener("keydown", onKey);
-
-    const tick = () => {
-      const cur = progressRef.current;
-      const tgt = targetRef.current;
-      progressRef.current = cur + (tgt - cur) * 0.085;
-      if (tgt >= 0.999 && progressRef.current > 0.985) {
-        sessionStorage.setItem(STORAGE_KEY, "1");
-        if (!playedRef.current && audioRef.current) {
-          playedRef.current = true;
-          audioRef.current.currentTime = 0;
-          audioRef.current.play().catch((err) => {
-            console.warn("[hero-intro] audio play failed:", err);
-          });
+      for (const step of LOG) {
+        if (cancelled) return;
+        setLines((prev) => [
+          ...prev,
+          { text: step.pending ?? step.done, done: !step.pending, deploy: !!step.deploy },
+        ]);
+        if (step.pending) {
+          await delay(step.deploy ? 720 : 520);
+          if (cancelled) return;
+          setLines((prev) =>
+            prev.map((l, i) =>
+              i === prev.length - 1 ? { text: step.done, done: true, deploy: l.deploy } : l,
+            ),
+          );
         }
-        setDone(true);
-        setActive(false);
-        return;
+        await delay(260);
       }
-      rafRef.current = requestAnimationFrame(tick);
+
+      await delay(360);
+      if (cancelled) return;
+
+      // Boom
+      setFlash(true);
+      const a = audioRef.current;
+      if (a) {
+        a.currentTime = 0;
+        a.play().catch((err) => console.warn("[hero-intro] audio play failed:", err));
+      }
+
+      await delay(680);
+      if (cancelled) return;
+      sessionStorage.setItem(STORAGE_KEY, "1");
+      setActive(false);
+      setDone(true);
     };
-    rafRef.current = requestAnimationFrame(tick);
+    run();
 
     return () => {
-      cancelAnimationFrame(rafRef.current);
-      window.removeEventListener("wheel", onWheel);
-      window.removeEventListener("touchstart", onTouchStart);
-      window.removeEventListener("touchmove", onTouchMove);
-      window.removeEventListener("keydown", onKey);
-      document.documentElement.style.overflow = prevOverflow;
-      document.body.style.overflow = prevBodyOverflow;
+      cancelled = true;
+      timeouts.forEach((id) => window.clearTimeout(id));
     };
-  }, [active, started]);
-
-  const skip = () => {
-    handleBegin();
-    targetRef.current = 1;
-  };
-
-  const handleBegin = () => {
-    if (!primedRef.current && audioRef.current) {
-      const a = audioRef.current;
-      primedRef.current = true;
-      a.muted = true;
-      a.play()
-        .then(() => {
-          a.pause();
-          a.currentTime = 0;
-          a.muted = false;
-        })
-        .catch((err) => {
-          primedRef.current = false;
-          a.muted = false;
-          console.warn("[hero-intro] audio prime failed:", err);
-        });
-    }
-    setStarted(true);
-  };
+  }, [active, done]);
 
   if (!mounted) return null;
+
+  const typing = lines.length === 0;
 
   return (
     <AnimatePresence>
@@ -232,78 +189,74 @@ export function HeroIntro() {
           key="intro"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.9, ease: "easeOut" } }}
-          className="fixed inset-0 z-[200] bg-black overflow-hidden"
-          style={{ touchAction: "none" }}
+          className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden bg-black px-4"
         >
-          <IntroScene progressRef={progressRef} />
-          <FlashLayer progressRef={progressRef} />
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(circle at 50% 42%, rgba(217,119,87,0.09), transparent 60%)",
+            }}
+          />
+          <FlashLayer trigger={flash} />
 
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/60 to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/90 to-transparent" />
-
-          <div className="absolute top-6 left-6 flex items-center gap-2 text-[10px] tracking-[0.3em] text-claude-400/80 uppercase">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-claude-500 opacity-75" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-claude-500" />
-            </span>
-            Scroll to advance
-          </div>
-
-          <button
-            onClick={skip}
-            className="absolute top-6 right-6 text-[10px] tracking-[0.3em] text-zinc-500 hover:text-claude-300 uppercase transition-colors"
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="relative w-full max-w-xl overflow-hidden rounded-xl border border-zinc-800 bg-black/90 font-mono shadow-2xl shadow-black/60"
           >
-            Skip →
-          </button>
+            <div className="flex items-center gap-2 border-b border-zinc-800/80 px-4 py-3">
+              <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
+              <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
+              <span className="h-3 w-3 rounded-full bg-[#28c840]" />
+              <span className="ml-2 text-[11px] text-zinc-500">suryansh@portfolio: ~/portfolio</span>
+            </div>
 
-          <div className="absolute inset-x-0 bottom-8 flex flex-col items-center gap-3">
-            <ProgressBar progressRef={progressRef} />
-            <motion.svg
-              width="22"
-              height="34"
-              viewBox="0 0 22 34"
-              fill="none"
-              className="opacity-60 text-zinc-500"
-              animate={{ y: [0, 4, 0] }}
-              transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <rect x="1" y="1" width="20" height="32" rx="10" stroke="currentColor" strokeWidth="1.2" />
-              <motion.circle
-                cx="11"
-                cy="10"
-                r="2"
-                fill="#D97757"
-                animate={{ cy: [10, 20, 10] }}
-                transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-              />
-            </motion.svg>
-          </div>
+            <div className="min-h-[280px] px-5 py-5 text-[13px] leading-relaxed">
+              <div className="flex text-zinc-200">
+                <span className="mr-2 text-claude-400">$</span>
+                <span>
+                  {typed}
+                  {typing && (
+                    <span
+                      className="ml-0.5 inline-block h-[15px] w-[7px] translate-y-[2px] bg-claude-400"
+                      style={{ animation: "blink 1s step-end infinite" }}
+                    />
+                  )}
+                </span>
+              </div>
 
-          <div className="pointer-events-none absolute bottom-6 right-6 text-[10px] tracking-[0.3em] text-zinc-600 uppercase">
+              <div className="mt-3 space-y-1.5">
+                {lines.map((line, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    {line.done ? (
+                      <span className={line.deploy ? "text-claude-300" : "text-claude-400"}>✓</span>
+                    ) : (
+                      <Spinner />
+                    )}
+                    <span className={line.done ? "text-zinc-300" : "text-zinc-500"}>{line.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+
+          <div className="pointer-events-none absolute bottom-6 right-6 text-[10px] uppercase tracking-[0.3em] text-zinc-600">
             Suryansh · 2026
           </div>
 
-          <AnimatePresence>
-            {!started && (
-              <motion.button
-                key="begin-gate"
-                type="button"
-                onClick={handleBegin}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0, transition: { duration: 0.5 } }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-                className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-5 bg-black/85 backdrop-blur-sm cursor-pointer"
-              >
-                <span className="relative flex h-16 w-16 items-center justify-center">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-claude-500/40" />
-                  <span className="relative inline-flex h-3 w-3 rounded-full bg-claude-500 shadow-[0_0_24px_rgba(217,119,87,0.8)]" />
-                </span>
-                <span className="font-display text-2xl text-zinc-100 tracking-tight">Click to begin</span>
-                <span className="text-[10px] tracking-[0.3em] uppercase text-zinc-500">Sound on · Scroll to advance</span>
-              </motion.button>
-            )}
-          </AnimatePresence>
+          <style jsx>{`
+            @keyframes blink {
+              0%,
+              100% {
+                opacity: 1;
+              }
+              50% {
+                opacity: 0;
+              }
+            }
+          `}</style>
         </motion.div>
       )}
     </AnimatePresence>
