@@ -30,7 +30,7 @@ Next.js 14 personal portfolio site using the App Router.
 
 **Fonts:** Inter (Google) and a local CalSans SemiBold loaded via `next/font`. CSS variables `--font-inter` and `--font-calsans` (the latter mapped to Tailwind's `font-display`).
 
-**Sounds:** `public/sounds/` holds audio clips wired into interactive components — `fahhh.mp3` plays on the hero intro's boom flash, `fuckyou.mp3` plays when the camera-based hand-scroll detects a middle finger. The intro auto-plays (no click gate), so `fahhh.mp3` is unlocked by priming on the visitor's first gesture (pointermove/scroll/click/key); a fully idle first load stays silent (Chrome autoplay policy requires user activation).
+**Sounds:** `public/sounds/` holds audio clips wired into interactive components — `fahhh.mp3` plays on the hero intro's boom flash, `fuckyou.mp3` plays when the camera-based hand-scroll detects a middle finger. The intro auto-plays (no click gate). `fahhh.mp3` plays through the **Web Audio API** (an `AudioContext`, not `<audio>`): the clip is decoded to a buffer up front, and the context is resumed on the visitor's first gesture (touch/click/key/scroll/move) via a silent 1-sample buffer. Once resumed, the buffer can fire from the boom's `setTimeout` — this is what makes it work on iOS, where a muted `<audio>` prime never authorizes later unmuted timer-driven playback. A fully idle first load stays silent (autoplay policy requires user activation).
 
 ## Adding a Blog Post
 
