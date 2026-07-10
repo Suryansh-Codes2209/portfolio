@@ -2,15 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Design tokens ─────────────────────────────────────────────────────────
+   Light is the default (:root); dark is applied via the `.dark` class that
+   next-themes toggles on <html>. Every component styles against these tokens
+   (bg / surface / line / fg-* / accent) so both themes stay in sync. */
 :root {
+  --bg: #faf9f7;          /* warm off-white */
+  --bg-2: #f3f1ec;
+  --surface: #ffffff;
+  --surface-2: #f4f2ee;
+  --line: rgba(28, 25, 23, 0.10);
+  --line-strong: rgba(28, 25, 23, 0.16);
+  --fg: #1c1a17;          /* near-black, warm */
+  --fg-muted: #57534e;
+  --fg-subtle: #78716c;
+  --fg-faint: #a8a29e;
+  --accent: #c15f3c;      /* darker orange for contrast on light */
+  --accent-text: #be5a38; /* links / small accent text — AA on cream */
+  --accent-soft: rgba(193, 95, 60, 0.10);
+  --accent-fg: #ffffff;
+  --grain-opacity: 0.03;
+  --edge-outline: rgba(28, 25, 23, 0.28);
+}
+
+.dark {
   --bg: #08070a;
-  --surface: rgba(24, 22, 27, 0.55);
-  --surface-2: rgba(32, 29, 35, 0.7);
-  --border: rgba(120, 113, 108, 0.14);
-  --text: #f5f4f2;
-  --text-muted: #a1a1aa;
-  --text-faint: #6b6b73;
+  --bg-2: #0d0c10;
+  --surface: #141216;
+  --surface-2: #1b191f;
+  --line: rgba(255, 255, 255, 0.09);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --fg: #f5f4f2;
+  --fg-muted: #b4b1ab;
+  --fg-subtle: #8a8883;
+  --fg-faint: #63615d;
   --accent: #d97757;
+  --accent-text: #e68a6b; /* links / small accent text — brightened for dark */
+  --accent-soft: rgba(217, 119, 87, 0.12);
+  --accent-fg: #ffffff;
+  --grain-opacity: 0.04;
+  --edge-outline: rgba(255, 255, 255, 0.30);
 }
 
 /* subtle film grain — premium editorial feel */
@@ -20,7 +51,7 @@
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.035;
+  opacity: var(--grain-opacity);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
@@ -37,8 +68,14 @@
     scroll-behavior: smooth;
   }
 
+  body {
+    background-color: var(--bg);
+    color: var(--fg);
+    /* smooth the theme flip */
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
   .text-edge-outline {
-    -webkit-text-stroke: 1px rgba(255,255,255,0.3);
+    -webkit-text-stroke: 1px var(--edge-outline);
   }
 }
-

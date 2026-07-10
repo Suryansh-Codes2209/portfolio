@@ -8,6 +8,7 @@ import { ScrollProgress } from "./components/scroll-progress";
 import { CursorGlow } from "./components/cursor-glow";
 import { BackToTop } from "./components/back-to-top";
 import { MotionProvider } from "./components/motion-provider";
+import { ThemeProvider } from "./components/theme-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://suryansh.work"),
@@ -97,7 +98,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={[inter.variable, calSans.variable, jetbrainsMono.variable].join(" ")}>
+    <html lang="en" suppressHydrationWarning className={[inter.variable, calSans.variable, jetbrainsMono.variable].join(" ")}>
       <head>
         <Analytics />
         {/* Add JSON-LD structured data */}
@@ -131,14 +132,16 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`grain bg-black ${
+        className={`grain bg-bg text-fg ${
           process.env.NODE_ENV === "development" ? "debug-screens" : undefined
         }`}
       >
-        <ScrollProgress />
-        <CursorGlow />
-        <MotionProvider>{children}</MotionProvider>
-        <BackToTop />
+        <ThemeProvider>
+          <ScrollProgress />
+          <CursorGlow />
+          <MotionProvider>{children}</MotionProvider>
+          <BackToTop />
+        </ThemeProvider>
       </body>
     </html>
   );

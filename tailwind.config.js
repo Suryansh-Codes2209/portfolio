@@ -2,6 +2,7 @@ const defaultTheme = require("tailwindcss/defaultTheme");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+	darkMode: "class",
 	content: [
 		"./app/**/*.{js,ts,jsx,tsx}",
 		"./content/**/*.mdx",
@@ -10,6 +11,30 @@ module.exports = {
 	theme: {
 		extend: {
 			colors: {
+				bg: {
+					DEFAULT: "var(--bg)",
+					2: "var(--bg-2)",
+				},
+				surface: {
+					DEFAULT: "var(--surface)",
+					2: "var(--surface-2)",
+				},
+				line: {
+					DEFAULT: "var(--line)",
+					strong: "var(--line-strong)",
+				},
+				fg: {
+					DEFAULT: "var(--fg)",
+					muted: "var(--fg-muted)",
+					subtle: "var(--fg-subtle)",
+					faint: "var(--fg-faint)",
+				},
+				accent: {
+					DEFAULT: "var(--accent)",
+					text: "var(--accent-text)",
+					soft: "var(--accent-soft)",
+					fg: "var(--accent-fg)",
+				},
 				claude: {
 					50:  "#FCF3EE",
 					100: "#F8E3D7",
@@ -22,10 +47,6 @@ module.exports = {
 					800: "#793826",
 					900: "#52261B",
 				},
-				bg: "var(--bg)",
-				surface: "var(--surface)",
-				"surface-2": "var(--surface-2)",
-				line: "var(--border)",
 			},
 			typography: {
 				DEFAULT: {
