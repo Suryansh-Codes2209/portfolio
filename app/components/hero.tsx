@@ -37,16 +37,16 @@ export function Hero() {
         transition={{ delay: 0.15, duration: 0.5 }}
         className="absolute left-5 top-20 z-30 max-w-[15rem] sm:left-8 sm:top-24"
       >
-        <div className="inline-flex items-center gap-2 rounded-full border border-claude-500/30 bg-claude-500/10 px-3 py-1.5 font-mono text-[11px] tracking-wide text-claude-300 backdrop-blur-sm">
+        <div className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent-soft px-3 py-1.5 font-mono text-[11px] tracking-wide text-accent-text backdrop-blur-sm">
           <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-claude-300 opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-claude-500" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
           </span>
           Building in public
         </div>
-        <p className="mt-4 text-sm leading-relaxed text-zinc-400">
-          Full-Stack <span className="text-zinc-200">AI Engineer</span> — I build in public, shipping{" "}
-          <span className="text-zinc-200">MacGet</span> &amp; production AI systems.
+        <p className="mt-4 text-sm leading-relaxed text-fg-muted">
+          Full-Stack <span className="text-fg">AI Engineer</span> — I build in public, shipping{" "}
+          <span className="text-fg">MacGet</span> &amp; production AI systems.
         </p>
       </motion.div>
 
@@ -59,7 +59,7 @@ export function Hero() {
       >
         <a
           href="#contact"
-          className="group inline-flex items-center gap-2 rounded-full bg-claude-600 px-5 py-2.5 text-sm font-medium text-white shadow-[0_0_24px_rgba(217,119,87,0.4)] transition-colors hover:bg-claude-500"
+          className="group inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-fg shadow-[0_0_24px_rgba(217,119,87,0.4)] transition-opacity hover:opacity-90"
         >
           Let&apos;s collaborate
           <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
@@ -72,7 +72,7 @@ export function Hero() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={s.label}
-              className="text-zinc-500 transition-colors hover:text-claude-300"
+              className="text-fg-subtle transition-colors hover:text-accent-text"
             >
               {s.icon}
             </a>
@@ -97,8 +97,8 @@ export function Hero() {
             height={1600}
             priority
             className="h-[40vh] w-auto max-w-none object-contain sm:h-[46vh] lg:h-[52vh]
-                       [-webkit-mask-image:radial-gradient(48%_80%_at_50%_42%,#000_18%,transparent_86%)]
-                       [mask-image:radial-gradient(48%_80%_at_50%_42%,#000_18%,transparent_86%)]"
+                       [-webkit-mask-image:radial-gradient(40%_70%_at_50%_42%,#000_40%,transparent_75%)]
+                       [mask-image:radial-gradient(40%_70%_at_50%_42%,#000_40%,transparent_75%)]"
           />
         </motion.div>
 
@@ -108,7 +108,7 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
           aria-label="Suryansh Chaudhary"
-          className="-mt-[4vh] select-none text-center font-display leading-[0.85] tracking-tighter text-white
+          className="-mt-[4vh] select-none text-center font-display leading-[0.85] tracking-tighter text-fg
                      text-[14vw] sm:-mt-[4vh] sm:text-[12vw] lg:text-[9.5vw]"
         >
           Suryansh
@@ -121,11 +121,11 @@ export function Hero() {
       <div className="absolute inset-x-0 bottom-24 z-30 flex justify-center gap-2.5 px-4 sm:hidden">
         <a
           href="#contact"
-          className="rounded-full bg-claude-600 px-5 py-2.5 text-sm font-medium text-white shadow-[0_0_20px_rgba(217,119,87,0.35)]"
+          className="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-fg shadow-[0_0_20px_rgba(217,119,87,0.35)]"
         >
           Let&apos;s collaborate
         </a>
-        <a href="#projects" className="rounded-full border border-line px-5 py-2.5 text-sm text-zinc-300">
+        <a href="#projects" className="rounded-full border border-line px-5 py-2.5 text-sm text-fg-muted">
           Work
         </a>
       </div>
@@ -135,17 +135,17 @@ export function Hero() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.5 }}
-        className="absolute inset-x-0 bottom-7 z-30 flex items-center justify-center gap-6 font-mono text-xs text-zinc-400"
+        className="absolute inset-x-0 bottom-7 z-30 flex items-center justify-center gap-6 font-mono text-xs text-fg-muted"
       >
         <span className="flex items-center gap-1.5">
-          <Github className="h-3.5 w-3.5 text-claude-400" /> {compact(stats.githubStars)} stars
+          <Github className="h-3.5 w-3.5 text-accent" /> {compact(stats.githubStars)} stars
         </span>
         <span className="h-4 w-px bg-line" />
         <span className="flex items-center gap-1.5">
-          <Download className="h-3.5 w-3.5 text-claude-400" /> {compact(stats.macgetDownloads)} downloads
+          <Download className="h-3.5 w-3.5 text-accent" /> {compact(stats.macgetDownloads)} downloads
         </span>
         <span className="hidden h-4 w-px bg-line sm:block" />
-        <a href="/suryansh.pdf" download className="hidden items-center gap-1.5 transition-colors hover:text-zinc-200 sm:flex">
+        <a href="/suryansh.pdf" download className="hidden items-center gap-1.5 transition-colors hover:text-fg sm:flex">
           <Download className="h-3.5 w-3.5" /> Resume
         </a>
       </motion.div>
