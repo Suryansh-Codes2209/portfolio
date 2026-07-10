@@ -22,8 +22,8 @@ export function NowBento() {
           className={`p-6 rounded-2xl border border-line bg-surface hover:border-claude-500/30 transition-colors flex flex-col ${item.span}`}
         >
           <div className="mb-3">{item.icon}</div>
-          <h3 className={`font-medium text-zinc-200 mb-1.5 ${item.span ? "text-lg" : "text-sm"}`}>{item.title}</h3>
-          <p className="text-xs text-zinc-500 leading-relaxed">{item.desc}</p>
+          <h3 className={`font-medium text-fg mb-1.5 ${item.span ? "text-lg" : "text-sm"}`}>{item.title}</h3>
+          <p className="text-xs text-fg-subtle leading-relaxed">{item.desc}</p>
         </motion.div>
       ))}
     </div>

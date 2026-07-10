@@ -5,6 +5,7 @@ import { ArrowLeft, ExternalLink, Github, Linkedin, Mail, Twitter } from "lucide
 import Link from "next/link";
 import { Card } from "../components/card";
 import { ShineText } from "../components/shine-text";
+import { ThemeToggle } from "../components/theme-toggle";
 
 const socials = [
   {
@@ -46,29 +47,32 @@ const fadeUp = (delay = 0) => ({
 
 export default function ContactPage() {
   return (
-    <div className="bg-black text-zinc-100 min-h-screen">
+    <div className="bg-bg text-fg min-h-screen">
       {/* nav */}
-      <header className="fixed inset-x-0 top-0 z-50 backdrop-blur-md border-b border-zinc-800/50 bg-black/80">
+      <header className="fixed inset-x-0 top-0 z-50 backdrop-blur-md border-b border-line bg-bg/70">
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
           <Link
             href="/"
-            className="flex items-center gap-2 text-xs text-zinc-500 hover:text-zinc-200 transition-colors"
+            className="flex items-center gap-2 text-xs text-fg-subtle hover:text-fg transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             Back home
           </Link>
-          <span className="text-xs text-zinc-600">Contact</span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-fg-faint">Contact</span>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
       <div className="max-w-5xl mx-auto px-4 pt-28 pb-24">
-        <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">
+        <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-fg-faint mb-2">
           Say Hello
         </motion.p>
         <motion.h1 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display mb-3">
           <ShineText>Get in Touch</ShineText>
         </motion.h1>
-        <motion.p {...fadeUp(0.08)} className="text-sm text-zinc-500 mb-12 max-w-md leading-relaxed">
+        <motion.p {...fadeUp(0.08)} className="text-sm text-fg-subtle mb-12 max-w-md leading-relaxed">
           Open to new opportunities, freelance projects, and interesting collaborations.
           Drop me a line — I&apos;ll get back to you quickly.
         </motion.p>
@@ -77,7 +81,7 @@ export default function ContactPage() {
         <motion.div {...fadeUp(0.12)} className="mb-14">
           <a
             href="mailto:suryansh.codes2001@gmail.com"
-            className="group inline-flex items-center gap-3 px-6 py-3.5 rounded-full border border-zinc-800 bg-zinc-900/50 text-zinc-300 text-sm hover:border-zinc-600 hover:text-white hover:bg-zinc-900 transition-all duration-200"
+            className="group inline-flex items-center gap-3 px-6 py-3.5 rounded-full border border-line bg-surface text-fg-muted text-sm hover:border-line-strong hover:text-fg hover:bg-surface-2 transition-all duration-200"
           >
             <Mail className="w-4 h-4" />
             suryansh.codes2001@gmail.com
@@ -96,17 +100,17 @@ export default function ContactPage() {
                   rel="noopener noreferrer"
                   className="flex items-start gap-4 p-6 group cursor-pointer"
                 >
-                  <span className="flex items-center justify-center w-10 h-10 rounded-full border border-zinc-800 text-zinc-500 group-hover:border-zinc-600 group-hover:text-zinc-300 flex-shrink-0 transition-all duration-200">
+                  <span className="flex items-center justify-center w-10 h-10 rounded-full border border-line text-fg-subtle group-hover:border-line-strong group-hover:text-fg-muted flex-shrink-0 transition-all duration-200">
                     {s.icon}
                   </span>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors">
+                    <p className="text-sm font-medium text-fg-muted group-hover:text-fg transition-colors">
                       {s.label}
                     </p>
-                    <p className="text-xs text-zinc-600 mt-0.5 mb-2 truncate">{s.handle}</p>
-                    <p className="text-xs text-zinc-500 leading-relaxed">{s.description}</p>
+                    <p className="text-xs text-fg-faint mt-0.5 mb-2 truncate">{s.handle}</p>
+                    <p className="text-xs text-fg-subtle leading-relaxed">{s.description}</p>
                   </div>
-                  <ExternalLink className="w-3.5 h-3.5 text-zinc-700 group-hover:text-zinc-500 flex-shrink-0 mt-0.5 transition-colors" />
+                  <ExternalLink className="w-3.5 h-3.5 text-fg-faint group-hover:text-fg-subtle flex-shrink-0 mt-0.5 transition-colors" />
                 </a>
               </Card>
             </motion.div>

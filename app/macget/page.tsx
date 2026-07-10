@@ -19,6 +19,7 @@ import Link from "next/link";
 import { Card } from "../components/card";
 import Particles from "../components/particles";
 import { ShineText } from "../components/shine-text";
+import { ThemeToggle } from "../components/theme-toggle";
 
 const DMG_URL =
 	"https://github.com/Suryansh-Codes2209/Macget/releases/latest/download/Macget.dmg";
@@ -89,18 +90,21 @@ const steps = [
 
 export default function MacgetPage() {
 	return (
-		<div className="bg-black text-zinc-100 min-h-screen overflow-x-hidden">
+		<div className="bg-bg text-fg min-h-screen overflow-x-hidden">
 			{/* ── Mini nav ───────────────────────────────────────────────────────── */}
-			<header className="fixed inset-x-0 top-0 z-50 backdrop-blur-md border-b border-claude-500/10 bg-black/80">
+			<header className="fixed inset-x-0 top-0 z-50 backdrop-blur-md border-b border-line bg-bg/70">
 				<div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
 					<Link
 						href="/"
-						className="flex items-center gap-2 text-xs text-zinc-500 hover:text-zinc-200 transition-colors"
+						className="flex items-center gap-2 text-xs text-fg-subtle hover:text-fg transition-colors"
 					>
 						<ArrowLeft className="w-3.5 h-3.5" />
 						Back home
 					</Link>
-					<span className="text-xs text-zinc-600">Macget</span>
+					<div className="flex items-center gap-3">
+						<span className="text-xs text-fg-faint">Macget</span>
+						<ThemeToggle />
+					</div>
 				</div>
 			</header>
 
@@ -132,7 +136,7 @@ export default function MacgetPage() {
 					initial={{ opacity: 0, y: 18 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ delay: 0.1, duration: 0.55, ease: "easeOut" }}
-					className="py-1 text-5xl sm:text-7xl font-display text-transparent bg-white bg-clip-text text-edge-outline mb-3"
+					className="py-1 text-5xl sm:text-7xl font-display text-transparent bg-fg bg-clip-text text-edge-outline mb-3"
 				>
 					Macget
 				</motion.h1>
@@ -141,7 +145,7 @@ export default function MacgetPage() {
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					transition={{ delay: 0.22, duration: 0.4 }}
-					className="text-base sm:text-lg text-zinc-400 max-w-md mb-2"
+					className="text-base sm:text-lg text-fg-muted max-w-md mb-2"
 				>
 					A fast, multi-threaded download manager for macOS — now with YouTube &
 					video downloads.
@@ -156,7 +160,7 @@ export default function MacgetPage() {
 					{["Free", "Open source", "macOS 26+"].map((b) => (
 						<span
 							key={b}
-							className="text-[11px] px-2.5 py-1 rounded-full border border-claude-500/30 bg-claude-500/10 text-claude-300"
+							className="text-[11px] px-2.5 py-1 rounded-full border border-accent/30 bg-accent-soft text-accent-text"
 						>
 							{b}
 						</span>
@@ -172,7 +176,7 @@ export default function MacgetPage() {
 					<a
 						href={DMG_URL}
 						download
-						className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-claude-600 to-claude-600 text-white text-sm font-medium hover:from-claude-500 hover:to-claude-400 transition-all duration-200 shadow-[0_0_20px_rgba(217,119,87,0.35)]"
+						className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-accent text-accent-fg text-sm font-medium hover:opacity-90 transition-all duration-200 shadow-[0_0_20px_rgba(217,119,87,0.35)]"
 					>
 						<Download className="w-4 h-4" /> Download for macOS
 					</a>
@@ -180,7 +184,7 @@ export default function MacgetPage() {
 						href={REPO_URL}
 						target="_blank"
 						rel="noopener noreferrer"
-						className="flex items-center gap-2 px-6 py-2.5 rounded-full border border-zinc-700 text-zinc-300 text-sm hover:border-zinc-500 hover:text-white transition-all duration-150"
+						className="flex items-center gap-2 px-6 py-2.5 rounded-full border border-line text-fg-muted text-sm hover:border-line-strong hover:text-fg transition-all duration-150"
 					>
 						<Github className="w-4 h-4" /> View on GitHub
 					</a>
@@ -190,7 +194,7 @@ export default function MacgetPage() {
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					transition={{ delay: 0.6, duration: 0.4 }}
-					className="text-[11px] text-zinc-600 mt-5"
+					className="text-[11px] text-fg-faint mt-5"
 				>
 					Universal build · Apple Silicon & Intel · ~130 MB
 				</motion.p>
@@ -203,7 +207,7 @@ export default function MacgetPage() {
 				<div className="max-w-5xl mx-auto relative">
 					<motion.p
 						{...fadeUp(0)}
-						className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2"
+						className="text-[10px] uppercase tracking-widest text-fg-faint mb-2"
 					>
 						Features
 					</motion.p>
@@ -220,19 +224,19 @@ export default function MacgetPage() {
 								<Card>
 									<div className="p-6 h-full">
 										<div className="flex items-center justify-between mb-3">
-											<span className="flex items-center justify-center w-9 h-9 rounded-full border border-zinc-800 bg-zinc-900/40">
+											<span className="flex items-center justify-center w-9 h-9 rounded-full border border-line bg-surface">
 												{f.icon}
 											</span>
 											{f.badge && (
-												<span className="text-[10px] px-2 py-0.5 rounded-full border border-claude-500/30 bg-claude-500/10 text-claude-300">
+												<span className="text-[10px] px-2 py-0.5 rounded-full border border-accent/30 bg-accent-soft text-accent-text">
 													{f.badge}
 												</span>
 											)}
 										</div>
-										<h3 className="text-sm font-medium text-zinc-200 mb-1.5">
+										<h3 className="text-sm font-medium text-fg mb-1.5">
 											{f.title}
 										</h3>
-										<p className="text-xs text-zinc-500 leading-relaxed">
+										<p className="text-xs text-fg-subtle leading-relaxed">
 											{f.desc}
 										</p>
 										{f.link && (
@@ -240,7 +244,7 @@ export default function MacgetPage() {
 												href={f.link.href}
 												target="_blank"
 												rel="noopener noreferrer"
-												className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-claude-300 hover:text-claude-200 transition-colors"
+												className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-accent-text hover:opacity-80 transition-colors"
 											>
 												{f.link.label}
 												<ArrowRight className="w-3 h-3" />
@@ -261,7 +265,7 @@ export default function MacgetPage() {
 				<div className="max-w-5xl mx-auto relative">
 					<motion.p
 						{...fadeUp(0)}
-						className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2"
+						className="text-[10px] uppercase tracking-widest text-fg-faint mb-2"
 					>
 						Browser extension
 					</motion.p>
@@ -274,7 +278,7 @@ export default function MacgetPage() {
 
 					<motion.p
 						{...fadeUp(0.1)}
-						className="text-sm text-zinc-400 max-w-2xl leading-relaxed mb-8"
+						className="text-sm text-fg-muted max-w-2xl leading-relaxed mb-8"
 					>
 						The companion Chrome extension hands your browser downloads to
 						Macget — cookies and headers included, so logged-in and
@@ -287,7 +291,7 @@ export default function MacgetPage() {
 							href={EXTENSION_URL}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-gradient-to-r from-claude-600 to-claude-600 text-white text-sm font-medium hover:from-claude-500 hover:to-claude-400 transition-all duration-200 shadow-[0_0_20px_rgba(217,119,87,0.35)]"
+							className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-accent text-accent-fg text-sm font-medium hover:opacity-90 transition-all duration-200 shadow-[0_0_20px_rgba(217,119,87,0.35)]"
 						>
 							<Puzzle className="w-4 h-4" /> Add to Chrome
 							<ArrowRight className="w-4 h-4" />
@@ -303,7 +307,7 @@ export default function MacgetPage() {
 				<div className="max-w-5xl mx-auto relative">
 					<motion.p
 						{...fadeUp(0)}
-						className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2"
+						className="text-[10px] uppercase tracking-widest text-fg-faint mb-2"
 					>
 						Get started
 					</motion.p>
@@ -319,15 +323,15 @@ export default function MacgetPage() {
 							<motion.div
 								key={s.n}
 								{...fadeUp(i * 0.07)}
-								className="p-6 rounded-xl border border-zinc-800/70 bg-zinc-900/30"
+								className="p-6 rounded-xl border border-line bg-surface"
 							>
-								<div className="w-8 h-8 rounded-full bg-gradient-to-br from-claude-500 to-claude-600 flex items-center justify-center text-xs font-bold text-white mb-4">
+								<div className="w-8 h-8 rounded-full bg-gradient-to-br from-claude-500 to-claude-600 flex items-center justify-center text-xs font-bold text-accent-fg mb-4">
 									{s.n}
 								</div>
-								<h3 className="text-sm font-medium text-zinc-200 mb-1.5">
+								<h3 className="text-sm font-medium text-fg mb-1.5">
 									{s.title}
 								</h3>
-								<p className="text-xs text-zinc-500 leading-relaxed">
+								<p className="text-xs text-fg-subtle leading-relaxed">
 									{s.desc}
 								</p>
 							</motion.div>
@@ -338,11 +342,11 @@ export default function MacgetPage() {
 						{...fadeUp(0.2)}
 						className="p-5 rounded-xl border border-claude-500/15 bg-gradient-to-br from-claude-500/[0.06] to-claude-600/[0.04]"
 					>
-						<p className="text-xs text-zinc-400 mb-3">
+						<p className="text-xs text-fg-muted mb-3">
 							Prefer the terminal for the first-launch step? Clear the
 							quarantine flag instead:
 						</p>
-						<code className="block text-[12px] font-mono text-claude-200 bg-black/40 border border-zinc-800 rounded-lg px-4 py-3 overflow-x-auto">
+						<code className="block text-[12px] font-mono text-accent-text bg-bg-2 border border-line rounded-lg px-4 py-3 overflow-x-auto">
 							xattr -dr com.apple.quarantine /Applications/Macget.app
 						</code>
 					</motion.div>
@@ -351,7 +355,7 @@ export default function MacgetPage() {
 						<a
 							href={DMG_URL}
 							download
-							className="flex items-center gap-2 px-7 py-3 rounded-full bg-gradient-to-r from-claude-600 to-claude-600 text-white text-sm font-medium hover:from-claude-500 hover:to-claude-400 transition-all duration-200 shadow-[0_0_20px_rgba(217,119,87,0.35)]"
+							className="flex items-center gap-2 px-7 py-3 rounded-full bg-accent text-accent-fg text-sm font-medium hover:opacity-90 transition-all duration-200 shadow-[0_0_20px_rgba(217,119,87,0.35)]"
 						>
 							<Download className="w-4 h-4" /> Download for macOS
 						</a>
@@ -364,13 +368,13 @@ export default function MacgetPage() {
 				<div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
 					<Link
 						href="/"
-						className="flex items-center gap-1.5 text-[11px] text-zinc-600 hover:text-zinc-300 transition-colors"
+						className="flex items-center gap-1.5 text-[11px] text-fg-faint hover:text-fg-subtle transition-colors"
 					>
 						<ArrowLeft className="w-3 h-3" /> Back to portfolio
 					</Link>
 					<Link
 						href="/blog/building-macget-download-engine"
-						className="flex items-center gap-1.5 text-[11px] text-zinc-600 hover:text-claude-300 transition-colors"
+						className="flex items-center gap-1.5 text-[11px] text-fg-faint hover:text-accent-text transition-colors"
 					>
 						Read the build log <ArrowRight className="w-3 h-3" />
 					</Link>
@@ -378,7 +382,7 @@ export default function MacgetPage() {
 						href={REPO_URL}
 						target="_blank"
 						rel="noopener noreferrer"
-						className="flex items-center gap-1.5 text-[11px] text-zinc-600 hover:text-zinc-300 transition-colors"
+						className="flex items-center gap-1.5 text-[11px] text-fg-faint hover:text-fg-subtle transition-colors"
 					>
 						Source on GitHub <ArrowRight className="w-3 h-3" />
 					</a>
