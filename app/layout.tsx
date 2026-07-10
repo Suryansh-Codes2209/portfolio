@@ -7,6 +7,7 @@ import { Analytics } from "./components/analytics";
 import { ScrollProgress } from "./components/scroll-progress";
 import { CursorGlow } from "./components/cursor-glow";
 import { BackToTop } from "./components/back-to-top";
+import { MotionProvider } from "./components/motion-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://suryansh.work"),
@@ -136,7 +137,7 @@ export default function RootLayout({
       >
         <ScrollProgress />
         <CursorGlow />
-        {children}
+        <MotionProvider>{children}</MotionProvider>
         <BackToTop />
       </body>
     </html>

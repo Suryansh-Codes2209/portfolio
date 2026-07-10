@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowDown, Download, Github, Linkedin, Mail, Twitter } from "lucide-react";
+import { ArrowUpRight, Download, Github, Linkedin, Mail, Twitter } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { compact } from "../data/stats";
@@ -26,76 +26,126 @@ export function Hero() {
   }, []);
 
   return (
-    <section className="relative flex flex-col items-center justify-center min-h-dvh text-center px-4 pt-14 overflow-hidden">
-      {/* restrained ambient glow — ONE orb, not five */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[520px] h-80 rounded-full bg-claude-600/10 blur-[110px] pointer-events-none" />
+    <section className="relative min-h-dvh overflow-hidden pt-14">
+      {/* ambient glow behind the subject */}
+      <div className="pointer-events-none absolute left-1/2 top-[30%] h-[440px] w-[640px] -translate-x-1/2 rounded-full bg-claude-600/15 blur-[130px]" />
+      <div className="pointer-events-none absolute left-1/2 top-[44%] h-64 w-64 -translate-x-1/2 rounded-full bg-claude-500/20 blur-[90px]" />
 
-      {/* vertical social rail (desktop) */}
-      <div className="hidden lg:flex flex-col items-center gap-4 absolute right-8 top-1/2 -translate-y-1/2">
-        {rail.map((s) => (
-          <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}
-             className="text-zinc-600 hover:text-claude-300 transition-colors">{s.icon}</a>
-        ))}
-        <span className="w-px h-16 bg-line mt-2" />
-      </div>
+      {/* GIANT NAME — sits BEHIND the portrait; the silhouette masks the middle */}
+      <motion.h1
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        aria-label="Suryansh Chaudhary"
+        className="pointer-events-none absolute inset-x-0 top-[29%] z-10 select-none text-center font-display leading-none tracking-tighter text-white
+                   text-[13.5vw] sm:top-auto sm:bottom-[26%] sm:text-[15vw] lg:bottom-[32%] lg:text-[13vw]"
+      >
+        SURYANSH
+      </motion.h1>
 
-      {/* availability pill */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05, duration: 0.4 }}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-claude-500/30 bg-claude-500/10 mb-8 font-mono text-[11px] tracking-wide text-claude-300">
-        <span className="relative flex h-2 w-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-claude-300 opacity-75" />
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-claude-500" />
-        </span>
-        Available for work · Building in public
+      {/* PORTRAIT — in front of the name, grounded to the bottom */}
+      <motion.div
+        initial={{ opacity: 0, scale: 1.04 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.85, ease: "easeOut" }}
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center"
+      >
+        <Image
+          src="/hero-portrait.png"
+          alt="Suryansh Chaudhary"
+          width={2000}
+          height={1600}
+          priority
+          className="h-[58vh] w-auto max-w-none object-contain object-bottom drop-shadow-[0_0_70px_rgba(217,119,87,0.28)] sm:h-[66vh] lg:h-[80vh]"
+        />
       </motion.div>
 
-      {/* small avatar accent */}
-      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}
-        className="mb-6">
-        <div className="w-16 h-16 rounded-full ring-1 ring-claude-500/40 ring-offset-2 ring-offset-black overflow-hidden mx-auto">
-          <Image src="/Profile.png" alt="Suryansh Chaudhary" width={64} height={64} className="object-cover w-full h-full" priority />
+      {/* fade the portrait's base into the page */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-44 bg-gradient-to-t from-black via-black/80 to-transparent" />
+
+      {/* top-left: availability + who I am */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15, duration: 0.5 }}
+        className="absolute left-5 top-20 z-30 max-w-[16rem] sm:left-8 sm:top-28"
+      >
+        <div className="inline-flex items-center gap-2 rounded-full border border-claude-500/30 bg-claude-500/10 px-3 py-1.5 font-mono text-[11px] tracking-wide text-claude-300 backdrop-blur-sm">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-claude-300 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-claude-500" />
+          </span>
+          Available for work
+        </div>
+        <p className="mt-4 text-sm leading-relaxed text-zinc-400">
+          Full-Stack <span className="text-zinc-200">AI Engineer</span> — I build in public, shipping{" "}
+          <span className="text-zinc-200">MacGet</span> &amp; production AI systems.
+        </p>
+      </motion.div>
+
+      {/* right: primary CTA + vertical social rail (desktop) */}
+      <motion.div
+        initial={{ opacity: 0, x: 12 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.25, duration: 0.5 }}
+        className="absolute right-5 top-1/2 z-30 hidden -translate-y-1/2 flex-col items-end gap-7 sm:flex"
+      >
+        <a
+          href="#contact"
+          className="group inline-flex items-center gap-2 rounded-full bg-claude-600 px-5 py-2.5 text-sm font-medium text-white shadow-[0_0_24px_rgba(217,119,87,0.4)] transition-colors hover:bg-claude-500"
+        >
+          Let&apos;s collaborate
+          <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+        </a>
+        <div className="flex flex-col items-center gap-4">
+          {rail.map((s) => (
+            <a
+              key={s.label}
+              href={s.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={s.label}
+              className="text-zinc-500 transition-colors hover:text-claude-300"
+            >
+              {s.icon}
+            </a>
+          ))}
+          <span className="mt-1 h-14 w-px bg-line" />
         </div>
       </motion.div>
 
-      {/* OVERSIZED name */}
-      <motion.h1 initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.55 }}
-        className="font-display leading-[0.95] tracking-tight text-transparent bg-white bg-clip-text text-edge-outline
-                   text-[15vw] sm:text-[13vw] lg:text-[9.5rem] mb-5">
-        Suryansh<br className="sm:hidden" /> Chaudhary
-      </motion.h1>
-
-      {/* one-line ship-focused tagline */}
-      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.28, duration: 0.4 }}
-        className="text-base sm:text-lg text-zinc-400 max-w-xl mb-8">
-        I build in public — shipping <span className="text-zinc-200">MacGet</span> and production AI systems.
-      </motion.p>
-
-      {/* CTAs — one primary */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.45 }}
-        className="flex flex-wrap items-center justify-center gap-2.5 mb-10">
-        <a href="#contact" className="px-6 py-2.5 rounded-full bg-claude-600 text-white text-sm font-medium hover:bg-claude-500 transition-colors shadow-[0_0_20px_rgba(217,119,87,0.35)]">
-          Let&apos;s build something
+      {/* mobile CTAs */}
+      <div className="absolute inset-x-0 bottom-24 z-30 flex justify-center gap-2.5 px-4 sm:hidden">
+        <a
+          href="#contact"
+          className="rounded-full bg-claude-600 px-5 py-2.5 text-sm font-medium text-white shadow-[0_0_20px_rgba(217,119,87,0.35)]"
+        >
+          Let&apos;s collaborate
         </a>
-        <a href="#projects" className="px-6 py-2.5 rounded-full border border-line text-zinc-300 text-sm hover:border-zinc-500 hover:text-white transition-colors">
-          View work
+        <a href="#projects" className="rounded-full border border-line px-5 py-2.5 text-sm text-zinc-300">
+          Work
         </a>
-      </motion.div>
+      </div>
 
-      {/* REAL proof row */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55, duration: 0.4 }}
-        className="flex items-center gap-8 font-mono text-xs text-zinc-500">
-        <span className="flex items-center gap-1.5"><Github className="w-3.5 h-3.5 text-claude-400" /> {compact(stats.githubStars)} stars</span>
-        <span className="w-px h-4 bg-line" />
-        <span className="flex items-center gap-1.5"><Download className="w-3.5 h-3.5 text-claude-400" /> {compact(stats.macgetDownloads)} downloads</span>
-        <span className="w-px h-4 bg-line hidden sm:block" />
-        <a href="/suryansh.pdf" download className="hidden sm:flex items-center gap-1.5 hover:text-zinc-200 transition-colors">
-          <Download className="w-3.5 h-3.5" /> Resume
+      {/* bottom: real proof row */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5, duration: 0.5 }}
+        className="absolute inset-x-0 bottom-7 z-30 flex items-center justify-center gap-6 font-mono text-xs text-zinc-400"
+      >
+        <span className="flex items-center gap-1.5">
+          <Github className="h-3.5 w-3.5 text-claude-400" /> {compact(stats.githubStars)} stars
+        </span>
+        <span className="h-4 w-px bg-line" />
+        <span className="flex items-center gap-1.5">
+          <Download className="h-3.5 w-3.5 text-claude-400" /> {compact(stats.macgetDownloads)} downloads
+        </span>
+        <span className="hidden h-4 w-px bg-line sm:block" />
+        <a href="/suryansh.pdf" download className="hidden items-center gap-1.5 transition-colors hover:text-zinc-200 sm:flex">
+          <Download className="h-3.5 w-3.5" /> Resume
         </a>
       </motion.div>
-
-      <a href="#now" aria-label="Scroll" className="absolute bottom-8 text-zinc-700 hover:text-zinc-400 transition-colors">
-        <ArrowDown className="w-5 h-5 animate-bounce" />
-      </a>
     </section>
   );
 }
