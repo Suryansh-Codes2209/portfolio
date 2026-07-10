@@ -6,7 +6,7 @@ import { motion, useInView, useReducedMotion } from "framer-motion";
 import {
   ArrowRight, Cloud, Code2, Cpu,
   Database, Download, ExternalLink, Github, Layers,
-  Linkedin, Mail, Menu, Server, Twitter, X, Zap,
+  Linkedin, Mail, Menu, Server, Twitter, X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,6 +14,7 @@ import { useEffect, useRef, useState } from "react";
 import { Card } from "./components/card";
 import { Hero } from "./components/hero";
 import { HeroIntro } from "./components/hero-intro";
+import { NowBento } from "./components/now-bento";
 import { ShineText } from "./components/shine-text";
 
 // ─── animated counter ─────────────────────────────────────────────────────────
@@ -249,23 +250,7 @@ export default function Home() {
             A live snapshot of what I&apos;m shipping right now — updated as things move.
           </motion.p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[
-              { icon: <Zap className="w-4 h-4 text-claude-400" />, title: "Shipping MacGet 1.2", desc: "YouTube & HLS video downloads, browser-capture, and signed auto-updates for the macOS download manager." },
-              { icon: <Code2 className="w-4 h-4 text-claude-300" />, title: "Writing build logs", desc: "Documenting how the download engine, actor concurrency, and AI agents actually get built — in public." },
-              { icon: <Cpu className="w-4 h-4 text-claude-400" />, title: "AI agents in production", desc: "Financial research agents at Spiral Kite Labs — live market data, grounded reasoning, analyst-grade reports." },
-            ].map((item, i) => (
-              <motion.div
-                key={item.title}
-                {...fadeUp(i * 0.07)}
-                className="p-5 rounded-xl border border-zinc-800/70 bg-zinc-900/30 hover:border-claude-500/30 transition-colors duration-200"
-              >
-                <div className="mb-3">{item.icon}</div>
-                <h3 className="text-sm font-medium text-zinc-200 mb-1.5">{item.title}</h3>
-                <p className="text-xs text-zinc-500 leading-relaxed">{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
+          <NowBento />
 
           <motion.p {...fadeUp(0.2)} className="text-[11px] text-zinc-700 mt-6">
             Last updated June 2026
