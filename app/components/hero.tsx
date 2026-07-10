@@ -96,9 +96,9 @@ export function Hero() {
             width={2000}
             height={1600}
             priority
-            className="h-[42vh] w-auto max-w-none object-contain sm:h-[47vh] lg:h-[54vh]
-                       [-webkit-mask-image:radial-gradient(66%_68%_at_50%_44%,#000_40%,transparent_75%)]
-                       [mask-image:radial-gradient(66%_68%_at_50%_44%,#000_40%,transparent_75%)]"
+            className="h-[40vh] w-auto max-w-none object-contain sm:h-[46vh] lg:h-[52vh]
+                       [-webkit-mask-image:radial-gradient(46%_76%_at_50%_42%,#000_34%,transparent_80%)]
+                       [mask-image:radial-gradient(46%_76%_at_50%_42%,#000_34%,transparent_80%)]"
           />
         </motion.div>
 
@@ -108,8 +108,8 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
           aria-label="Suryansh Chaudhary"
-          className="-mt-[6vh] select-none text-center font-display leading-[0.85] tracking-tighter text-white
-                     text-[15vw] sm:-mt-[5vh] sm:text-[13vw] lg:text-[11vw]"
+          className="-mt-[4vh] select-none text-center font-display leading-[0.85] tracking-tighter text-white
+                     text-[14vw] sm:-mt-[4vh] sm:text-[12vw] lg:text-[9.5vw]"
         >
           Suryansh
           <br />
