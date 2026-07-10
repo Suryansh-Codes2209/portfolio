@@ -4,7 +4,7 @@ import { allBlogs } from "contentlayer/generated";
 import { projects } from "./data/projects";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import {
-  ArrowDown, ArrowRight, Cloud, Code2, Cpu,
+  ArrowRight, Cloud, Code2, Cpu,
   Database, Download, ExternalLink, Github, Layers,
   Linkedin, Mail, Menu, Server, Twitter, X, Zap,
 } from "lucide-react";
@@ -12,38 +12,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Card } from "./components/card";
-import Particles from "./components/particles";
+import { Hero } from "./components/hero";
 import { HeroIntro } from "./components/hero-intro";
 import { ShineText } from "./components/shine-text";
-
-// ─── typing animation hook ────────────────────────────────────────────────────
-function useTyping(words: string[], speed = 80, pause = 2400) {
-  const [idx, setIdx] = useState(0);
-  const [text, setText] = useState("");
-  const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    const word = words[idx];
-    const timeout = setTimeout(
-      () => {
-        if (!deleting && text === word) {
-          setTimeout(() => setDeleting(true), pause);
-          return;
-        }
-        if (deleting && text === "") {
-          setDeleting(false);
-          setIdx((i) => (i + 1) % words.length);
-          return;
-        }
-        setText(deleting ? word.slice(0, text.length - 1) : word.slice(0, text.length + 1));
-      },
-      deleting ? speed / 2 : speed,
-    );
-    return () => clearTimeout(timeout);
-  }, [text, deleting, idx, words, speed, pause]);
-
-  return text;
-}
 
 // ─── animated counter ─────────────────────────────────────────────────────────
 function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
@@ -69,13 +40,6 @@ function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
 }
 
 // ─── data ─────────────────────────────────────────────────────────────────────
-const roles = [
-  "Builder in Public",
-  "Creator of MacGet",
-  "Full Stack AI Engineer",
-  "Ships open-source tools",
-];
-
 const navLinks = [
   { label: "Now",      href: "#now"      },
   { label: "About",    href: "#about"    },
@@ -197,9 +161,6 @@ export default function Home() {
     setTimeout(() => setSent(false), 4000);
   };
 
-  // typing role
-  const role = useTyping(roles);
-
   return (
     <div className="bg-black text-zinc-100 overflow-x-hidden">
       <HeroIntro />
@@ -268,102 +229,7 @@ export default function Home() {
       </nav>
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <section className="relative flex flex-col items-center justify-center min-h-dvh text-center px-4 pt-14">
-        <Particles className="absolute inset-0 -z-10" quantity={100} />
-
-        {/* orbs */}
-        <div className="absolute top-1/4 left-1/4 w-80 h-80 rounded-full bg-claude-600/10 blur-[80px] pointer-events-none" />
-        <div className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-claude-700/10 blur-[80px] pointer-events-none" />
-        <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-60 h-60 rounded-full bg-claude-600/[0.07] blur-[80px] pointer-events-none" />
-
-        <div className="hidden w-screen h-px md:block animate-glow animate-fade-left bg-gradient-to-r from-claude-500/0 via-claude-500/40 to-claude-500/0 absolute top-[38%]" />
-        <div className="hidden w-screen h-px md:block animate-glow animate-fade-right bg-gradient-to-r from-claude-600/0 via-claude-600/30 to-claude-600/0 absolute top-[62%]" />
-
-        {/* available badge */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05, duration: 0.4 }}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-claude-500/30 bg-claude-500/10 mb-6"
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-claude-300 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-claude-500" />
-          </span>
-          <span className="text-xs text-claude-300 font-medium">Building in public</span>
-        </motion.div>
-
-        {/* profile */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.88 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className="mb-7"
-        >
-          <div className="w-24 h-24 rounded-full ring-1 ring-claude-500/40 ring-offset-2 ring-offset-black overflow-hidden mx-auto shadow-[0_0_30px_rgba(217,119,87,0.2)]">
-            <Image src="/Profile.png" alt="Suryansh Chaudhary" width={96} height={96} className="object-cover w-full h-full" priority />
-          </div>
-        </motion.div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.12, duration: 0.55, ease: "easeOut" }}
-          className="py-1 text-5xl sm:text-7xl md:text-8xl font-display text-transparent bg-white bg-clip-text text-edge-outline mb-3"
-        >
-          Suryansh Chaudhary
-        </motion.h1>
-
-        {/* typing role */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.25, duration: 0.4 }}
-          className="h-7 flex items-center justify-center mb-1.5"
-        >
-          <p className="text-base sm:text-lg text-zinc-400">
-            {role}
-            <span className="inline-block w-0.5 h-4 bg-claude-400 ml-0.5 animate-pulse" />
-          </p>
-        </motion.div>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.32, duration: 0.4 }}
-          className="text-sm text-zinc-400 max-w-md mb-10 leading-relaxed"
-        >
-          I build and ship products in public. Open-source tools + AI systems.
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.42, duration: 0.45, ease: "easeOut" }}
-          className="flex flex-wrap items-center justify-center gap-2.5"
-        >
-          <a href="#projects" className="px-6 py-2.5 rounded-full bg-gradient-to-r from-claude-600 to-claude-600 text-white text-sm font-medium hover:from-claude-500 hover:to-claude-400 transition-all duration-200 cursor-pointer shadow-[0_0_20px_rgba(217,119,87,0.35)]">
-            See what I&apos;m building
-          </a>
-          <a href="#contact" className="px-6 py-2.5 rounded-full border border-zinc-700 text-zinc-300 text-sm hover:border-zinc-500 hover:text-white transition-all duration-150 cursor-pointer">
-            Contact Me
-          </a>
-          <a href="/suryansh.pdf" download className="flex items-center gap-1.5 px-6 py-2.5 rounded-full border border-zinc-700 text-zinc-300 text-sm hover:border-zinc-500 hover:text-white transition-all duration-150 cursor-pointer">
-            <Download className="w-3.5 h-3.5" /> Resume
-          </a>
-        </motion.div>
-
-        <motion.a
-          href="#about"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.1, duration: 0.4 }}
-          className="absolute bottom-8 text-zinc-700 hover:text-zinc-400 transition-colors cursor-pointer"
-          aria-label="Scroll to About"
-        >
-          <ArrowDown className="w-5 h-5 animate-bounce" />
-        </motion.a>
-      </section>
+      <Hero />
 
       {/* ── Now / Building ──────────────────────────────────────────────────── */}
       <section id="now" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
