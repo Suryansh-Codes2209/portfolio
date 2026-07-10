@@ -91,7 +91,7 @@ export function Hero() {
           className="pointer-events-none flex justify-center"
         >
           <Image
-            src="/hero-portrait.png"
+            src="/hero-portrait-vector.png"
             alt="Suryansh Chaudhary"
             width={2000}
             height={1600}
