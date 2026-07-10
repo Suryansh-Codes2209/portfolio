@@ -22,6 +22,10 @@ module.exports = {
 					800: "#793826",
 					900: "#52261B",
 				},
+				bg: "var(--bg)",
+				surface: "var(--surface)",
+				"surface-2": "var(--surface-2)",
+				line: "var(--border)",
 			},
 			typography: {
 				DEFAULT: {
@@ -44,6 +48,7 @@ module.exports = {
 			fontFamily: {
 				sans: ["var(--font-inter)", ...defaultTheme.fontFamily.sans],
 				display: ["var(--font-calsans)"],
+				mono: ["var(--font-mono)", ...defaultTheme.fontFamily.mono],
 			},
 			backgroundImage: {
 				"gradient-radial":

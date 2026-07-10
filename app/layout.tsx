@@ -1,6 +1,6 @@
 import type React from "react";
 import "../global.css";
-import { Inter } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import LocalFont from "next/font/local";
 import type { Metadata } from "next";
 import { Analytics } from "./components/analytics";
@@ -83,13 +83,19 @@ const calSans = LocalFont({
   variable: "--font-calsans",
 });
 
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+});
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={[inter.variable, calSans.variable].join(" ")}>
+    <html lang="en" className={[inter.variable, calSans.variable, jetbrainsMono.variable].join(" ")}>
       <head>
         <Analytics />
         {/* Add JSON-LD structured data */}
@@ -123,7 +129,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`bg-black ${
+        className={`grain bg-black ${
           process.env.NODE_ENV === "development" ? "debug-screens" : undefined
         }`}
       >

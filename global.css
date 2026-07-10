@@ -2,6 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg: #08070a;
+  --surface: rgba(24, 22, 27, 0.55);
+  --surface-2: rgba(32, 29, 35, 0.7);
+  --border: rgba(120, 113, 108, 0.14);
+  --text: #f5f4f2;
+  --text-muted: #a1a1aa;
+  --text-faint: #6b6b73;
+  --accent: #d97757;
+}
+
+/* subtle film grain — premium editorial feel */
+.grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
