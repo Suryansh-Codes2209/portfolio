@@ -9,7 +9,6 @@
     "fmt": "pnpm rome check . --apply-unsafe && pnpm rome format . --write"
   },
   "dependencies": {
-    "@mediapipe/tasks-vision": "^0.10.35",
     "contentlayer": "npm:contentlayer2@^0.5.8",
     "framer-motion": "^10.18.0",
     "lucide-react": "^0.469.0",

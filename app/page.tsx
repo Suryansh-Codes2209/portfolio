@@ -15,7 +15,6 @@ import { Card } from "./components/card";
 import Particles from "./components/particles";
 import { HeroIntro } from "./components/hero-intro";
 import { ShineText } from "./components/shine-text";
-import { GestureScroll } from "./components/gesture-scroll";
 
 // ─── typing animation hook ────────────────────────────────────────────────────
 function useTyping(words: string[], speed = 80, pause = 2400) {
@@ -221,7 +220,6 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-3">
-            <GestureScroll className="hidden sm:flex" />
             <a
               href="/suryansh.pdf"
               download
