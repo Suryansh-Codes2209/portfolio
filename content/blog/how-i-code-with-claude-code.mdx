@@ -1,0 +1,83 @@
+---
+published: true
+title: "How I actually code with Claude Code: /clear, /compact, and a CLAUDE.md that earns its keep"
+description: "The context-management habits that keep an AI coding agent sharp over a long session — when to /clear, when to /compact, and how to write a CLAUDE.md the model actually reads."
+date: 2026-07-10
+tags: ["claude-code", "ai-assisted-dev", "workflow", "build-in-public"]
+readingTime: 7
+---
+
+The thing nobody tells you about coding with an AI agent is that the model isn't the bottleneck — **the context is**. A long session doesn't fail because the model got dumber. It fails because you let the window fill up with three unrelated tasks, a stale file tree, and a debugging thread you abandoned an hour ago. The model is now doing its best to reconcile all of it at once, and it drifts.
+
+Most of my Claude Code output quality comes down to boring context hygiene, not clever prompting. Here's the actual workflow I run.
+
+## Treat context like a resource, not a transcript
+
+The mental model that fixed this for me: the context window is **working memory**, not a chat history. Everything in it is being re-read on every turn. If it's not helping the current task, it's actively hurting — competing for attention, nudging the model toward whatever I was doing before.
+
+So I manage it deliberately with two commands.
+
+## `/clear` between unrelated tasks — aggressively
+
+When I finish a task and move to something unrelated, I `/clear`. Every time. Fixing a theme bug, then writing a blog post, then touching an API route — those are three different jobs. Carrying the theme-bug context into the blog post gives me a model that keeps pattern-matching on CSS tokens when I want it thinking about prose.
+
+The tell that I should have cleared already: the model starts referencing files or decisions that have nothing to do with what I just asked. That's stale context leaking. `/clear` is cheap. A confused 40-message session is not.
+
+The one thing that survives a clear is `CLAUDE.md` (more below) — so clearing costs me almost nothing, because the durable project knowledge is on disk, not in the transcript.
+
+## `/compact` mid-task, when I need continuity but not the noise
+
+`/clear` is for *switching* tasks. `/compact` is for *staying* on one that's gotten long. When I'm deep in a multi-step change — say, tokenizing every page for a dual light/dark theme — I don't want to lose the thread, but I also don't need the full verbatim history of every file I read forty turns ago.
+
+`/compact` summarizes the session down to what matters and keeps going. I reach for it when I can feel the session getting heavy but I'm not done. The trick is timing: compact *at a natural checkpoint* — a finished sub-step — not in the middle of a half-applied edit, so the summary captures a clean state.
+
+Rough rule I follow:
+
+- **Switching tasks?** → `/clear`
+- **Same task, getting long?** → `/compact` at the next checkpoint
+- **Model drifting or contradicting itself?** → I've waited too long on one of the above
+
+## A CLAUDE.md that the model actually reads
+
+`/clear` only works because I don't rely on the transcript for project knowledge. That lives in `CLAUDE.md`, which gets loaded into every session automatically. If it's vague, every fresh session starts by rediscovering how the project works. If it's precise, the model is productive on turn one.
+
+Mine is not a README. It's an operating brief written *for the agent* — commands, architecture, and the specific gotchas that would otherwise cost me a bad diff. A real slice from this portfolio's file:
+
+```md
+**Project data — static:** Projects live as a typed array in
+`app/data/projects.ts` (no MDX, no Redis, no view counts).
+Edit that file to add/remove projects.
+
+**Design tokens:** `global.css` defines root CSS vars (`--bg`,
+`--surface`, `--border`, `--text`, `--accent`) that
+`tailwind.config.js` wires up as `bg`, `surface`, `line` colors.
+Use Tailwind classes like `border-line`, `bg-surface`, and
+`font-mono` rather than hardcoding these values.
+```
+
+That second paragraph exists because the model kept hardcoding hex values instead of using the token classes. One sentence in `CLAUDE.md` fixed it permanently, across every future session. That's the pattern: **when I correct the same mistake twice, it becomes a line in `CLAUDE.md`** instead of a correction I have to repeat forever.
+
+What earns a spot in the file:
+- The exact commands (`pnpm fmt` uses Rome and applies unsafe fixes — the model needs to know that)
+- Architecture that isn't obvious from the file tree ("blog is Contentlayer MDX, projects are a static array")
+- Conventions I care about (use design tokens, not raw values)
+- Honest constraints ("there are no tests in this project" — so it stops looking for them)
+
+What doesn't: anything already obvious from the code, and anything that's really about *one* task. That belongs in the session, not the standing brief.
+
+## The stuff on disk that survives every `/clear`
+
+Two more things make the clear-often approach work, because they persist outside the transcript:
+
+- **Custom slash commands.** This post came out of a `/build-log` command I wrote — a `.claude/commands/build-log.md` file that tells the agent how to gather real context from git history and write in my voice. Repeatable workflows become one word instead of a paragraph I retype.
+- **A memory file.** Facts that outlive a session — project goals, a gotcha I hit last week — go into a memory index the agent reads on startup. Same principle as `CLAUDE.md`: durable knowledge belongs on disk, not in a transcript I'm about to clear.
+
+## What I learned
+
+The counterintuitive part is that **clearing more often makes the agent smarter, not dumber.** I used to hoard context, afraid to lose something. That gave me long, muddy sessions where the model hedged and drifted. Now the loop is: sharp `CLAUDE.md`, short focused sessions, `/clear` between jobs, `/compact` within a long one. The model spends its attention on the task in front of it instead of the archaeology behind it.
+
+None of this is clever. It's just refusing to treat the context window as infinite — because it isn't, and the model pays for every token of noise I leave in it.
+
+## What's next
+
+I want to get more disciplined about pushing recurring corrections into `CLAUDE.md` *the first* time instead of the second, and to build out a couple more custom commands for the workflows I repeat most. If you've got a context-management habit that works for you — or you think I'm wrong about clearing this aggressively — I'd genuinely like to hear it.
