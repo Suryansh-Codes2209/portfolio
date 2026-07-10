@@ -15,6 +15,7 @@ import { Card } from "./components/card";
 import { Hero } from "./components/hero";
 import { HeroIntro } from "./components/hero-intro";
 import { NowBento } from "./components/now-bento";
+import { TechStack } from "./components/tech-stack";
 import { ShineText } from "./components/shine-text";
 import { ThemeToggle } from "./components/theme-toggle";
 
@@ -50,15 +51,6 @@ const navLinks = [
   { label: "Blog",     href: "#blog"     },
   { label: "Resume",   href: "#resume"   },
   { label: "Contact",  href: "#contact"  },
-];
-
-const techCategories = [
-  { icon: <Cpu className="w-3.5 h-3.5" />,       label: "AI & Agents",      items: ["LangGraph", "LangChain", "Gemini API", "OpenAI API", "RAG / Vector Search", "Prompt Engineering"] },
-  { icon: <Server className="w-3.5 h-3.5" />,    label: "Backend",          items: ["Python", "FastAPI", "Django", "Node.js", "REST APIs", "GraphQL"] },
-  { icon: <Layers className="w-3.5 h-3.5" />,    label: "Frontend",         items: ["React", "Next.js", "TypeScript", "Tailwind CSS", "Framer Motion"] },
-  { icon: <Database className="w-3.5 h-3.5" />,  label: "Database",         items: ["PostgreSQL", "MongoDB", "Redis"] },
-  { icon: <Cloud className="w-3.5 h-3.5" />,     label: "DevOps & Cloud",   items: ["Google Cloud Run", "Docker", "AWS", "CI/CD", "GitHub Actions"] },
-  { icon: <Code2 className="w-3.5 h-3.5" />,     label: "Tools",            items: ["Git", "VS Code", "Postman", "Linux", "Figma"] },
 ];
 
 const recommendations = [
@@ -336,32 +328,7 @@ export default function Home() {
       </section>
 
       {/* ── Tech Stack ──────────────────────────────────────────────────────── */}
-      <section id="stack" className="relative py-24 px-4 border-t border-line overflow-hidden">
-        <div className="absolute -top-24 right-0 w-[480px] h-[480px] rounded-full bg-claude-500/10 blur-[100px] pointer-events-none" />
-
-        <div className="max-w-5xl mx-auto relative">
-          <motion.p {...fadeUp(0)} className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-text mb-2">Technologies</motion.p>
-          <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display mb-12"><ShineText>Tech I work with</ShineText></motion.h2>
-
-          <div className="space-y-7">
-            {techCategories.map((cat, ci) => (
-              <motion.div key={cat.label} {...fadeUp(ci * 0.06)}>
-                <div className="flex items-center gap-2 text-fg-faint mb-3">
-                  {cat.icon}
-                  <span className="text-[10px] uppercase tracking-widest">{cat.label}</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {cat.items.map((item) => (
-                    <span key={item} className="px-3 py-1.5 text-xs rounded-full border border-line bg-surface text-fg-muted hover:border-line-strong hover:text-fg transition-colors duration-150 cursor-default">
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <TechStack />
 
       {/* ── Projects ────────────────────────────────────────────────────────── */}
       <section id="projects" className="relative py-24 px-4 border-t border-line overflow-hidden">

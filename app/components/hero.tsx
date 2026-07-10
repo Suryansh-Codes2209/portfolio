@@ -5,6 +5,7 @@ import { ArrowUpRight, Download, Github, Linkedin, Mail, Twitter } from "lucide-
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { compact } from "../data/stats";
+import { ShineText } from "./shine-text";
 
 const rail = [
   { icon: <Github className="w-4 h-4" />, href: "https://github.com/Suryansh-Codes2209", label: "GitHub" },
@@ -111,9 +112,11 @@ export function Hero() {
           className="-mt-[4vh] select-none text-center font-display leading-[0.85] tracking-tighter text-fg
                      text-[14vw] sm:-mt-[4vh] sm:text-[12vw] lg:text-[9.5vw]"
         >
-          Suryansh
-          <br />
-          Chaudhary
+          <ShineText highlight="var(--accent)">
+            Suryansh
+            <br />
+            Chaudhary
+          </ShineText>
         </motion.h1>
       </div>
 

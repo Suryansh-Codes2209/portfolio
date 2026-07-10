@@ -44,6 +44,19 @@
   --edge-outline: rgba(255, 255, 255, 0.30);
 }
 
+/* subtle drifting dot-grid — professional texture behind the tech stack */
+.tech-pattern {
+  background-image: radial-gradient(var(--line-strong) 1px, transparent 1px);
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(ellipse 75% 60% at 50% 45%, #000 25%, transparent 78%);
+  mask-image: radial-gradient(ellipse 75% 60% at 50% 45%, #000 25%, transparent 78%);
+  animation: gridDrift 24s linear infinite;
+}
+@keyframes gridDrift {
+  from { background-position: 0 0; }
+  to { background-position: 26px 26px; }
+}
+
 /* subtle film grain — premium editorial feel */
 .grain::before {
   content: "";
