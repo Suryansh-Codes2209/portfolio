@@ -49,8 +49,26 @@ export default function BlogPostPage({ params }: Props) {
   const url = `https://suryansh.work/blog/${post.slug}`;
   const image = `https://suryansh.work${post.image ?? "/og.png"}`;
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.description,
+    datePublished: new Date(post.date).toISOString(),
+    dateModified: new Date(post.date).toISOString(),
+    author: { "@type": "Person", name: "Suryansh Chaudhary", url: "https://suryansh.work" },
+    publisher: { "@type": "Person", name: "Suryansh Chaudhary" },
+    mainEntityOfPage: { "@type": "WebPage", "@id": `https://suryansh.work/blog/${post.slug}` },
+    image: [`https://suryansh.work/blog/${post.slug}/opengraph-image`],
+    keywords: post.tags?.join(", "),
+  };
+
   return (
     <div className="bg-black text-zinc-100 min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
