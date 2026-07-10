@@ -70,6 +70,7 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: "https://suryansh.work",
+    types: { "application/rss+xml": "https://suryansh.work/rss.xml" },
   },
 };
 
