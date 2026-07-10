@@ -1,0 +1,79 @@
+---
+published: true
+title: "How I architect LangGraph agents that actually ship"
+description: "The structure I reach for when building production AI agents — explicit state, small nodes, tool boundaries, and knowing when NOT to let the model decide."
+date: 2026-07-08
+tags: ["ai-agents", "langgraph", "system-design"]
+readingTime: 6
+---
+
+Most "AI agent" demos fall apart the moment they leave the notebook. They loop forever, call the wrong tool, or quietly hallucinate a number into a report nobody double-checks. Shipping one to production is a different sport — it's less about clever prompts and more about **plain engineering discipline**.
+
+Here's the structure I keep coming back to for the financial-research agents I build.
+
+## Model the state explicitly
+
+The single biggest upgrade is treating the agent as a **state machine**, not a chat loop. In LangGraph that means one typed state object that every node reads from and writes to:
+
+```python
+from typing import TypedDict, Annotated
+from operator import add
+
+class AgentState(TypedDict):
+    question: str
+    plan: list[str]
+    evidence: Annotated[list[str], add]   # accumulates across nodes
+    answer: str | None
+    steps: int
+```
+
+When the state is explicit, you can log it, snapshot it, replay it, and reason about *exactly* what the agent knew at each step. When it's buried inside a free-form message history, you can't.
+
+## Keep nodes small and boring
+
+Each node should do one thing: plan, retrieve, reason, critique, or format. A node that "retrieves data and reasons and writes the report" is impossible to test or debug. Small nodes give you clean seams:
+
+```python
+graph.add_node("plan", plan_node)
+graph.add_node("retrieve", retrieve_node)
+graph.add_node("synthesize", synthesize_node)
+graph.add_conditional_edges("retrieve", enough_evidence, {
+    True: "synthesize",
+    False: "plan",   # loop back, but with a guard (see below)
+})
+```
+
+## Guard every loop
+
+Any edge that can cycle needs a hard limit. LLMs are perfectly happy to retrieve the same document forty times. I put a `steps` counter in the state and short-circuit:
+
+```python
+def enough_evidence(state: AgentState) -> bool:
+    if state["steps"] >= 5:
+        return True  # bail out, answer with what we have
+    return len(state["evidence"]) >= 3
+```
+
+"Bail out gracefully with partial evidence" beats "loop until the timeout" every single time in production.
+
+## Decide what the model is *not* allowed to decide
+
+The tempting failure mode is to hand the model everything and let it orchestrate. Don't. The model is good at *language* and *judgment*; it's bad at *control flow* and *math*. So:
+
+- **Routing** between well-known steps → deterministic code / conditional edges.
+- **Calculations** → a real tool, never the model's arithmetic.
+- **Which tool, with what arguments** → the model, but validated against a schema before you run it.
+
+Every time I moved a decision from the prompt into code, reliability went up.
+
+## Ground, then generate
+
+For anything factual, retrieval comes first and generation is constrained to the retrieved context. The prompt literally says "answer only from the evidence below; if it's not there, say so." Pair that with citations in the state and you get reports you can actually trust — and audit.
+
+## What I'd tell past-me
+
+Start with the dumbest graph that works — plan → retrieve → answer — and add nodes only when a real failure demands one. Every node is a thing that can break at 3am. The best agent is the smallest one that gets the job done.
+
+---
+
+_This is a build log — I'm building these in public. Follow along on [X](https://x.com/Suryansh_2001) or grab [MacGet](/macget)._

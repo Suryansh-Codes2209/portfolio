@@ -1,12 +1,14 @@
 import type React from "react";
 import "../global.css";
-import { Inter } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import LocalFont from "next/font/local";
 import type { Metadata } from "next";
 import { Analytics } from "./components/analytics";
 import { ScrollProgress } from "./components/scroll-progress";
 import { CursorGlow } from "./components/cursor-glow";
 import { BackToTop } from "./components/back-to-top";
+import { MotionProvider } from "./components/motion-provider";
+import { ThemeProvider } from "./components/theme-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://suryansh.work"),
@@ -70,6 +72,7 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: "https://suryansh.work",
+    types: { "application/rss+xml": "https://suryansh.work/rss.xml" },
   },
 };
 
@@ -83,13 +86,19 @@ const calSans = LocalFont({
   variable: "--font-calsans",
 });
 
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+});
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={[inter.variable, calSans.variable].join(" ")}>
+    <html lang="en" suppressHydrationWarning className={[inter.variable, calSans.variable, jetbrainsMono.variable].join(" ")}>
       <head>
         <Analytics />
         {/* Add JSON-LD structured data */}
@@ -123,14 +132,16 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`bg-black ${
+        className={`grain bg-bg text-fg ${
           process.env.NODE_ENV === "development" ? "debug-screens" : undefined
         }`}
       >
-        <ScrollProgress />
-        <CursorGlow />
-        {children}
-        <BackToTop />
+        <ThemeProvider>
+          <ScrollProgress />
+          <CursorGlow />
+          <MotionProvider>{children}</MotionProvider>
+          <BackToTop />
+        </ThemeProvider>
       </body>
     </html>
   );

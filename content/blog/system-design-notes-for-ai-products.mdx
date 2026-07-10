@@ -1,0 +1,57 @@
+---
+published: true
+title: "System design notes for AI products: fast, cheap, and boring"
+description: "The infrastructure lessons behind running LLM features in production — streaming, caching, cost routing, and treating the model as an unreliable network call."
+date: 2026-07-10
+tags: ["system-design", "ai-agents", "backend"]
+readingTime: 5
+---
+
+An AI feature is a distributed system with one very expensive, very slow, occasionally-wrong dependency: the model. Once you frame it that way, the system design gets a lot clearer. Here are the notes I keep pinned.
+
+## Treat the model like a flaky network call
+
+Because it is one. It times out, rate-limits, returns malformed JSON, and costs money per request. So it gets the same treatment as any unreliable dependency:
+
+- **Timeouts and retries with backoff** on every call.
+- **Schema validation** on every response — never `json.loads` and hope.
+- **A fallback path** — a cheaper model, a cached answer, or an honest "try again."
+
+```python
+async def call_model(prompt: str) -> Result:
+    for attempt in range(3):
+        try:
+            raw = await client.generate(prompt, timeout=20)
+            return Schema.model_validate_json(raw)   # validate, don't trust
+        except (TimeoutError, ValidationError):
+            await asyncio.sleep(2 ** attempt)
+    return FALLBACK
+```
+
+## Stream, or feel slow
+
+A 6-second response that streams feels faster than a 2-second one that blocks. Token streaming is the single highest-ROI UX change for any LLM feature. On the backend that means Server-Sent Events (or a WebSocket) from FastAPI straight through to the client — no buffering the whole completion server-side.
+
+## Cache aggressively, at three layers
+
+Most "AI cost problems" are really "we recompute the same thing" problems.
+
+1. **Exact-match cache** on (prompt, model, params) — free wins for repeated queries.
+2. **Semantic cache** — embed the query, reuse an answer if a near-identical one exists.
+3. **Component cache** — cache the *retrieval* and the *embeddings*, not just the final answer.
+
+## Route by difficulty, not by default
+
+Sending every request to your most capable model is how bills explode. Route: cheap/fast model for classification, extraction, and simple rewrites; the big model only for the hard reasoning. A tiny classifier up front pays for itself in a day.
+
+## Make it observable or you're flying blind
+
+Log the full request/response, token counts, latency, cost, and which path (cache hit? fallback? which model?) served each call. When quality drifts — and it will — this trace is the only thing that tells you *why*. I treat "no trace" as a production incident waiting to happen.
+
+## Boring infrastructure, interesting product
+
+Docker, a queue for the slow jobs, Cloud Run that scales to zero, health checks, and a budget alert. None of it is exciting, and that's the point — the interesting part should be the product, not the 3am pages. The goal is an AI feature that's **fast, cheap, and boring** to operate.
+
+---
+
+_Build log from shipping AI systems in public. More at [/blog](/blog) — or say hi on [X](https://x.com/Suryansh_2001)._

@@ -4,47 +4,20 @@ import { allBlogs } from "contentlayer/generated";
 import { projects } from "./data/projects";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import {
-  ArrowDown, ArrowRight, Cloud, Code2, Cpu,
+  ArrowRight, Check, Cloud, Code2, Copy, Cpu,
   Database, Download, ExternalLink, Github, Layers,
-  Linkedin, Mail, Menu, Server, Twitter, X, Zap,
+  Linkedin, Mail, Menu, Server, Twitter, X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Card } from "./components/card";
-import Particles from "./components/particles";
+import { Hero } from "./components/hero";
 import { HeroIntro } from "./components/hero-intro";
+import { NowBento } from "./components/now-bento";
+import { TechStack } from "./components/tech-stack";
 import { ShineText } from "./components/shine-text";
-import { GestureScroll } from "./components/gesture-scroll";
-
-// ─── typing animation hook ────────────────────────────────────────────────────
-function useTyping(words: string[], speed = 80, pause = 2400) {
-  const [idx, setIdx] = useState(0);
-  const [text, setText] = useState("");
-  const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    const word = words[idx];
-    const timeout = setTimeout(
-      () => {
-        if (!deleting && text === word) {
-          setTimeout(() => setDeleting(true), pause);
-          return;
-        }
-        if (deleting && text === "") {
-          setDeleting(false);
-          setIdx((i) => (i + 1) % words.length);
-          return;
-        }
-        setText(deleting ? word.slice(0, text.length - 1) : word.slice(0, text.length + 1));
-      },
-      deleting ? speed / 2 : speed,
-    );
-    return () => clearTimeout(timeout);
-  }, [text, deleting, idx, words, speed, pause]);
-
-  return text;
-}
+import { ThemeToggle } from "./components/theme-toggle";
 
 // ─── animated counter ─────────────────────────────────────────────────────────
 function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
@@ -70,13 +43,6 @@ function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
 }
 
 // ─── data ─────────────────────────────────────────────────────────────────────
-const roles = [
-  "Builder in Public",
-  "Creator of MacGet",
-  "Full Stack AI Engineer",
-  "Ships open-source tools",
-];
-
 const navLinks = [
   { label: "Now",      href: "#now"      },
   { label: "About",    href: "#about"    },
@@ -85,15 +51,6 @@ const navLinks = [
   { label: "Blog",     href: "#blog"     },
   { label: "Resume",   href: "#resume"   },
   { label: "Contact",  href: "#contact"  },
-];
-
-const techCategories = [
-  { icon: <Cpu className="w-3.5 h-3.5" />,       label: "AI & Agents",      items: ["LangGraph", "LangChain", "Gemini API", "OpenAI API", "RAG / Vector Search", "Prompt Engineering"] },
-  { icon: <Server className="w-3.5 h-3.5" />,    label: "Backend",          items: ["Python", "FastAPI", "Django", "Node.js", "REST APIs", "GraphQL"] },
-  { icon: <Layers className="w-3.5 h-3.5" />,    label: "Frontend",         items: ["React", "Next.js", "TypeScript", "Tailwind CSS", "Framer Motion"] },
-  { icon: <Database className="w-3.5 h-3.5" />,  label: "Database",         items: ["PostgreSQL", "MongoDB", "Redis"] },
-  { icon: <Cloud className="w-3.5 h-3.5" />,     label: "DevOps & Cloud",   items: ["Google Cloud Run", "Docker", "AWS", "CI/CD", "GitHub Actions"] },
-  { icon: <Code2 className="w-3.5 h-3.5" />,     label: "Tools",            items: ["Git", "VS Code", "Postman", "Linux", "Figma"] },
 ];
 
 const recommendations = [
@@ -173,6 +130,8 @@ const fadeUp = (delay = 0) => ({
 const MACGET_DMG_URL =
   "https://github.com/Suryansh-Codes2209/Macget/releases/latest/download/Macget.dmg";
 
+const EMAIL = "suryansh.codes2001@gmail.com";
+
 // ─── page ─────────────────────────────────────────────────────────────────────
 export default function Home() {
   const reduceMotion = useReducedMotion();
@@ -189,6 +148,18 @@ export default function Home() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [sent, setSent] = useState(false);
 
+  // copy-email micro-interaction
+  const [copied, setCopied] = useState(false);
+  const handleCopyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(EMAIL);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard unavailable — silently ignore
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const subject = encodeURIComponent(`Portfolio enquiry from ${form.name}`);
@@ -198,41 +169,38 @@ export default function Home() {
     setTimeout(() => setSent(false), 4000);
   };
 
-  // typing role
-  const role = useTyping(roles);
-
   return (
-    <div className="bg-black text-zinc-100 overflow-x-hidden">
+    <div className="overflow-x-hidden">
       <HeroIntro />
       {/* ── Sticky nav ─────────────────────────────────────────────────────── */}
-      <nav className="fixed inset-x-0 top-0 z-50 backdrop-blur-md border-b border-claude-500/10 bg-black/80">
+      <nav className="fixed inset-x-0 top-0 z-50 backdrop-blur-md border-b border-line bg-bg/70">
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
-          <Link href="/" className="font-display text-sm text-zinc-200 hover:text-white transition-colors">
+          <Link href="/" className="font-display text-sm text-fg hover:text-accent-text transition-colors">
             Suryansh.
           </Link>
 
           {/* desktop links */}
           <div className="hidden lg:flex items-center gap-6">
             {navLinks.map((l) => (
-              <a key={l.href} href={l.href} className="text-xs text-zinc-500 hover:text-zinc-100 transition-colors duration-150">
+              <a key={l.href} href={l.href} className="text-xs text-fg-subtle hover:text-fg transition-colors duration-150">
                 {l.label}
               </a>
             ))}
           </div>
 
           <div className="flex items-center gap-3">
-            <GestureScroll className="hidden sm:flex" />
             <a
               href="/suryansh.pdf"
               download
-              className="hidden sm:flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-200 transition-all duration-150"
+              className="hidden sm:flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-line text-fg-subtle hover:border-line-strong hover:text-fg transition-all duration-150"
             >
               <Download className="w-3 h-3" /> Resume
             </a>
+            <ThemeToggle className="hidden sm:flex" />
             {/* hamburger */}
             <button
               onClick={() => setMenuOpen((o) => !o)}
-              className="lg:hidden flex items-center justify-center w-8 h-8 text-zinc-400 hover:text-zinc-100 transition-colors"
+              className="lg:hidden flex items-center justify-center w-8 h-8 text-fg-muted hover:text-fg transition-colors"
               aria-label="Toggle menu"
             >
               {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -245,7 +213,7 @@ export default function Home() {
           initial={false}
           animate={{ height: menuOpen ? "auto" : 0, opacity: menuOpen ? 1 : 0 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          className="overflow-hidden lg:hidden border-t border-zinc-800/50"
+          className="overflow-hidden lg:hidden border-t border-line"
         >
           <div className="max-w-5xl mx-auto px-5 py-4 flex flex-col gap-1">
             {navLinks.map((l) => (
@@ -253,7 +221,7 @@ export default function Home() {
                 key={l.href}
                 href={l.href}
                 onClick={() => setMenuOpen(false)}
-                className="text-sm text-zinc-400 hover:text-zinc-100 py-2 transition-colors"
+                className="text-sm text-fg-muted hover:text-fg py-2 transition-colors"
               >
                 {l.label}
               </a>
@@ -261,119 +229,28 @@ export default function Home() {
             <a
               href="/suryansh.pdf"
               download
-              className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-100 py-2 transition-colors"
+              className="flex items-center gap-1.5 text-sm text-fg-muted hover:text-fg py-2 transition-colors"
             >
               <Download className="w-3.5 h-3.5" /> Download Resume
             </a>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-sm text-fg-muted">Theme</span>
+              <ThemeToggle />
+            </div>
           </div>
         </motion.div>
       </nav>
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <section className="relative flex flex-col items-center justify-center min-h-dvh text-center px-4 pt-14">
-        <Particles className="absolute inset-0 -z-10" quantity={100} />
-
-        {/* orbs */}
-        <div className="absolute top-1/4 left-1/4 w-80 h-80 rounded-full bg-claude-600/10 blur-[80px] pointer-events-none" />
-        <div className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-claude-700/10 blur-[80px] pointer-events-none" />
-        <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-60 h-60 rounded-full bg-claude-600/[0.07] blur-[80px] pointer-events-none" />
-
-        <div className="hidden w-screen h-px md:block animate-glow animate-fade-left bg-gradient-to-r from-claude-500/0 via-claude-500/40 to-claude-500/0 absolute top-[38%]" />
-        <div className="hidden w-screen h-px md:block animate-glow animate-fade-right bg-gradient-to-r from-claude-600/0 via-claude-600/30 to-claude-600/0 absolute top-[62%]" />
-
-        {/* available badge */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05, duration: 0.4 }}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-claude-500/30 bg-claude-500/10 mb-6"
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-claude-300 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-claude-500" />
-          </span>
-          <span className="text-xs text-claude-300 font-medium">Building in public</span>
-        </motion.div>
-
-        {/* profile */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.88 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className="mb-7"
-        >
-          <div className="w-24 h-24 rounded-full ring-1 ring-claude-500/40 ring-offset-2 ring-offset-black overflow-hidden mx-auto shadow-[0_0_30px_rgba(217,119,87,0.2)]">
-            <Image src="/Profile.png" alt="Suryansh Chaudhary" width={96} height={96} className="object-cover w-full h-full" priority />
-          </div>
-        </motion.div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.12, duration: 0.55, ease: "easeOut" }}
-          className="py-1 text-5xl sm:text-7xl md:text-8xl font-display text-transparent bg-white bg-clip-text text-edge-outline mb-3"
-        >
-          Suryansh Chaudhary
-        </motion.h1>
-
-        {/* typing role */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.25, duration: 0.4 }}
-          className="h-7 flex items-center justify-center mb-1.5"
-        >
-          <p className="text-base sm:text-lg text-zinc-400">
-            {role}
-            <span className="inline-block w-0.5 h-4 bg-claude-400 ml-0.5 animate-pulse" />
-          </p>
-        </motion.div>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.32, duration: 0.4 }}
-          className="text-sm text-zinc-400 max-w-md mb-10 leading-relaxed"
-        >
-          I build and ship products in public. Open-source tools + AI systems.
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.42, duration: 0.45, ease: "easeOut" }}
-          className="flex flex-wrap items-center justify-center gap-2.5"
-        >
-          <a href="#projects" className="px-6 py-2.5 rounded-full bg-gradient-to-r from-claude-600 to-claude-600 text-white text-sm font-medium hover:from-claude-500 hover:to-claude-400 transition-all duration-200 cursor-pointer shadow-[0_0_20px_rgba(217,119,87,0.35)]">
-            See what I&apos;m building
-          </a>
-          <a href="#contact" className="px-6 py-2.5 rounded-full border border-zinc-700 text-zinc-300 text-sm hover:border-zinc-500 hover:text-white transition-all duration-150 cursor-pointer">
-            Contact Me
-          </a>
-          <a href="/suryansh.pdf" download className="flex items-center gap-1.5 px-6 py-2.5 rounded-full border border-zinc-700 text-zinc-300 text-sm hover:border-zinc-500 hover:text-white transition-all duration-150 cursor-pointer">
-            <Download className="w-3.5 h-3.5" /> Resume
-          </a>
-        </motion.div>
-
-        <motion.a
-          href="#about"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.1, duration: 0.4 }}
-          className="absolute bottom-8 text-zinc-700 hover:text-zinc-400 transition-colors cursor-pointer"
-          aria-label="Scroll to About"
-        >
-          <ArrowDown className="w-5 h-5 animate-bounce" />
-        </motion.a>
-      </section>
+      <Hero />
 
       {/* ── Now / Building ──────────────────────────────────────────────────── */}
-      <section id="now" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
+      <section id="now" className="relative py-24 px-4 border-t border-line overflow-hidden">
         <div className="absolute -top-16 right-1/4 w-[480px] h-80 rounded-full bg-claude-500/[0.08] blur-[100px] pointer-events-none" />
         <div className="absolute bottom-0 -left-20 w-72 h-72 rounded-full bg-claude-600/[0.06] blur-[80px] pointer-events-none" />
 
         <div className="max-w-5xl mx-auto relative">
-          <motion.p {...fadeUp(0)} className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-600 mb-2">
+          <motion.p {...fadeUp(0)} className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-fg-faint mb-2">
             <span className="relative flex h-1.5 w-1.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-claude-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-claude-500" />
@@ -381,50 +258,33 @@ export default function Home() {
             Now
           </motion.p>
           <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display mb-3"><ShineText>What I&apos;m building</ShineText></motion.h2>
-          <motion.p {...fadeUp(0.08)} className="text-sm text-zinc-500 mb-10 max-w-xl leading-relaxed">
+          <motion.p {...fadeUp(0.08)} className="text-sm text-fg-subtle mb-10 max-w-xl leading-relaxed">
             A live snapshot of what I&apos;m shipping right now — updated as things move.
           </motion.p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[
-              { icon: <Zap className="w-4 h-4 text-claude-400" />, title: "Shipping MacGet 1.2", desc: "YouTube & HLS video downloads, browser-capture, and signed auto-updates for the macOS download manager." },
-              { icon: <Code2 className="w-4 h-4 text-claude-300" />, title: "Writing build logs", desc: "Documenting how the download engine, actor concurrency, and AI agents actually get built — in public." },
-              { icon: <Cpu className="w-4 h-4 text-claude-400" />, title: "AI agents in production", desc: "Financial research agents at Spiral Kite Labs — live market data, grounded reasoning, analyst-grade reports." },
-            ].map((item, i) => (
-              <motion.div
-                key={item.title}
-                {...fadeUp(i * 0.07)}
-                className="p-5 rounded-xl border border-zinc-800/70 bg-zinc-900/30 hover:border-claude-500/30 transition-colors duration-200"
-              >
-                <div className="mb-3">{item.icon}</div>
-                <h3 className="text-sm font-medium text-zinc-200 mb-1.5">{item.title}</h3>
-                <p className="text-xs text-zinc-500 leading-relaxed">{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
+          <NowBento />
 
-          <motion.p {...fadeUp(0.2)} className="text-[11px] text-zinc-700 mt-6">
+          <motion.p {...fadeUp(0.2)} className="text-[11px] text-fg-faint mt-6">
             Last updated June 2026
           </motion.p>
         </div>
       </section>
 
       {/* ── About ───────────────────────────────────────────────────────────── */}
-      <section id="about" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
+      <section id="about" className="relative py-24 px-4 border-t border-line overflow-hidden">
         <div className="absolute -bottom-20 -left-32 w-[500px] h-[500px] rounded-full bg-claude-500/10 blur-[100px] pointer-events-none" />
-        <div className="absolute top-10 right-0 w-72 h-72 rounded-full bg-claude-500/[0.07] blur-[80px] pointer-events-none" />
 
         <div className="max-w-5xl mx-auto relative">
-          <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">About Me</motion.p>
+          <motion.p {...fadeUp(0)} className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-text mb-2">About Me</motion.p>
           <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display mb-12"><ShineText>Building AI agents that actually ship</ShineText></motion.h2>
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 mb-14">
-            <motion.div {...fadeUp(0.08)} className="lg:col-span-3 space-y-4 text-[15px] text-zinc-400 leading-relaxed">
+            <motion.div {...fadeUp(0.08)} className="lg:col-span-3 space-y-4 text-[15px] text-fg-muted leading-relaxed">
               <p>
-                I&apos;m a <strong className="text-zinc-300 font-medium">Full Stack AI Engineer</strong> building financial research AI agents — production systems that pull live market data, reason through financials, and generate analyst-grade reports, fully automated.
+                I&apos;m a <strong className="text-fg font-medium">Full Stack AI Engineer</strong> building financial research AI agents — production systems that pull live market data, reason through financials, and generate analyst-grade reports, fully automated.
               </p>
               <p>
-                Currently at <strong className="text-zinc-300 font-medium">Spiral Kite Labs</strong>, I own the full stack: LangGraph agent architecture, LangChain tool integrations, FastAPI backend, Google Cloud Run infrastructure, and the React frontend that makes it usable.
+                Currently at <strong className="text-fg font-medium">Spiral Kite Labs</strong>, I own the full stack: LangGraph agent architecture, LangChain tool integrations, FastAPI backend, Google Cloud Run infrastructure, and the React frontend that makes it usable.
               </p>
               <p>When you&apos;re the AI + DevOps + backend + frontend person at a startup, you stop thinking in layers and start thinking in outcomes.</p>
             </motion.div>
@@ -437,11 +297,11 @@ export default function Home() {
                 { label: "LLM APIs",       target: 6,  suffix: "+" },
                 { label: "Technologies",   target: 25, suffix: "+" },
               ].map((s) => (
-                <div key={s.label} className="p-5 rounded-xl border border-zinc-800/70 bg-zinc-900/30">
-                  <p className="text-xl font-display text-zinc-100">
+                <div key={s.label} className="p-5 rounded-xl border border-line bg-surface hover:border-line-strong hover:-translate-y-0.5 transition-all duration-200">
+                  <p className="text-xl font-display text-fg">
                     <Counter target={s.target} suffix={s.suffix} />
                   </p>
-                  <p className="text-[11px] text-zinc-600 mt-1">{s.label}</p>
+                  <p className="text-[11px] text-fg-faint mt-1">{s.label}</p>
                 </div>
               ))}
             </motion.div>
@@ -449,18 +309,18 @@ export default function Home() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
-              { icon: <Cpu className="w-4 h-4 text-claude-400" />, title: "AI Engineering", desc: "LangGraph + LangChain agents with conditional routing, tool orchestration, and grounded financial reasoning." },
-              { icon: <Server className="w-4 h-4 text-claude-300" />, title: "Full Stack Ownership", desc: "FastAPI + React, streaming LLM responses, TypeScript SDKs, and agent state management end-to-end." },
-              { icon: <Cloud className="w-4 h-4 text-claude-400" />, title: "Cloud & DevOps", desc: "Docker, Google Cloud Run, CI/CD, and cost-optimised inference routing for AI workloads in production." },
+              { icon: <Cpu className="w-4 h-4 text-accent-text" />, title: "AI Engineering", desc: "LangGraph + LangChain agents with conditional routing, tool orchestration, and grounded financial reasoning." },
+              { icon: <Server className="w-4 h-4 text-accent-text" />, title: "Full Stack Ownership", desc: "FastAPI + React, streaming LLM responses, TypeScript SDKs, and agent state management end-to-end." },
+              { icon: <Cloud className="w-4 h-4 text-accent-text" />, title: "Cloud & DevOps", desc: "Docker, Google Cloud Run, CI/CD, and cost-optimised inference routing for AI workloads in production." },
             ].map((item, i) => (
               <motion.div
                 key={item.title}
                 {...fadeUp(i * 0.07)}
-                className="p-5 rounded-xl border border-zinc-800/70 bg-zinc-900/30 hover:border-zinc-700 transition-colors duration-200"
+                className="p-5 rounded-xl border border-line bg-surface hover:border-line-strong hover:-translate-y-0.5 transition-all duration-200"
               >
                 <div className="mb-3">{item.icon}</div>
-                <h3 className="text-sm font-medium text-zinc-200 mb-1.5">{item.title}</h3>
-                <p className="text-xs text-zinc-500 leading-relaxed">{item.desc}</p>
+                <h3 className="text-sm font-medium text-fg mb-1.5">{item.title}</h3>
+                <p className="text-xs text-fg-subtle leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -468,47 +328,20 @@ export default function Home() {
       </section>
 
       {/* ── Tech Stack ──────────────────────────────────────────────────────── */}
-      <section id="stack" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
-        <div className="absolute -top-24 right-0 w-[480px] h-[480px] rounded-full bg-claude-500/10 blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-0 left-1/4 w-80 h-80 rounded-full bg-claude-600/[0.07] blur-[80px] pointer-events-none" />
-
-        <div className="max-w-5xl mx-auto relative">
-          <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Technologies</motion.p>
-          <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display mb-12"><ShineText>Tech I work with</ShineText></motion.h2>
-
-          <div className="space-y-7">
-            {techCategories.map((cat, ci) => (
-              <motion.div key={cat.label} {...fadeUp(ci * 0.06)}>
-                <div className="flex items-center gap-2 text-zinc-600 mb-3">
-                  {cat.icon}
-                  <span className="text-[10px] uppercase tracking-widest">{cat.label}</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {cat.items.map((item) => (
-                    <span key={item} className="px-3 py-1.5 text-xs rounded-full border border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200 transition-colors duration-150 cursor-default">
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <TechStack />
 
       {/* ── Projects ────────────────────────────────────────────────────────── */}
-      <section id="projects" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
+      <section id="projects" className="relative py-24 px-4 border-t border-line overflow-hidden">
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-72 rounded-full bg-claude-500/[0.07] blur-[100px] pointer-events-none" />
-        <div className="absolute -bottom-10 -right-20 w-96 h-96 rounded-full bg-claude-500/[0.06] blur-[90px] pointer-events-none" />
 
         <div className="max-w-5xl mx-auto relative">
           <div className="flex items-end justify-between mb-12">
             <div>
-              <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Work</motion.p>
+              <motion.p {...fadeUp(0)} className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-text mb-2">Work</motion.p>
               <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display"><ShineText>Featured Projects</ShineText></motion.h2>
             </div>
             <motion.div {...fadeUp(0.05)}>
-              <Link href="/projects" className="hidden sm:flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-200 transition-colors duration-150">
+              <Link href="/projects" className="hidden sm:flex items-center gap-1.5 text-xs text-fg-subtle hover:text-fg transition-colors duration-150">
                 View all <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </motion.div>
@@ -523,28 +356,28 @@ export default function Home() {
                   <div className="flex items-center gap-3 mb-4">
                     <Image src="/macget-icon.png" alt="MacGet" width={52} height={52} className="rounded-[14px] shadow-[0_0_24px_rgba(217,119,87,0.25)]" />
                     <div>
-                      <p className="text-[10px] uppercase tracking-widest text-claude-400/80">Flagship · Open source</p>
-                      <h3 className="text-xl font-display text-zinc-100 leading-tight">MacGet</h3>
+                      <p className="text-[10px] uppercase tracking-widest text-accent-text">Flagship · Open source</p>
+                      <h3 className="text-xl font-display text-fg leading-tight">MacGet</h3>
                     </div>
                   </div>
-                  <p className="text-sm text-zinc-400 leading-relaxed mb-4 max-w-sm">
+                  <p className="text-sm text-fg-muted leading-relaxed mb-4 max-w-sm">
                     A fast, multi-threaded download manager for macOS — chunked HTTP downloads, browser-extension capture, and YouTube/HLS video via bundled yt-dlp. SwiftUI + an actor-based engine.
                   </p>
                   <div className="flex flex-wrap gap-2 mb-6">
                     {["Free", "Open source", "macOS 26+"].map((b) => (
-                      <span key={b} className="text-[11px] px-2.5 py-1 rounded-full border border-claude-500/30 bg-claude-500/10 text-claude-300">{b}</span>
+                      <span key={b} className="text-[11px] px-2.5 py-1 rounded-full border border-accent/30 bg-accent-soft text-accent-text">{b}</span>
                     ))}
                   </div>
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <a href={MACGET_DMG_URL} download className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-claude-600 to-claude-600 text-white text-sm font-medium hover:from-claude-500 hover:to-claude-400 transition-all duration-200 shadow-[0_0_20px_rgba(217,119,87,0.35)]">
+                    <a href={MACGET_DMG_URL} download className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-accent-fg text-sm font-medium hover:opacity-90 transition-all duration-200 shadow-[0_0_20px_rgba(217,119,87,0.35)]">
                       <Download className="w-4 h-4" /> Download
                     </a>
                     {heroProject.github && (
-                      <a href={heroProject.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-zinc-700 text-zinc-300 text-sm hover:border-zinc-500 hover:text-white transition-all duration-150">
+                      <a href={heroProject.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-line text-fg-muted text-sm hover:border-line-strong hover:text-fg transition-all duration-150">
                         <Github className="w-4 h-4" /> GitHub
                       </a>
                     )}
-                    <Link href="/macget" className="flex items-center gap-1.5 px-3 py-2.5 text-sm text-zinc-400 hover:text-claude-300 transition-colors">
+                    <Link href="/macget" className="flex items-center gap-1.5 px-3 py-2.5 text-sm text-fg-muted hover:text-accent-text transition-colors">
                       Learn more <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
                   </div>
@@ -552,13 +385,13 @@ export default function Home() {
 
                 {/* media frame */}
                 <div className="relative z-20 p-7 sm:p-8 lg:pl-0 flex items-center">
-                  <div className="w-full rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900/60 shadow-[0_0_40px_rgba(0,0,0,0.45)]">
-                    <div className="flex items-center gap-1.5 px-3 py-2 border-b border-zinc-800 bg-zinc-900/80">
-                      <span className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+                  <div className="w-full rounded-xl overflow-hidden border border-line bg-surface shadow-[0_0_40px_rgba(0,0,0,0.45)]">
+                    <div className="flex items-center gap-1.5 px-3 py-2 border-b border-line bg-surface-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-line-strong" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-line-strong" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-line-strong" />
                     </div>
-                    <div className="relative aspect-video bg-black">
+                    <div className="relative aspect-video bg-bg-2">
                       <video
                         src="/macget-demo.mp4"
                         poster="/macget-icon.png"
@@ -584,24 +417,24 @@ export default function Home() {
                 <Card>
                   <div className="block p-6">
                     <div className="flex items-start justify-between gap-2 mb-3">
-                      <h3 className="text-sm font-medium text-zinc-200 group-hover:text-white transition-colors leading-snug">{project.title}</h3>
+                      <h3 className="text-sm font-medium text-fg-muted group-hover:text-fg transition-colors leading-snug">{project.title}</h3>
                       <div className="flex items-center gap-1.5 flex-shrink-0 mt-0.5">
                         {project.github && (
                           <a href={project.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-                            <Github className="w-3.5 h-3.5 text-zinc-700 hover:text-zinc-400 transition-colors" />
+                            <Github className="w-3.5 h-3.5 text-fg-faint hover:text-fg-muted transition-colors" />
                           </a>
                         )}
                         {project.url && (
                           <a href={project.url} target="_blank" rel="noopener noreferrer" aria-label="Live site">
-                            <ExternalLink className="w-3.5 h-3.5 text-zinc-700 hover:text-zinc-400 transition-colors" />
+                            <ExternalLink className="w-3.5 h-3.5 text-fg-faint hover:text-fg-muted transition-colors" />
                           </a>
                         )}
                       </div>
                     </div>
-                    <p className="text-xs text-zinc-500 leading-relaxed line-clamp-3">{project.description}</p>
+                    <p className="text-xs text-fg-subtle leading-relaxed line-clamp-3">{project.description}</p>
                     <div className="flex flex-wrap gap-1.5 mt-4">
                       {project.tags.slice(0, 3).map((tag) => (
-                        <span key={tag} className="text-[10px] px-2 py-0.5 rounded border border-zinc-800 text-zinc-600">{tag}</span>
+                        <span key={tag} className="text-[10px] px-2 py-0.5 rounded border border-line text-fg-faint">{tag}</span>
                       ))}
                     </div>
                   </div>
@@ -611,7 +444,7 @@ export default function Home() {
           </div>
 
           <motion.div {...fadeUp(0.28)} className="mt-8 sm:hidden">
-            <Link href="/projects" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-200 transition-colors duration-150">
+            <Link href="/projects" className="flex items-center gap-1.5 text-xs text-fg-subtle hover:text-fg transition-colors duration-150">
               View all projects <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </motion.div>
@@ -619,14 +452,13 @@ export default function Home() {
       </section>
 
       {/* ── Recommendation ──────────────────────────────────────────────────── */}
-      <section id="testimonials" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
+      <section id="testimonials" className="relative py-24 px-4 border-t border-line overflow-hidden">
         <div className="absolute top-10 left-0 w-96 h-96 rounded-full bg-claude-600/[0.06] blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full bg-claude-500/[0.06] blur-[80px] pointer-events-none" />
 
         <div className="max-w-3xl mx-auto relative">
-          <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Recommendation</motion.p>
+          <motion.p {...fadeUp(0)} className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-text mb-2">Recommendation</motion.p>
           <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display mb-3"><ShineText>What people say</ShineText></motion.h2>
-          <motion.p {...fadeUp(0.08)} className="text-sm text-zinc-500 mb-12 max-w-md">A word from someone I&apos;ve built with.</motion.p>
+          <motion.p {...fadeUp(0.08)} className="text-sm text-fg-subtle mb-12 max-w-md">A word from someone I&apos;ve built with.</motion.p>
 
           <div className="space-y-6">
             {recommendations.map((r, i) => (
@@ -646,27 +478,27 @@ export default function Home() {
                         href={r.sourceUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-[10px] tracking-[0.25em] uppercase text-claude-300 border border-claude-500/30 bg-claude-500/10 px-2.5 py-1 rounded-full hover:border-claude-400/60 hover:text-claude-200 transition-colors"
+                        className="inline-flex items-center gap-1.5 text-[10px] tracking-[0.25em] uppercase text-accent-text border border-accent/30 bg-accent-soft px-2.5 py-1 rounded-full hover:border-accent/50 hover:opacity-90 transition-colors"
                       >
                         <Linkedin className="w-3 h-3" /> via {r.source}
                       </a>
-                      <span className="text-[10px] text-zinc-600">{r.date}</span>
+                      <span className="text-[10px] text-fg-faint">{r.date}</span>
                     </div>
 
-                    <div className="space-y-4 text-[15px] text-zinc-300 leading-relaxed mb-8">
+                    <div className="space-y-4 text-[15px] text-fg-muted leading-relaxed mb-8">
                       {r.paragraphs.map((p, j) => (
                         <p key={j}>{p}</p>
                       ))}
                     </div>
 
-                    <div className="flex items-start gap-4 pt-6 border-t border-zinc-800/70">
-                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-claude-500 to-claude-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+                    <div className="flex items-start gap-4 pt-6 border-t border-line">
+                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-claude-500 to-claude-600 flex items-center justify-center text-xs font-bold text-accent-fg flex-shrink-0">
                         {r.initials}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-zinc-200">{r.name}</p>
-                        <p className="text-[11px] text-zinc-500 leading-relaxed">{r.tagline}</p>
-                        <p className="text-[10px] text-zinc-600 mt-1">{r.relation}</p>
+                        <p className="text-sm font-medium text-fg">{r.name}</p>
+                        <p className="text-[11px] text-fg-subtle leading-relaxed">{r.tagline}</p>
+                        <p className="text-[10px] text-fg-faint mt-1">{r.relation}</p>
                       </div>
                     </div>
                   </div>
@@ -678,18 +510,17 @@ export default function Home() {
       </section>
 
       {/* ── Blog ────────────────────────────────────────────────────────────── */}
-      <section id="blog" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
+      <section id="blog" className="relative py-24 px-4 border-t border-line overflow-hidden">
         <div className="absolute top-0 right-0 w-[500px] h-72 rounded-full bg-claude-600/[0.07] blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-claude-700/[0.05] blur-[80px] pointer-events-none" />
 
         <div className="max-w-5xl mx-auto relative">
           <div className="flex items-end justify-between mb-12">
             <div>
-              <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Writing</motion.p>
+              <motion.p {...fadeUp(0)} className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-text mb-2">Writing</motion.p>
               <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display"><ShineText>Latest Posts</ShineText></motion.h2>
             </div>
             <motion.div {...fadeUp(0.05)}>
-              <Link href="/blog" className="hidden sm:flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-200 transition-colors">
+              <Link href="/blog" className="hidden sm:flex items-center gap-1.5 text-xs text-fg-subtle hover:text-fg transition-colors">
                 All posts <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </motion.div>
@@ -703,17 +534,17 @@ export default function Home() {
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1.5">
                         {post.tags?.slice(0, 2).map((tag) => (
-                          <span key={tag} className="text-[10px] text-claude-400/70 border border-claude-500/20 bg-claude-500/[0.07] px-2 py-0.5 rounded-full">{tag}</span>
+                          <span key={tag} className="text-[10px] text-accent-text border border-accent/20 bg-accent-soft px-2 py-0.5 rounded-full">{tag}</span>
                         ))}
                       </div>
-                      <h3 className="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors truncate">{post.title}</h3>
-                      <p className="text-xs text-zinc-600 mt-0.5 truncate">{post.description}</p>
+                      <h3 className="text-sm font-medium text-fg-muted group-hover:text-fg transition-colors truncate">{post.title}</h3>
+                      <p className="text-xs text-fg-faint mt-0.5 truncate">{post.description}</p>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className="hidden sm:block text-[11px] text-zinc-700">
+                      <span className="hidden sm:block text-[11px] text-fg-faint">
                         {new Date(post.date).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
                       </span>
-                      <ArrowRight className="w-3.5 h-3.5 text-zinc-700 group-hover:text-claude-400 group-hover:translate-x-0.5 transition-all duration-150" />
+                      <ArrowRight className="w-3.5 h-3.5 text-fg-faint group-hover:text-accent-text group-hover:translate-x-0.5 transition-all duration-150" />
                     </div>
                   </Link>
                 </Card>
@@ -724,21 +555,20 @@ export default function Home() {
       </section>
 
       {/* ── Resume ──────────────────────────────────────────────────────────── */}
-      <section id="resume" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
+      <section id="resume" className="relative py-24 px-4 border-t border-line overflow-hidden">
         <div className="absolute -top-20 right-0 w-[500px] h-[500px] rounded-full bg-claude-600/10 blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-0 -left-20 w-80 h-80 rounded-full bg-claude-500/[0.08] blur-[80px] pointer-events-none" />
 
         <div className="max-w-5xl mx-auto relative">
           <div className="flex items-end justify-between mb-12">
             <div>
-              <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-claude-400/70 mb-2">Career</motion.p>
+              <motion.p {...fadeUp(0)} className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-text mb-2">Career</motion.p>
               <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display"><ShineText>Resume</ShineText></motion.h2>
             </div>
             <motion.a
               {...fadeUp(0.05)}
               href="/suryansh.pdf"
               download
-              className="flex items-center gap-1.5 text-xs px-4 py-2 rounded-full bg-gradient-to-r from-claude-600/20 to-claude-700/20 border border-claude-500/30 text-claude-300 hover:from-claude-600/30 hover:to-claude-700/30 hover:border-claude-400/50 hover:text-claude-200 transition-all duration-200"
+              className="flex items-center gap-1.5 text-xs px-4 py-2 rounded-full border border-accent/30 bg-accent-soft text-accent-text hover:opacity-90 transition-all duration-200"
             >
               <Download className="w-3.5 h-3.5" /> Download CV
             </motion.a>
@@ -746,21 +576,21 @@ export default function Home() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-14">
             <motion.div {...fadeUp(0.08)}>
-              <p className="text-[10px] uppercase tracking-widest text-claude-400/60 mb-7">Experience</p>
+              <p className="text-[10px] uppercase tracking-widest text-accent-text mb-7">Experience</p>
               <div className="space-y-9">
                 {experience.map((exp, i) => (
-                  <div key={i} className="relative pl-5 border-l-2 border-claude-500/20">
-                    <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-claude-500/80 shadow-[0_0_8px_rgba(217,119,87,0.7)]" />
+                  <div key={i} className="relative pl-5 border-l-2 border-accent/20">
+                    <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-accent shadow-[0_0_8px_rgba(217,119,87,0.7)]" />
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-0.5">
-                      <h4 className="text-sm font-medium text-zinc-200">{exp.role}</h4>
-                      <span className="text-[10px] text-claude-300/70 border border-claude-500/20 bg-claude-500/10 px-2 py-0.5 rounded-full">{exp.type}</span>
+                      <h4 className="text-sm font-medium text-fg">{exp.role}</h4>
+                      <span className="text-[10px] text-accent-text border border-accent/30 bg-accent-soft px-2 py-0.5 rounded-full">{exp.type}</span>
                     </div>
-                    <p className="text-xs text-zinc-400 mb-0.5">{exp.company}</p>
-                    <p className="text-[11px] text-zinc-600 mb-3">{exp.period}</p>
-                    <p className="text-xs text-zinc-500 leading-relaxed mb-3">{exp.desc}</p>
+                    <p className="text-xs text-fg-muted mb-0.5">{exp.company}</p>
+                    <p className="text-[11px] text-fg-faint mb-3">{exp.period}</p>
+                    <p className="text-xs text-fg-subtle leading-relaxed mb-3">{exp.desc}</p>
                     <div className="flex flex-wrap gap-1.5">
                       {exp.tech.map((t) => (
-                        <span key={t} className="text-[10px] px-2 py-0.5 border border-claude-600/20 bg-claude-600/[0.07] rounded text-claude-300/60">{t}</span>
+                        <span key={t} className="text-[10px] px-2 py-0.5 border border-accent/20 bg-accent-soft rounded text-accent-text">{t}</span>
                       ))}
                     </div>
                   </div>
@@ -769,23 +599,23 @@ export default function Home() {
             </motion.div>
 
             <motion.div {...fadeUp(0.12)}>
-              <p className="text-[10px] uppercase tracking-widest text-claude-400/60 mb-7">Education</p>
+              <p className="text-[10px] uppercase tracking-widest text-accent-text mb-7">Education</p>
               <div className="space-y-9 mb-10">
                 {education.map((edu, i) => (
-                  <div key={i} className="relative pl-5 border-l-2 border-claude-600/20">
-                    <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-claude-600/80 shadow-[0_0_8px_rgba(193,95,60,0.6)]" />
-                    <h4 className="text-sm font-medium text-zinc-200 mb-0.5">{edu.degree}</h4>
-                    <p className="text-xs text-zinc-400 mb-0.5">{edu.institution}</p>
-                    <p className="text-[11px] text-zinc-600">{edu.period}</p>
+                  <div key={i} className="relative pl-5 border-l-2 border-accent/20">
+                    <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-accent shadow-[0_0_8px_rgba(193,95,60,0.6)]" />
+                    <h4 className="text-sm font-medium text-fg mb-0.5">{edu.degree}</h4>
+                    <p className="text-xs text-fg-muted mb-0.5">{edu.institution}</p>
+                    <p className="text-[11px] text-fg-faint">{edu.period}</p>
                   </div>
                 ))}
               </div>
 
               <div className="p-5 rounded-xl border border-claude-500/15 bg-gradient-to-br from-claude-500/[0.06] to-claude-600/[0.04]">
-                <p className="text-[10px] uppercase tracking-widest text-claude-400/60 mb-4">Core Strengths</p>
+                <p className="text-[10px] uppercase tracking-widest text-accent-text mb-4">Core Strengths</p>
                 <div className="flex flex-wrap gap-2">
                   {["System Design", "API Architecture", "Performance Optimisation", "TypeScript", "CI/CD", "Agile / Scrum"].map((s) => (
-                    <span key={s} className="text-xs px-3 py-1 rounded-full border border-claude-500/20 bg-claude-500/[0.07] text-claude-300/70">{s}</span>
+                    <span key={s} className="text-xs px-3 py-1 rounded-full border border-accent/30 bg-accent-soft text-accent-text">{s}</span>
                   ))}
                 </div>
               </div>
@@ -795,54 +625,78 @@ export default function Home() {
       </section>
 
       {/* ── Contact ─────────────────────────────────────────────────────────── */}
-      <section id="contact" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
+      <section id="contact" className="relative py-24 px-4 border-t border-line overflow-hidden">
         <div className="absolute -top-10 -right-20 w-[450px] h-[450px] rounded-full bg-claude-500/[0.08] blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-10 left-0 w-72 h-72 rounded-full bg-claude-600/[0.06] blur-[80px] pointer-events-none" />
 
         <div className="max-w-5xl mx-auto relative">
-          <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Say Hello</motion.p>
+          <motion.p {...fadeUp(0)} className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-text mb-2">Say Hello</motion.p>
           <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display mb-3"><ShineText>Get in Touch</ShineText></motion.h2>
-          <motion.p {...fadeUp(0.08)} className="text-sm text-zinc-500 mb-12 max-w-md leading-relaxed">
+          <motion.p {...fadeUp(0.08)} className="text-sm text-fg-subtle mb-8 max-w-md leading-relaxed">
             I build in public. Got a project, a bug report, or just want to talk shop? Reach out — fill the form or hit me up directly.
           </motion.p>
 
+          {/* copy-email — primary focal action */}
+          <motion.div {...fadeUp(0.1)} className="mb-10">
+            <button
+              type="button"
+              onClick={handleCopyEmail}
+              className="group flex w-full flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-accent/30 bg-accent-soft px-6 py-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/50"
+            >
+              <div className="min-w-0">
+                <p className="text-[10px] uppercase tracking-widest text-accent-text mb-1.5">Direct line</p>
+                <p className="font-mono text-sm sm:text-base text-fg truncate">{EMAIL}</p>
+              </div>
+              <span className="inline-flex items-center gap-1.5 flex-shrink-0 text-xs font-medium px-3 py-1.5 rounded-full bg-accent text-accent-fg transition-opacity group-hover:opacity-90">
+                {copied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" /> Copied ✓
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" /> Copy email
+                  </>
+                )}
+              </span>
+            </button>
+          </motion.div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             {/* contact form */}
-            <motion.div {...fadeUp(0.1)}>
+            <motion.div {...fadeUp(0.15)}>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-xs text-zinc-500 mb-1.5" htmlFor="name">Name</label>
+                  <label className="block text-xs text-fg-subtle mb-1.5" htmlFor="name">Name</label>
                   <input
                     id="name" type="text" required
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                     placeholder="Your name"
-                    className="w-full px-4 py-2.5 rounded-xl border border-zinc-800 bg-zinc-900/50 text-sm text-zinc-200 placeholder:text-zinc-700 focus:outline-none focus:border-claude-500/50 focus:ring-1 focus:ring-claude-500/30 transition-all"
+                    className="w-full px-4 py-2.5 rounded-xl border border-line bg-surface text-sm text-fg placeholder:text-fg-faint focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-zinc-500 mb-1.5" htmlFor="email">Email</label>
+                  <label className="block text-xs text-fg-subtle mb-1.5" htmlFor="email">Email</label>
                   <input
                     id="email" type="email" required
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
                     placeholder="your@email.com"
-                    className="w-full px-4 py-2.5 rounded-xl border border-zinc-800 bg-zinc-900/50 text-sm text-zinc-200 placeholder:text-zinc-700 focus:outline-none focus:border-claude-500/50 focus:ring-1 focus:ring-claude-500/30 transition-all"
+                    className="w-full px-4 py-2.5 rounded-xl border border-line bg-surface text-sm text-fg placeholder:text-fg-faint focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-zinc-500 mb-1.5" htmlFor="message">Message</label>
+                  <label className="block text-xs text-fg-subtle mb-1.5" htmlFor="message">Message</label>
                   <textarea
                     id="message" required rows={4}
                     value={form.message}
                     onChange={(e) => setForm({ ...form, message: e.target.value })}
                     placeholder="Tell me about your project..."
-                    className="w-full px-4 py-2.5 rounded-xl border border-zinc-800 bg-zinc-900/50 text-sm text-zinc-200 placeholder:text-zinc-700 focus:outline-none focus:border-claude-500/50 focus:ring-1 focus:ring-claude-500/30 transition-all resize-none"
+                    className="w-full px-4 py-2.5 rounded-xl border border-line bg-surface text-sm text-fg placeholder:text-fg-faint focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition-all resize-none"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-claude-600 to-claude-600 text-white text-sm font-medium hover:from-claude-500 hover:to-claude-400 transition-all duration-200 shadow-[0_0_20px_rgba(217,119,87,0.25)]"
+                  className="w-full py-2.5 rounded-xl bg-accent text-accent-fg text-sm font-medium hover:opacity-90 transition-all duration-200 shadow-[0_0_20px_rgba(217,119,87,0.25)]"
                 >
                   {sent ? "✓ Opening your email client..." : "Send Message"}
                 </button>
@@ -850,7 +704,7 @@ export default function Home() {
             </motion.div>
 
             {/* socials */}
-            <motion.div {...fadeUp(0.15)} className="grid grid-cols-2 gap-3 content-start">
+            <motion.div {...fadeUp(0.2)} className="grid grid-cols-2 gap-3 content-start">
               {socials.map((s) => (
                 <Card key={s.label}>
                   <a
@@ -859,12 +713,12 @@ export default function Home() {
                     rel="noopener noreferrer"
                     className="flex flex-col gap-3 p-5 group cursor-pointer"
                   >
-                    <span className="flex items-center justify-center w-9 h-9 rounded-full border border-zinc-800 text-zinc-500 group-hover:border-claude-500/40 group-hover:text-claude-300 group-hover:shadow-[0_0_10px_rgba(217,119,87,0.2)] transition-all duration-200">
+                    <span className="flex items-center justify-center w-9 h-9 rounded-full border border-line text-fg-subtle group-hover:border-accent/40 group-hover:text-accent-text group-hover:shadow-[0_0_10px_rgba(217,119,87,0.2)] transition-all duration-200">
                       {s.icon}
                     </span>
                     <div>
-                      <p className="text-xs font-medium text-zinc-400 group-hover:text-zinc-200 transition-colors">{s.label}</p>
-                      <p className="text-[10px] text-zinc-700 mt-0.5 truncate">{s.handle}</p>
+                      <p className="text-xs font-medium text-fg-muted group-hover:text-fg transition-colors">{s.label}</p>
+                      <p className="text-[10px] text-fg-faint mt-0.5 truncate">{s.handle}</p>
                     </div>
                   </a>
                 </Card>
@@ -875,25 +729,25 @@ export default function Home() {
       </section>
 
       {/* ── Footer ──────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-claude-500/10 py-8 px-4">
+      <footer className="border-t border-line py-8 px-4">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p className="text-[11px] text-zinc-700">
+          <p className="text-[11px] text-fg-faint">
             © {new Date().getFullYear()} Suryansh Chaudhary
-            <span className="text-zinc-800"> · </span>
-            <span className="text-zinc-600">Open to interesting collaborations</span>
+            <span className="text-fg-faint"> · </span>
+            <span className="text-fg-faint">Open to interesting collaborations</span>
           </p>
           <div className="flex items-center gap-4">
             {socials.map((s) => (
-              <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="text-zinc-700 hover:text-zinc-400 transition-colors">
+              <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="text-fg-faint hover:text-fg-muted transition-colors">
                 {s.icon}
               </a>
             ))}
           </div>
-          <p className="text-[11px] text-zinc-600">
-            Typed by me <span className="text-claude-400">·</span> Paired with{" "}
-            <span className="text-claude-400 font-medium">Claude</span>{" "}
-            <span className="text-claude-400">·</span> Deployed at{" "}
-            <span className="text-claude-300 font-medium">3am</span>
+          <p className="text-[11px] text-fg-faint">
+            Typed by me <span className="text-accent-text">·</span> Paired with{" "}
+            <span className="text-accent-text font-medium">Claude</span>{" "}
+            <span className="text-accent-text">·</span> Deployed at{" "}
+            <span className="text-accent-text font-medium">3am</span>
           </p>
         </div>
       </footer>

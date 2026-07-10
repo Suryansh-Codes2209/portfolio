@@ -1,0 +1,17 @@
+---
+published: false
+title: "The decision behind X"
+description: "One-sentence hook — what a reader learns."
+date: 2026-07-10
+tags: ["build-in-public", "macget"]
+---
+
+**What I shipped / decided.** One paragraph of context.
+
+## The problem
+
+## The approach
+
+## What I'd do differently
+
+_Building in public — follow along on [X](https://x.com/Suryansh_2001)._
