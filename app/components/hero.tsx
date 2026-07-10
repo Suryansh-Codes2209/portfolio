@@ -26,53 +26,16 @@ export function Hero() {
   }, []);
 
   return (
-    <section className="relative min-h-dvh overflow-hidden pt-14">
+    <section className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-4 pt-14">
       {/* ambient glow behind the subject */}
-      <div className="pointer-events-none absolute left-1/2 top-[30%] h-[440px] w-[640px] -translate-x-1/2 rounded-full bg-claude-600/15 blur-[130px]" />
-      <div className="pointer-events-none absolute left-1/2 top-[44%] h-64 w-64 -translate-x-1/2 rounded-full bg-claude-500/20 blur-[90px]" />
-
-      {/* GIANT NAME — sits BEHIND the portrait; the silhouette masks the middle */}
-      <motion.h1
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, ease: "easeOut" }}
-        aria-label="Suryansh Chaudhary"
-        className="pointer-events-none absolute inset-x-0 top-[24%] z-10 select-none text-center font-display leading-[0.85] tracking-tighter text-white
-                   text-[12.5vw] sm:top-auto sm:bottom-[19%] sm:text-[12.5vw] lg:bottom-[22%] lg:text-[11.5vw]"
-      >
-        Suryansh
-        <br />
-        Chaudhary
-      </motion.h1>
-
-      {/* PORTRAIT — in front of the name, grounded to the bottom */}
-      <motion.div
-        initial={{ opacity: 0, scale: 1.04 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.85, ease: "easeOut" }}
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center"
-      >
-        <Image
-          src="/hero-portrait.png"
-          alt="Suryansh Chaudhary"
-          width={2000}
-          height={1600}
-          priority
-          className="h-[58vh] w-auto max-w-none object-contain object-bottom drop-shadow-[0_0_70px_rgba(217,119,87,0.28)] sm:h-[66vh] lg:h-[80vh]
-                     [-webkit-mask-image:radial-gradient(118%_92%_at_50%_40%,#000_58%,transparent_88%)]
-                     [mask-image:radial-gradient(118%_92%_at_50%_40%,#000_58%,transparent_88%)]"
-        />
-      </motion.div>
-
-      {/* fade the portrait's base into the page */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-44 bg-gradient-to-t from-black via-black/80 to-transparent" />
+      <div className="pointer-events-none absolute left-1/2 top-[24%] h-[420px] w-[600px] -translate-x-1/2 rounded-full bg-claude-600/16 blur-[130px]" />
 
       {/* top-left: availability + who I am */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15, duration: 0.5 }}
-        className="absolute left-5 top-20 z-30 max-w-[16rem] sm:left-8 sm:top-28"
+        className="absolute left-5 top-20 z-30 max-w-[15rem] sm:left-8 sm:top-24"
       >
         <div className="inline-flex items-center gap-2 rounded-full border border-claude-500/30 bg-claude-500/10 px-3 py-1.5 font-mono text-[11px] tracking-wide text-claude-300 backdrop-blur-sm">
           <span className="relative flex h-2 w-2">
@@ -117,6 +80,42 @@ export function Hero() {
           <span className="mt-1 h-14 w-px bg-line" />
         </div>
       </motion.div>
+
+      {/* ── Centre stack: PHOTO (upper) then NAME (under it) ─────────────── */}
+      <div className="relative z-10 flex flex-col items-center">
+        {/* PHOTO — soft feathered edges that melt into the background */}
+        <motion.div
+          initial={{ opacity: 0, scale: 1.04 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.85, ease: "easeOut" }}
+          className="pointer-events-none flex justify-center"
+        >
+          <Image
+            src="/hero-portrait.png"
+            alt="Suryansh Chaudhary"
+            width={2000}
+            height={1600}
+            priority
+            className="h-[42vh] w-auto max-w-none object-contain sm:h-[47vh] lg:h-[54vh]
+                       [-webkit-mask-image:radial-gradient(66%_68%_at_50%_44%,#000_40%,transparent_75%)]
+                       [mask-image:radial-gradient(66%_68%_at_50%_44%,#000_40%,transparent_75%)]"
+          />
+        </motion.div>
+
+        {/* NAME — directly under the photo, tucked slightly beneath it */}
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          aria-label="Suryansh Chaudhary"
+          className="-mt-[6vh] select-none text-center font-display leading-[0.85] tracking-tighter text-white
+                     text-[15vw] sm:-mt-[5vh] sm:text-[13vw] lg:text-[11vw]"
+        >
+          Suryansh
+          <br />
+          Chaudhary
+        </motion.h1>
+      </div>
 
       {/* mobile CTAs */}
       <div className="absolute inset-x-0 bottom-24 z-30 flex justify-center gap-2.5 px-4 sm:hidden">
