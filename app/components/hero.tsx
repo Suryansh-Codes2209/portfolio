@@ -42,7 +42,7 @@ export function Hero() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-claude-300 opacity-75" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-claude-500" />
           </span>
-          Available for work
+          Building in public
         </div>
         <p className="mt-4 text-sm leading-relaxed text-zinc-400">
           Full-Stack <span className="text-zinc-200">AI Engineer</span> — I build in public, shipping{" "}
