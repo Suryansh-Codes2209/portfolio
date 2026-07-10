@@ -46,12 +46,9 @@ export default function BlogPostPage({ params }: Props) {
   const post = allBlogs.find((p) => p.slug === params.slug);
   if (!post) notFound();
 
-  const url = `https://suryansh.work/blog/${post.slug}`;
-  const image = `https://suryansh.work${post.image ?? "/og.png"}`;
-
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": "BlogPosting",
     headline: post.title,
     description: post.description,
     datePublished: new Date(post.date).toISOString(),
@@ -68,28 +65,6 @@ export default function BlogPostPage({ params }: Props) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BlogPosting",
-            headline: post.title,
-            description: post.description,
-            image,
-            datePublished: new Date(post.date).toISOString(),
-            dateModified: new Date(post.date).toISOString(),
-            keywords: post.tags?.join(", "),
-            url,
-            mainEntityOfPage: url,
-            author: {
-              "@type": "Person",
-              name: "Suryansh Chaudhary",
-              url: "https://suryansh.work",
-            },
-          }),
-        }}
       />
       {/* ambient */}
       <div className="pointer-events-none fixed inset-0 z-0">
