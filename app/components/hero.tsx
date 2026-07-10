@@ -37,10 +37,12 @@ export function Hero() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
         aria-label="Suryansh Chaudhary"
-        className="pointer-events-none absolute inset-x-0 top-[29%] z-10 select-none text-center font-display leading-none tracking-tighter text-white
-                   text-[13.5vw] sm:top-auto sm:bottom-[26%] sm:text-[15vw] lg:bottom-[32%] lg:text-[13vw]"
+        className="pointer-events-none absolute inset-x-0 top-[24%] z-10 select-none text-center font-display leading-[0.85] tracking-tighter text-white
+                   text-[12.5vw] sm:top-auto sm:bottom-[19%] sm:text-[12.5vw] lg:bottom-[22%] lg:text-[11.5vw]"
       >
-        SURYANSH
+        Suryansh
+        <br />
+        Chaudhary
       </motion.h1>
 
       {/* PORTRAIT — in front of the name, grounded to the bottom */}
@@ -56,7 +58,9 @@ export function Hero() {
           width={2000}
           height={1600}
           priority
-          className="h-[58vh] w-auto max-w-none object-contain object-bottom drop-shadow-[0_0_70px_rgba(217,119,87,0.28)] sm:h-[66vh] lg:h-[80vh]"
+          className="h-[58vh] w-auto max-w-none object-contain object-bottom drop-shadow-[0_0_70px_rgba(217,119,87,0.28)] sm:h-[66vh] lg:h-[80vh]
+                     [-webkit-mask-image:radial-gradient(118%_92%_at_50%_40%,#000_58%,transparent_88%)]
+                     [mask-image:radial-gradient(118%_92%_at_50%_40%,#000_58%,transparent_88%)]"
         />
       </motion.div>
 
