@@ -261,10 +261,9 @@ export default function Home() {
       {/* ── About ───────────────────────────────────────────────────────────── */}
       <section id="about" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
         <div className="absolute -bottom-20 -left-32 w-[500px] h-[500px] rounded-full bg-claude-500/10 blur-[100px] pointer-events-none" />
-        <div className="absolute top-10 right-0 w-72 h-72 rounded-full bg-claude-500/[0.07] blur-[80px] pointer-events-none" />
 
         <div className="max-w-5xl mx-auto relative">
-          <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">About Me</motion.p>
+          <motion.p {...fadeUp(0)} className="font-mono text-[10px] uppercase tracking-[0.25em] text-claude-400/70 mb-2">About Me</motion.p>
           <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display mb-12"><ShineText>Building AI agents that actually ship</ShineText></motion.h2>
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 mb-14">
@@ -286,7 +285,7 @@ export default function Home() {
                 { label: "LLM APIs",       target: 6,  suffix: "+" },
                 { label: "Technologies",   target: 25, suffix: "+" },
               ].map((s) => (
-                <div key={s.label} className="p-5 rounded-xl border border-zinc-800/70 bg-zinc-900/30">
+                <div key={s.label} className="p-5 rounded-xl border border-line bg-surface">
                   <p className="text-xl font-display text-zinc-100">
                     <Counter target={s.target} suffix={s.suffix} />
                   </p>
@@ -305,7 +304,7 @@ export default function Home() {
               <motion.div
                 key={item.title}
                 {...fadeUp(i * 0.07)}
-                className="p-5 rounded-xl border border-zinc-800/70 bg-zinc-900/30 hover:border-zinc-700 transition-colors duration-200"
+                className="p-5 rounded-xl border border-line bg-surface hover:border-zinc-700 transition-colors duration-200"
               >
                 <div className="mb-3">{item.icon}</div>
                 <h3 className="text-sm font-medium text-zinc-200 mb-1.5">{item.title}</h3>
@@ -319,10 +318,9 @@ export default function Home() {
       {/* ── Tech Stack ──────────────────────────────────────────────────────── */}
       <section id="stack" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
         <div className="absolute -top-24 right-0 w-[480px] h-[480px] rounded-full bg-claude-500/10 blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-0 left-1/4 w-80 h-80 rounded-full bg-claude-600/[0.07] blur-[80px] pointer-events-none" />
 
         <div className="max-w-5xl mx-auto relative">
-          <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Technologies</motion.p>
+          <motion.p {...fadeUp(0)} className="font-mono text-[10px] uppercase tracking-[0.25em] text-claude-400/70 mb-2">Technologies</motion.p>
           <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display mb-12"><ShineText>Tech I work with</ShineText></motion.h2>
 
           <div className="space-y-7">
@@ -334,7 +332,7 @@ export default function Home() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {cat.items.map((item) => (
-                    <span key={item} className="px-3 py-1.5 text-xs rounded-full border border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200 transition-colors duration-150 cursor-default">
+                    <span key={item} className="px-3 py-1.5 text-xs rounded-full border border-line bg-surface text-zinc-400 hover:border-zinc-600 hover:text-zinc-200 transition-colors duration-150 cursor-default">
                       {item}
                     </span>
                   ))}
@@ -348,12 +346,11 @@ export default function Home() {
       {/* ── Projects ────────────────────────────────────────────────────────── */}
       <section id="projects" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-72 rounded-full bg-claude-500/[0.07] blur-[100px] pointer-events-none" />
-        <div className="absolute -bottom-10 -right-20 w-96 h-96 rounded-full bg-claude-500/[0.06] blur-[90px] pointer-events-none" />
 
         <div className="max-w-5xl mx-auto relative">
           <div className="flex items-end justify-between mb-12">
             <div>
-              <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Work</motion.p>
+              <motion.p {...fadeUp(0)} className="font-mono text-[10px] uppercase tracking-[0.25em] text-claude-400/70 mb-2">Work</motion.p>
               <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display"><ShineText>Featured Projects</ShineText></motion.h2>
             </div>
             <motion.div {...fadeUp(0.05)}>
@@ -470,10 +467,9 @@ export default function Home() {
       {/* ── Recommendation ──────────────────────────────────────────────────── */}
       <section id="testimonials" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
         <div className="absolute top-10 left-0 w-96 h-96 rounded-full bg-claude-600/[0.06] blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full bg-claude-500/[0.06] blur-[80px] pointer-events-none" />
 
         <div className="max-w-3xl mx-auto relative">
-          <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Recommendation</motion.p>
+          <motion.p {...fadeUp(0)} className="font-mono text-[10px] uppercase tracking-[0.25em] text-claude-400/70 mb-2">Recommendation</motion.p>
           <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display mb-3"><ShineText>What people say</ShineText></motion.h2>
           <motion.p {...fadeUp(0.08)} className="text-sm text-zinc-500 mb-12 max-w-md">A word from someone I&apos;ve built with.</motion.p>
 
@@ -529,12 +525,11 @@ export default function Home() {
       {/* ── Blog ────────────────────────────────────────────────────────────── */}
       <section id="blog" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
         <div className="absolute top-0 right-0 w-[500px] h-72 rounded-full bg-claude-600/[0.07] blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-claude-700/[0.05] blur-[80px] pointer-events-none" />
 
         <div className="max-w-5xl mx-auto relative">
           <div className="flex items-end justify-between mb-12">
             <div>
-              <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Writing</motion.p>
+              <motion.p {...fadeUp(0)} className="font-mono text-[10px] uppercase tracking-[0.25em] text-claude-400/70 mb-2">Writing</motion.p>
               <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display"><ShineText>Latest Posts</ShineText></motion.h2>
             </div>
             <motion.div {...fadeUp(0.05)}>
@@ -575,12 +570,11 @@ export default function Home() {
       {/* ── Resume ──────────────────────────────────────────────────────────── */}
       <section id="resume" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
         <div className="absolute -top-20 right-0 w-[500px] h-[500px] rounded-full bg-claude-600/10 blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-0 -left-20 w-80 h-80 rounded-full bg-claude-500/[0.08] blur-[80px] pointer-events-none" />
 
         <div className="max-w-5xl mx-auto relative">
           <div className="flex items-end justify-between mb-12">
             <div>
-              <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-claude-400/70 mb-2">Career</motion.p>
+              <motion.p {...fadeUp(0)} className="font-mono text-[10px] uppercase tracking-[0.25em] text-claude-400/70 mb-2">Career</motion.p>
               <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display"><ShineText>Resume</ShineText></motion.h2>
             </div>
             <motion.a
@@ -646,10 +640,9 @@ export default function Home() {
       {/* ── Contact ─────────────────────────────────────────────────────────── */}
       <section id="contact" className="relative py-24 px-4 border-t border-claude-500/10 overflow-hidden">
         <div className="absolute -top-10 -right-20 w-[450px] h-[450px] rounded-full bg-claude-500/[0.08] blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-10 left-0 w-72 h-72 rounded-full bg-claude-600/[0.06] blur-[80px] pointer-events-none" />
 
         <div className="max-w-5xl mx-auto relative">
-          <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Say Hello</motion.p>
+          <motion.p {...fadeUp(0)} className="font-mono text-[10px] uppercase tracking-[0.25em] text-claude-400/70 mb-2">Say Hello</motion.p>
           <motion.h2 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display mb-3"><ShineText>Get in Touch</ShineText></motion.h2>
           <motion.p {...fadeUp(0.08)} className="text-sm text-zinc-500 mb-12 max-w-md leading-relaxed">
             I build in public. Got a project, a bug report, or just want to talk shop? Reach out — fill the form or hit me up directly.
