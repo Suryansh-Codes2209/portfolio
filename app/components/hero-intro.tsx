@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const STORAGE_KEY = "claude-intro-seen";
 
@@ -51,9 +51,6 @@ function FlashLayer({ trigger }: { trigger: boolean }) {
 }
 
 export function HeroIntro() {
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const bufferRef = useRef<AudioBuffer | null>(null);
-  const primedRef = useRef(false);
   const [mounted, setMounted] = useState(false);
   const [active, setActive] = useState(false);
   const [done, setDone] = useState(false);
@@ -61,7 +58,6 @@ export function HeroIntro() {
   const [lines, setLines] = useState<Line[]>([]);
   const [flash, setFlash] = useState(false);
 
-  // Mount gate + audio setup + gesture-priming (browsers block audio without a user gesture).
   useEffect(() => {
     setMounted(true);
     if (typeof window === "undefined") return;
@@ -72,46 +68,20 @@ export function HeroIntro() {
       return;
     }
     setActive(true);
-
-    // Web Audio (not <audio>): iOS ignores muted-priming — a muted gesture-play
-    // never authorizes a later *unmuted* timer-driven play, so the boom stays
-    // silent. Instead we resume an AudioContext synchronously inside the first
-    // gesture (unlocked with a 1-sample silent buffer, no blip); once resumed,
-    // firing the decoded clip from the boom's setTimeout is allowed on iOS too.
-    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!AudioCtx) return; // very old browser: skip sound, visuals still run
-    const ctx = new AudioCtx();
-    audioCtxRef.current = ctx;
-
-    // Decode the clip up front so the buffer is ready by the time boom fires.
-    fetch("/sounds/fahhh.mp3")
-      .then((r) => r.arrayBuffer())
-      .then((buf) => ctx.decodeAudioData(buf))
-      .then((decoded) => {
-        bufferRef.current = decoded;
-      })
-      .catch(() => {});
-
-    // touch/click/keys are honored as user activation by iOS; move/scroll cover desktop.
-    const events = ["touchend", "pointerdown", "pointerup", "click", "keydown", "scroll", "pointermove"];
-    const cleanup = () => events.forEach((e) => window.removeEventListener(e, unlock));
-    const unlock = () => {
-      if (primedRef.current) return;
-      primedRef.current = true;
-      ctx.resume().catch(() => {});
-      // Play a silent 1-sample buffer to fully unlock Web Audio on iOS.
-      const silent = ctx.createBufferSource();
-      silent.buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
-      silent.connect(ctx.destination);
-      silent.start(0);
-      cleanup();
-    };
-    events.forEach((e) => window.addEventListener(e, unlock, { once: true, passive: true }));
-    return () => {
-      cleanup();
-      ctx.close().catch(() => {});
-    };
   }, []);
+
+  const skip = useCallback(() => {
+    sessionStorage.setItem(STORAGE_KEY, "1");
+    setActive(false);
+    setDone(true);
+  }, []);
+
+  useEffect(() => {
+    if (!active || done) return;
+    const onKey = () => skip();
+    window.addEventListener("keydown", onKey, { once: true });
+    return () => window.removeEventListener("keydown", onKey);
+  }, [active, done, skip]);
 
   // Lock page scroll while the intro plays.
   useEffect(() => {
@@ -138,12 +108,12 @@ export function HeroIntro() {
       });
 
     const run = async () => {
-      await delay(600);
+      await delay(300);
 
       for (let i = 1; i <= PROMPT.length; i++) {
         if (cancelled) return;
         setTyped(PROMPT.slice(0, i));
-        await delay(34);
+        await delay(22);
       }
       await delay(480);
 
@@ -162,26 +132,14 @@ export function HeroIntro() {
             ),
           );
         }
-        await delay(260);
+        await delay(160);
       }
 
       await delay(360);
       if (cancelled) return;
 
-      // Boom
+      // Boom (visual only)
       setFlash(true);
-      const ctx = audioCtxRef.current;
-      const buffer = bufferRef.current;
-      if (ctx && buffer) {
-        // Chrome may re-suspend an idle context; resume is a no-op once unlocked.
-        if (ctx.state === "suspended") ctx.resume().catch(() => {});
-        const src = ctx.createBufferSource();
-        src.buffer = buffer;
-        const gain = ctx.createGain();
-        gain.gain.value = 0.7;
-        src.connect(gain).connect(ctx.destination);
-        src.start(0);
-      }
 
       await delay(680);
       if (cancelled) return;
@@ -261,9 +219,16 @@ export function HeroIntro() {
             </div>
           </motion.div>
 
-          <div className="pointer-events-none absolute bottom-6 right-6 text-[10px] uppercase tracking-[0.3em] text-zinc-600">
+          <div className="pointer-events-none absolute bottom-6 left-6 text-[10px] uppercase tracking-[0.3em] text-zinc-600">
             Suryansh · 2026
           </div>
+
+          <button
+            onClick={skip}
+            className="pointer-events-auto absolute bottom-6 right-6 text-[10px] uppercase tracking-[0.3em] text-zinc-600 hover:text-zinc-300 transition-colors"
+          >
+            skip →
+          </button>
 
           <style jsx>{`
             @keyframes blink {
