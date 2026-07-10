@@ -19,14 +19,14 @@ export function ShineText({
   as: Tag = "span",
   className = "",
   delay = 0,
-  baseColor = "#E4E4E7",
-  highlight = "#FFE5CF",
+  baseColor = "var(--fg)",
+  highlight = "var(--accent)",
   children,
 }: Props) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px 0px -80px 0px" });
 
-  const gradient = `linear-gradient(110deg, ${baseColor} 0%, ${baseColor} 42%, ${highlight} 48%, #FFFFFF 50%, ${highlight} 52%, ${baseColor} 58%, ${baseColor} 100%)`;
+  const gradient = `linear-gradient(110deg, ${baseColor} 0%, ${baseColor} 42%, ${highlight} 50%, ${baseColor} 58%, ${baseColor} 100%)`;
 
   return (
     <Tag
