@@ -97,8 +97,8 @@ export function Hero() {
             height={1600}
             priority
             className="h-[40vh] w-auto max-w-none object-contain sm:h-[46vh] lg:h-[52vh]
-                       [-webkit-mask-image:radial-gradient(46%_76%_at_50%_42%,#000_34%,transparent_80%)]
-                       [mask-image:radial-gradient(46%_76%_at_50%_42%,#000_34%,transparent_80%)]"
+                       [-webkit-mask-image:radial-gradient(48%_80%_at_50%_42%,#000_18%,transparent_86%)]
+                       [mask-image:radial-gradient(48%_80%_at_50%_42%,#000_18%,transparent_86%)]"
           />
         </motion.div>
 
