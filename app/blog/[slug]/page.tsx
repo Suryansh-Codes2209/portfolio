@@ -19,7 +19,6 @@ export function generateMetadata({ params }: Props): Metadata {
   if (!post) return {};
 
   const url = `https://suryansh.work/blog/${post.slug}`;
-  const image = post.image ?? "/og.png";
   return {
     title: post.title,
     description: post.description,
@@ -33,14 +32,12 @@ export function generateMetadata({ params }: Props): Metadata {
       publishedTime: new Date(post.date).toISOString(),
       authors: ["Suryansh Chaudhary"],
       tags: post.tags,
-      images: [image],
     },
     twitter: {
       card: "summary_large_image",
       title: post.title,
       description: post.description,
       creator: "@Suryansh_2001",
-      images: [image],
     },
   };
 }
