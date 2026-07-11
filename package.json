@@ -9,6 +9,9 @@
     "fmt": "pnpm rome check . --apply-unsafe && pnpm rome format . --write"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.110.2",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.38.0",
     "contentlayer": "npm:contentlayer2@^0.5.8",
     "framer-motion": "^10.18.0",
     "lucide-react": "^0.469.0",
@@ -22,6 +25,7 @@
     "rehype-pretty-code": "^0.14.1",
     "rehype-slug": "^6.0.0",
     "remark-gfm": "^4.0.1",
+    "resend": "^6.17.2",
     "typescript": "^5.7.3"
   },
   "devDependencies": {
