@@ -26,8 +26,11 @@ template — never put real secrets in it.
      unsubscribe / post links in emails — must be the real domain, not localhost).
    - `LIKE_SALT` and `CRON_SECRET`: any long random strings.
 2. Push the branch and open a PR, or merge to `main`. Vercel builds automatically.
-3. `vercel.json` registers a Cron hitting `/api/notify` every 30 min. Vercel sends
-   `Authorization: Bearer $CRON_SECRET` automatically — no extra wiring.
+3. `vercel.json` registers a Cron hitting `/api/notify` **once a day** (09:00 UTC).
+   Vercel's Hobby plan only allows daily crons, so new posts are announced within
+   ~24h. Vercel sends `Authorization: Bearer $CRON_SECRET` automatically.
+   To announce a post immediately after publishing, hit the manual trigger:
+   `GET https://suryansh.work/api/notify?secret=$CRON_SECRET`.
 
 ## How new-post notifications work
 
