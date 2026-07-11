@@ -3,6 +3,8 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useMDXComponent } from "next-contentlayer/hooks";
+import { Callout } from "./blog/callout";
+import { Pre } from "./blog/copy-code";
 
 function clsx(...args: any) {
 	return args.filter(Boolean).join(" ");
@@ -73,7 +75,10 @@ const components = {
 	),
 	p: ({ className, ...props }) => (
 		<p
-			className={clsx("leading-7 text-fg-muted [&:not(:first-child)]:mt-6", className)}
+			className={clsx(
+				"text-[1.05rem] leading-[1.8] text-fg-muted [&:not(:first-child)]:mt-6",
+				className,
+			)}
 			{...props}
 		/>
 	),
@@ -145,25 +150,12 @@ const components = {
 			{...props}
 		/>
 	),
-	pre: ({ className, ...props }) => (
-		<pre
-			className={clsx(
-				"mt-6 mb-4 overflow-x-auto rounded-lg border border-line bg-surface-2 py-4 font-mono text-sm",
-				className,
-			)}
-			{...props}
-		/>
-	),
+	pre: Pre,
 	code: ({ className, ...props }) => (
-		<code
-			className={clsx(
-				"relative rounded bg-surface-2 py-[0.2rem] px-[0.3rem] font-mono text-sm text-accent-text",
-				className,
-			)}
-			{...props}
-		/>
+		<code className={clsx("font-mono", className)} {...props} />
 	),
 	Image,
+	Callout,
 };
 
 interface MdxProps {

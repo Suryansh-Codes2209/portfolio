@@ -1,13 +1,18 @@
-[data-rehype-pretty-code-fragment] code {
+  /* Code blocks are a consistent dark surface in both light and dark themes, so
+     the fixed github-dark syntax tokens are always legible. */
+  .mdx pre {
+    background: #0f0d12 !important;
+  }
+  [data-rehype-pretty-code-figure] code {
     @apply grid min-w-full break-words rounded-none border-0 bg-transparent p-0 text-sm;
-    color: var(--fg);
+    color: #e6edf3;
     counter-reset: line;
     box-decoration-break: clone;
   }
-  [data-rehype-pretty-code-fragment] .line {
+  [data-rehype-pretty-code-figure] .line {
     @apply px-4 py-1;
   }
-  [data-rehype-pretty-code-fragment] [data-line-numbers] > .line::before {
+  [data-rehype-pretty-code-figure] [data-line-numbers] > .line::before {
     counter-increment: line;
     content: counter(line);
     display: inline-block;
@@ -16,13 +21,13 @@
     text-align: right;
     color: var(--fg-faint);
   }
-  [data-rehype-pretty-code-fragment] .line--highlighted {
+  [data-rehype-pretty-code-figure] .line--highlighted {
     @apply bg-accent-soft;
   }
-  [data-rehype-pretty-code-fragment] .line-highlighted span {
+  [data-rehype-pretty-code-figure] .line-highlighted span {
     @apply relative;
   }
-  [data-rehype-pretty-code-fragment] .word--highlighted {
+  [data-rehype-pretty-code-figure] .word--highlighted {
     @apply rounded-md bg-accent-soft p-1;
   }
   [data-rehype-pretty-code-title] {
@@ -30,4 +35,20 @@
   }
   [data-rehype-pretty-code-title] + pre {
     @apply mt-0;
+  }
+
+  /* Inline code chip — scoped so it never touches code inside <pre> blocks. */
+  .mdx :not(pre) > code {
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--accent-text);
+    padding: 0.12rem 0.35rem;
+    border-radius: 0.35rem;
+    font-size: 0.85em;
+    white-space: nowrap;
+  }
+
+  /* Lead-in first paragraph: slightly larger, eases the reader in. */
+  .mdx > p:first-of-type {
+    @apply text-[1.15rem] leading-relaxed text-fg;
   }

@@ -1,9 +1,11 @@
 "use client";
 
 import { allBlogs } from "contentlayer/generated";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Clock } from "lucide-react";
 import Link from "next/link";
+import { useMemo, useState } from "react";
+import { SubscribeForm } from "../components/blog/subscribe-form";
 import { ThemeToggle } from "../components/theme-toggle";
 
 const fadeUp = (delay = 0) => ({
@@ -17,12 +19,23 @@ const published = allBlogs
   .filter((p) => p.published)
   .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+const allTags = Array.from(new Set(published.flatMap((p) => p.tags ?? []))).sort();
+
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 export default function BlogPage() {
+  const [activeTag, setActiveTag] = useState<string>("All");
+
   const [featured, ...rest] = published;
+
+  const filtered = useMemo(() => {
+    if (activeTag === "All") return rest;
+    return published.filter((p) => (p.tags ?? []).includes(activeTag));
+  }, [activeTag, rest]);
+
+  const showFeatured = activeTag === "All" && featured;
 
   return (
     <div className="bg-bg text-fg min-h-screen">
@@ -53,7 +66,7 @@ export default function BlogPage() {
         <motion.h1 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display mb-3 text-fg">
           Build logs
         </motion.h1>
-        <motion.p {...fadeUp(0.08)} className="text-sm text-fg-muted mb-12 max-w-md">
+        <motion.p {...fadeUp(0.08)} className="text-sm text-fg-muted mb-8 max-w-md">
           Build logs from shipping MacGet and AI systems in public — the engineering, the trade-offs, and what
           broke along the way.
         </motion.p>
@@ -62,7 +75,31 @@ export default function BlogPage() {
           <p className="text-sm text-fg-subtle">No posts yet — check back soon.</p>
         )}
 
-        {featured && (
+        {/* tag filter */}
+        {allTags.length > 0 && (
+          <motion.div {...fadeUp(0.1)} className="mb-10 flex flex-wrap gap-2">
+            {["All", ...allTags].map((tag) => {
+              const active = tag === activeTag;
+              return (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => setActiveTag(tag)}
+                  className={`rounded-full border px-3 py-1 text-xs transition-colors duration-150 ${
+                    active
+                      ? "border-accent/40 bg-accent-soft text-accent-text"
+                      : "border-line text-fg-subtle hover:border-line-strong hover:text-fg"
+                  }`}
+                >
+                  {tag}
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+
+        {/* featured */}
+        {showFeatured && (
           <motion.div {...fadeUp(0.1)} className="mb-14">
             <Link
               href={`/blog/${featured.slug}`}
@@ -84,7 +121,7 @@ export default function BlogPage() {
                     {tag}
                   </span>
                 ))}
-                <span className="flex items-center gap-1 text-[11px] text-fg-subtle">
+                <span className="flex items-center gap-1 font-mono text-[11px] text-fg-subtle">
                   {formatDate(featured.date)}
                   {featured.readingTime ? ` · ${featured.readingTime} min read` : ""}
                 </span>
@@ -94,10 +131,19 @@ export default function BlogPage() {
           </motion.div>
         )}
 
-        {rest.length > 0 && (
-          <div className="border-t border-line divide-y divide-line">
-            {rest.map((post, i) => (
-              <motion.div key={post.slug} {...fadeUp(i * 0.05)}>
+        {/* list */}
+        <div className="border-t border-line">
+          <AnimatePresence mode="popLayout" initial={false}>
+            {filtered.map((post) => (
+              <motion.div
+                key={post.slug}
+                layout
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="border-b border-line"
+              >
                 <Link
                   href={`/blog/${post.slug}`}
                   className="group flex flex-col sm:flex-row sm:items-start justify-between gap-3 py-5 sm:py-6 transition-transform duration-200 hover:-translate-y-0.5"
@@ -123,9 +169,9 @@ export default function BlogPage() {
                     )}
                   </div>
                   <div className="flex shrink-0 items-center gap-2 sm:flex-col sm:items-end sm:gap-1.5">
-                    <span className="text-[11px] text-fg-subtle">{formatDate(post.date)}</span>
+                    <span className="font-mono text-[11px] text-fg-subtle">{formatDate(post.date)}</span>
                     {post.readingTime && (
-                      <span className="flex items-center gap-1 text-[11px] text-fg-faint">
+                      <span className="flex items-center gap-1 font-mono text-[11px] text-fg-faint">
                         <Clock className="w-3 h-3" />
                         {post.readingTime} min read
                       </span>
@@ -135,8 +181,17 @@ export default function BlogPage() {
                 </Link>
               </motion.div>
             ))}
-          </div>
+          </AnimatePresence>
+        </div>
+
+        {filtered.length === 0 && published.length > 0 && (
+          <p className="py-8 text-sm text-fg-subtle">No posts tagged “{activeTag}”.</p>
         )}
+
+        {/* subscribe CTA */}
+        <div className="mt-16">
+          <SubscribeForm />
+        </div>
       </div>
     </div>
   );
