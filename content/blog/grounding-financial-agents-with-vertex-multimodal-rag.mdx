@@ -1,0 +1,88 @@
+---
+published: true
+title: "Agentic RAG for financial research: grounding agents on Vertex AI's multimodal RAG Engine"
+description: "LangGraph runs the control plane; Vertex AI's managed multimodal RAG Engine runs the data plane. How I got retrieval quality and groundedness where I needed it — because in financial filings, the number lives in the chart, not the paragraph."
+date: "2026-07-12"
+tags: ["agentic-rag", "langgraph", "vertex-ai", "rag", "langchain"]
+readingTime: 7
+---
+
+The number you need is almost never in the paragraph. It's in a bar chart on page 34, a footnote to a table, or a line item in a cash-flow statement that got flattened into mush the moment a text-only parser touched the PDF. That's the core problem with building research agents over financial documents: the corpus is **multimodal**, and pretending it's plain text is how you ship an agent that confidently cites the wrong revenue figure.
+
+The fix isn't a cleverer prompt — it's **agentic RAG** done with discipline: an agent that plans, retrieves, checks its own evidence, and only then answers. I build these with LangChain and LangGraph for orchestration — but I stopped building the retrieval layer myself. I hand ingestion and retrieval to **Vertex AI's RAG Engine** on GCP. Here's why, and what it cost me to get retrieval quality and groundedness where I needed them.
+
+## The split: LangGraph is the control plane, Vertex is the data plane
+
+I've [written before](/blog/how-i-architect-langgraph-agents) about treating an agent as a state machine — explicit state, small nodes, guarded loops. That still holds. What changed is where the *evidence* comes from.
+
+The division of labor I settled on — a clean **control-plane / data-plane** split:
+
+- **LangGraph** is the control plane: plan → retrieve → critique → synthesize, with a typed state object and hard loop guards.
+- **LangChain** owns the model plumbing — prompts, structured output, the tool interface.
+- **Vertex AI RAG Engine** is the data plane: it parses the PDFs (including charts and tables), chunks them, embeds them, and serves grounded results with citations.
+
+The decision that mattered: **I did not want to own the ingestion pipeline.** Parsing a 200-page filing with embedded charts, merged table cells, and scanned exhibits into clean, retrievable chunks is its own multi-month project. Vertex's managed multimodal ingestion does that layout-aware parsing for me, so my effort goes into the agent, not into rebuilding a document parser I'd only ever half-finish.
+
+## Ingestion is one call, not a pipeline
+
+The whole reason to reach for the managed engine is that corpus setup collapses to a few calls instead of a parsing service:
+
+```python
+from vertexai.preview import rag
+
+corpus = rag.create_corpus(display_name="filings-2026")
+
+rag.import_files(
+    corpus.name,
+    paths=["gs://research-corpus/filings/"],   # PDFs with charts + tables
+    chunk_size=512,
+    chunk_overlap=100,
+)
+```
+
+No OCR wiring, no table-extraction heuristics, no embedding job to babysit. It ingests the bucket and gives me a corpus I can query.
+
+## Retrieval is just a node
+
+Inside the graph, retrieval is a single boring node. It queries the corpus and writes the results — with their source citations — into the agent's state, so every downstream claim is auditable:
+
+```python
+def retrieve_node(state: AgentState) -> dict:
+    response = rag.retrieval_query(
+        rag_resources=[rag.RagResource(rag_corpus=CORPUS)],
+        text=state["query"],
+        similarity_top_k=8,
+        vector_distance_threshold=0.5,
+    )
+    chunks = [
+        {"text": c.text, "source": c.source_uri}
+        for c in response.contexts.contexts
+    ]
+    return {"evidence": chunks}   # accumulates into typed state
+```
+
+That's the clean part. The synthesize node then runs under the usual constraint — *answer only from the evidence below; if it isn't there, say so* — and carries the citations through to the final report.
+
+## What broke: retrieval quality on multimodal
+
+Managed ingestion gets you a corpus fast. It does **not** hand you good answers for free. Retrieval quality was the entire fight, and it broke in ways text-only RAG never does:
+
+- **Tables got sliced across chunks.** A fixed chunk boundary would cut a table so a row's label landed in one chunk and its value in another. The model would then confidently pair the wrong label with the wrong number. Tuning `chunk_size` and overlap helped at the margins, but the real fix was **layout-aware parsing** — using the Document AI Layout Parser so tables and their headers stay intact as a unit before they're embedded, instead of letting a naive splitter cut through them.
+- **Charts came back as captions.** Retrieval would surface the text *around* a chart — "Figure 4: quarterly revenue" — without the values the chart encodes. If the datapoint only exists visually, a caption match looks relevant and answers nothing.
+- **Top-k was a tradeoff, not a setting.** Low `similarity_top_k` missed the one chunk with the real number; high top-k flooded the context with near-duplicate boilerplate and diluted the signal. I landed on retrieving wider, then adding a **critique node** that scores whether the evidence actually contains the answer before synthesis — and loops back to re-query (with a guard) if it doesn't.
+
+The pattern that saved me: **treat "did retrieval actually find the answer?" as an explicit, model-checked step**, not an assumption. That extra node caught most of the confident-but-wrong failures before they reached a report.
+
+## What I learned
+
+Buy the boring, hard, undifferentiated part; build the part that's actually yours. Layout-aware multimodal ingestion is boring and hard — perfect to buy. Deciding *when the agent has enough evidence to answer* is the actual product, and no managed service will do it for you.
+
+And measure retrieval on your worst documents, not your cleanest. A text-heavy quarterly summary makes any RAG stack look great. The scanned exhibit with a chart and a merged-cell table is where you find out whether it works.
+
+## What's next
+
+The teams winning at RAG right now built their **evaluation infrastructure first**, and I'm catching up on that. I'm building retrieval evals specifically for the table and chart cases — a small labeled set of "the answer is only in this figure" questions that scores both **retrieval quality** (did the right chunk show up?) and **groundedness** (did the answer actually use it?), so I can catch regressions when I tune chunking or swap models. If you've built agentic RAG over financial or scientific PDFs and found something that helped with chart-level retrieval, I'd genuinely like to hear it.
+
+---
+
+_This is a build log — I'm building these in public. Follow along on [X](https://x.com/Suryansh_2001) or grab [MacGet](/macget)._
