@@ -1,0 +1,76 @@
+---
+published: true
+title: "How we're architecting a financial AI analyst: a multi-agent research desk on LangGraph"
+description: "The system behind an AI that reads filings and answers like an analyst — specialized agents on LangGraph over a Vertex multimodal RAG data plane. What the architecture looks like, and the four things that broke on the way there."
+date: "2026-07-16"
+tags: ["financial-ai", "multi-agent", "langgraph", "agentic-rag", "build-in-public"]
+readingTime: 8
+---
+
+The demo is easy. Ask an LLM "what was the operating margin trend?" over a 10-K and it will say something fluent and confident. The problem is that in finance, *fluent and confident* is the failure mode. One wrong number and the analyst stops trusting the whole tool — and they're right to. Everything we've built for the financial AI analyst is a reaction to that single fact: the bar isn't a good answer, it's a *defensible* one.
+
+Here's how we're architecting it right now, and the four things that broke before it started to work.
+
+## The shape: a research desk, not a chatbot
+
+The instinct is to build one big agent with a huge toolbelt and hope the model figures it out. We tried that. It doesn't hold up once the questions get real — "compare gross margin across these three filings and tell me what's driving the divergence" is not one hop.
+
+So the analyst is structured like an actual research desk: **specialized agents, each with a narrow job, orchestrated by [LangGraph](/blog/how-i-architect-langgraph-agents).** A supervisor plans and routes; the specialists do the work:
+
+- a **fundamentals** agent that pulls and computes from the financial statements,
+- a **filings / disclosure** agent that reads the qualitative sections (MD&A, risk factors, footnotes),
+- a **news & sentiment** agent for the outside-the-filing context,
+- and a **synthesizer** that assembles a single grounded answer with citations back to the source.
+
+The reason for the split isn't elegance — it's **auditability**. When each agent has one job and one tool boundary, you can trace exactly which node produced which claim. In a domain with governance and "show me where you got that," a graph of small nodes gives you an audit trail by construction. One monolith agent gives you a vibe.
+
+LangGraph runs that control plane — explicit state, small nodes, deterministic edges where the routing shouldn't be up to the model. The retrieval lives on a separate data plane: **Vertex AI's managed multimodal RAG Engine**, which matters more than it sounds, because in a filing [the number lives in the chart, not the paragraph](/blog/grounding-financial-agents-with-vertex-multimodal-rag).
+
+That's the clean version. Here's what it cost.
+
+## What broke #1: it was almost never the model
+
+Early on, every bad answer felt like a reasoning failure, so I kept reaching for a bigger model. Wrong instinct. When I actually traced the failures, the overwhelming majority were **retrieval failures** — the right chunk never made it into context. The model reasoned fine over garbage.
+
+The worst offenders were exactly the things that matter most in a filing: **tables and charts.** A margin trend that only exists in a bar chart, a segment breakdown that only exists in a table — naive text chunking turns those into noise or drops them entirely. Moving to multimodal retrieval on the data plane fixed more "reasoning" bugs than any model swap ever did.
+
+The lesson I keep relearning: **in financial RAG, the gap between the tutorial and production is almost entirely retrieval.** Teams who've shipped this well talk in 12–18 month build cycles, and it's not because the prompting is hard.
+
+## What broke #2: more tools made it dumber
+
+The multi-agent split created a temptation to give each agent a rich toolbelt. Every tool I added felt like a capability. In aggregate they made the agent *worse* — it would pick the wrong tool, chain them in the wrong order, or burn a step second-guessing which one to call.
+
+There's a real, non-obvious ceiling here: past a handful of tools per agent, the model's ability to *chain* them reliably falls off a cliff. The fix was subtraction. Each specialist now gets the smallest toolbelt that lets it do its one job, and anything ambiguous gets pushed up to the supervisor's routing instead of being resolved by the model mid-task. Fewer tools, sharper agents.
+
+## What broke #3: being right isn't enough — you have to *prove* it
+
+This is the finance-specific one. A general assistant can be approximately right. A financial analyst that's approximately right on a number is worse than useless, because the person reading it can't tell which numbers to trust.
+
+Two things came out of this:
+
+- **Numbers get computed, not generated.** Where I can, ratios and deltas are computed in a tool from retrieved raw values rather than produced by the model. The model orchestrates; it doesn't do the arithmetic that decisions ride on.
+- **Every claim carries provenance.** The synthesizer's job isn't just to write the answer — it's to attach the citation, so the analyst can click through to the exact table or sentence. An answer without a source doesn't ship.
+
+And because untrusted filings and news flow straight into the context, the whole thing sits behind [hard gates and soft gates](/blog/langgraph-prompt-injection-hard-soft-gates) — deterministic checks plus an LLM-as-judge — so a "disregard previous instructions" buried in a document footnote doesn't get to steer the desk.
+
+## What broke #4: the honest version is slow and expensive
+
+All of the above — multi-agent routing, multimodal retrieval, compute-then-answer, guardrails on the edges — adds hops. A real multi-step run is slower and pricier than the single-shot demo, and that's the actual cost of a defensible answer.
+
+We haven't fully solved this; we're managing it. Prompt caching on the stable context, routing cheaper models to the narrow sub-tasks and saving the strong model for synthesis, and ruthlessly cutting steps that don't change the answer. The framing that helps: [treat the model as an unreliable, billable network call](/blog/system-design-notes-for-ai-products), and every architecture decision follows from that.
+
+## What I've actually learned so far
+
+- **The architecture is a trust argument.** Multi-agent, small tools, computed numbers, citations — none of it is for show. It exists so that when the analyst asks "where did this come from," there's an answer.
+- **Retrieval is the product.** The model is nearly interchangeable; the data plane is not. If I could only invest in one thing, it's evals for table- and chart-level retrieval.
+- **Subtract to make it smarter.** Every capability I removed made the agent more reliable. That's counterintuitive until you watch a model fumble a nine-tool decision tree.
+
+## What's next
+
+The gap I'm closing now is **evaluation**. Right now I can feel when the desk gets better; I can't yet *score* it. I'm building a labeled eval set of "the answer is only in this figure" and "this number must be exact" cases, run per-agent, so I can catch a retrieval or grounding regression before an analyst does. Evals first is the thing every team that's won at this did early, and I'm catching up.
+
+If you've built a multi-agent analyst — financial or otherwise — and found something that kept the numbers honest or the tool-chaining sane, I'd genuinely like to hear it.
+
+---
+
+_This is a build log — I'm building these in public. Follow along on [X](https://x.com/Suryansh_2001) or grab [MacGet](/macget)._
