@@ -1,0 +1,87 @@
+---
+title: "Run a build-log blog on your portfolio for $0: Next.js, Supabase, Redis, and Resend on free tiers"
+description: "How I added a full build-log blog to my portfolio — likes, email subscribers, and new-post notifications — without paying for anything. The stack, the code, and the one Vercel Hobby limit that broke my cron."
+date: "2026-07-22"
+tags: ["nextjs", "build-in-public", "supabase", "resend", "free-tier"]
+published: true
+readingTime: 6
+---
+
+Writing in public only works if publishing is frictionless and free. The moment your blog needs a paid CMS, a mailing-list SaaS, or a database bill, you'll find reasons not to post. So when I upgraded the build-log on this site, I set one hard constraint: **$0/month**, running entirely on free tiers — and it had to feel like a real blog, not a folder of markdown. Likes, email subscribers, new-post notifications, the works.
+
+Here's the whole stack, what each free tier covers, and the one limit that actually broke something.
+
+## The $0 stack for a portfolio build-log
+
+- **Content: MDX + Contentlayer.** Posts are `.mdx` files in `content/blog/`, type-checked at build time. No CMS, no admin panel — a new post is a git commit. Free because it's just your repo.
+- **Hosting: Vercel Hobby.** The Next.js app, the API routes, and (with one caveat below) a cron job.
+- **Likes: Redis.** A hosted Redis free tier, talked to over TCP with `ioredis` from Node runtime routes.
+- **Subscribers: Supabase Postgres.** One `subscribers` table through the connection pooler.
+- **Email: Resend.** Confirmation emails and new-post notifications from an API route.
+
+The theme across all of it: every integration is optional at runtime. If an env var is missing, the feature degrades instead of crashing:
+
+```ts
+export function getRedis(): Redis | null {
+  if (globalForRedis.redis !== undefined) return globalForRedis.redis;
+  const url = process.env.REDIS_URL;
+  if (!url) {
+    globalForRedis.redis = null;
+    return null; // likes simply disable
+  }
+  // ...
+}
+```
+
+That one pattern means anyone can clone the repo and run it with zero services configured. Likes hide, the subscribe form says "not configured yet," and the blog still ships.
+
+## Anonymous likes without accounts (or storing IPs)
+
+I didn't want auth just for a like button. Instead each visitor gets a coarse fingerprint — a SHA-256 of IP + user-agent + a server salt, truncated. The raw IP is never stored:
+
+```ts
+return createHash("sha256").update(`${ip}|${ua}|${salt}`).digest("hex").slice(0, 24);
+```
+
+One like per visitor is enforced with Redis `SET NX` — the set only succeeds the first time, so the increment is idempotent:
+
+```ts
+const first = await redis.set(dedupKey(slug, v), "1", "EX", 60 * 60 * 24 * 365, "NX");
+if (first === "OK") count = await redis.incr(countKey(slug));
+```
+
+A fixed-window rate limit (20 actions/minute per visitor) sits in front, also just `INCR` + `EXPIRE`. Shared office NATs collapse into one visitor, and that's fine — the right bar for anonymous likes is "honest enough," not "perfect."
+
+## Email subscribers: double opt-in on Supabase + Resend
+
+Subscribers live in one Postgres table with a `status` column (`pending` → `confirmed` → `unsubscribed`) and a UUID token that doubles as the confirm/unsubscribe link. The subscribe route upserts, then sends a confirmation email through Resend — **double opt-in**, because a list of unverified emails is a liability, not an asset.
+
+Two Supabase-specific details cost me time:
+
+- `prepare: false` on the postgres.js client, because the transaction pooler doesn't support prepared statements.
+- `max: 1` connections per serverless instance, so a burst of invocations doesn't exhaust the pooler.
+
+## New-post notifications: a cron, a Redis set, and a seed run
+
+Notifying subscribers is a daily cron hitting `/api/notify`. It diffs published posts against a Redis set of already-announced slugs and emails only the fresh ones. The detail I'm most glad I thought of: **on the very first run it seeds the set with every existing post and sends nothing.** Without that, deploying the feature would have blasted the whole back-catalog to every subscriber.
+
+## What broke: Vercel Hobby crons run once a day, period
+
+I originally scheduled the notify cron every 30 minutes. Deploys started failing — **Vercel's Hobby plan only allows cron expressions that run at most once per day**, and it rejects anything more frequent at deploy time. The fix was a one-line change to `0 9 * * *`, plus accepting the fine print: Hobby crons fire *sometime within* the scheduled hour, not on the dot, and schedules are UTC only.
+
+For a blog notification that's completely fine — nobody needs a "new post" email within 30 minutes. But it's the kind of limit you want to know before you design around freshness. Free tiers are a design constraint, not just a budget.
+
+## What I learned
+
+- **Degrade, don't gate.** Making every service optional (`null` clients, disabled features) kept the repo clonable and the deploys fearless.
+- **Idempotency is cheaper than auth.** `SET NX` gave me one-like-per-visitor with no accounts, no sessions, no GDPR-shaped IP storage.
+- **Seed before you notify.** Any "announce what's new" job needs a first-run that marks everything as old.
+- **Read the free-tier fine print first.** The Hobby cron limit was documented; I just hadn't looked until a deploy failed.
+
+## What's next
+
+Per-post view counts are the obvious next Redis key, and I want a `/api/notify` dry-run mode so I can preview exactly who gets emailed before a post goes out. If you build a version of this — or know a cleaner free-tier trick for the notification cron — tell me.
+
+---
+
+_This is a build log — I'm building these in public. Follow along on [X](https://x.com/Suryansh_2001) or grab [MacGet](/macget)._
