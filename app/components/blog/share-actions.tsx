@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Link2 } from "lucide-react";
-import { SiX } from "react-icons/si";
+import { Check, Link2, Linkedin } from "lucide-react";
+import { SiDevdotto, SiX } from "react-icons/si";
 
 /**
- * Minimal, tasteful share row: "Share on X" intent link + "Copy link" with a
- * copied-confirmation. `layout` controls whether it stacks (side rail) or sits
- * inline (footer).
+ * Minimal, tasteful share row: share intent links (X, dev.to prefilled draft,
+ * LinkedIn) + "Copy link" with a copied-confirmation. `layout` controls whether
+ * it stacks (side rail) or sits inline (footer).
  */
 export function ShareActions({
   title,
@@ -34,6 +34,12 @@ export function ShareActions({
     title,
   )}&url=${encodeURIComponent(url)}`;
 
+  // dev.to has no share intent — this prefills its new-post editor with a
+  // link-post pointing back at the article.
+  const devto = `https://dev.to/new?prefill=${encodeURIComponent(`## ${title}\n\n${url}`)}`;
+
+  const linkedin = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+
   const btn =
     "flex items-center gap-1.5 rounded-lg border border-line px-3 py-1.5 text-xs text-fg-subtle transition-colors duration-150 hover:border-line-strong hover:text-fg";
 
@@ -42,6 +48,14 @@ export function ShareActions({
       <a href={tweet} target="_blank" rel="noopener noreferrer" className={btn}>
         <SiX className="h-3 w-3" />
         Share
+      </a>
+      <a href={devto} target="_blank" rel="noopener noreferrer" className={btn}>
+        <SiDevdotto className="h-3.5 w-3.5" />
+        dev.to
+      </a>
+      <a href={linkedin} target="_blank" rel="noopener noreferrer" className={btn}>
+        <Linkedin className="h-3.5 w-3.5" />
+        LinkedIn
       </a>
       <button type="button" onClick={copyLink} className={btn} aria-label="Copy link">
         {copied ? (
