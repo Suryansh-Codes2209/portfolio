@@ -342,12 +342,12 @@ function StarsLayer() {
 function CloudsLayer() {
   const clouds = useMemo(
     () =>
-      Array.from({ length: 5 }, (_, i) => ({
-        top: 4 + Math.random() * 34,
-        left: -10 + Math.random() * 90,
-        w: 32 + Math.random() * 28,
-        h: 10 + Math.random() * 8,
-        op: 0.18 + Math.random() * 0.14,
+      Array.from({ length: 6 }, (_, i) => ({
+        top: 3 + Math.random() * 36,
+        left: -12 + Math.random() * 94,
+        w: 36 + Math.random() * 30,
+        h: 11 + Math.random() * 9,
+        op: 0.38 + Math.random() * 0.22,
         dur: 26 + Math.random() * 20,
         delay: -(i * 6),
       })),
@@ -360,6 +360,15 @@ function CloudsLayer() {
       animate={{ opacity: 1 }}
       transition={{ duration: 1.6 }}
     >
+      {/* Ambient overcast wash — lifts the sky off pure black so clouds read. */}
+      <span
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(to bottom, rgba(148, 163, 190, 0.16), rgba(148, 163, 190, 0.05) 45%, transparent 72%)",
+        }}
+      />
       {clouds.map((c, i) => (
         <span
           key={i}
@@ -371,9 +380,9 @@ function CloudsLayer() {
             height: `${c.h}vh`,
             borderRadius: "50%",
             background:
-              "radial-gradient(ellipse at center, rgba(205, 215, 235, 1), transparent 70%)",
+              "radial-gradient(ellipse at center, rgba(222, 230, 245, 1), rgba(222, 230, 245, 0.5) 45%, transparent 72%)",
             opacity: c.op,
-            filter: "blur(22px)",
+            filter: "blur(16px)",
             animation: `intro-cloud-drift ${c.dur}s ease-in-out ${c.delay}s infinite alternate`,
           }}
         />
@@ -390,15 +399,29 @@ function SunLayer() {
       animate={{ opacity: 1 }}
       transition={{ duration: 1.8 }}
     >
+      {/* Full-viewport glow — gradient fades out well inside the box, so no
+          hard clip line where the span ends. */}
       <span
         style={{
           position: "absolute",
-          top: "-18vh",
-          right: "-8vw",
-          width: "55vw",
-          height: "55vh",
+          inset: 0,
           background:
-            "radial-gradient(circle at 70% 25%, rgba(253, 200, 120, 0.38), rgba(217, 119, 87, 0.14) 45%, transparent 70%)",
+            "radial-gradient(circle at 82% 12%, rgba(253, 205, 125, 0.42), rgba(217, 119, 87, 0.16) 38%, transparent 62%)",
+          animation: "intro-sun-pulse 5s ease-in-out infinite",
+        }}
+      />
+      {/* The sun itself — an unmistakable disc, not just haze. */}
+      <span
+        style={{
+          position: "absolute",
+          top: "9vh",
+          right: "12vw",
+          width: "13vmin",
+          height: "13vmin",
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(255, 226, 160, 0.95), rgba(253, 186, 116, 0.45) 55%, transparent 78%)",
+          filter: "blur(3px)",
           animation: "intro-sun-pulse 5s ease-in-out infinite",
         }}
       />
@@ -419,27 +442,24 @@ function SunsetLayer() {
       <span
         style={{
           position: "absolute",
-          bottom: "-22vh",
-          left: "-10vw",
-          width: "120vw",
-          height: "58vh",
+          inset: 0,
           background:
-            "radial-gradient(ellipse at 50% 100%, rgba(251, 146, 60, 0.30), rgba(220, 80, 90, 0.13) 45%, transparent 72%)",
+            "radial-gradient(ellipse 90vw 65vh at 50% 100%, rgba(251, 146, 60, 0.5), rgba(220, 80, 90, 0.22) 45%, transparent 75%)",
           animation: "intro-sun-pulse 6s ease-in-out infinite",
         }}
       />
       <span
         style={{
           position: "absolute",
-          bottom: "6vh",
+          bottom: "7vh",
           left: "50%",
-          width: "9vmin",
-          height: "9vmin",
-          marginLeft: "-4.5vmin",
+          width: "12vmin",
+          height: "12vmin",
+          marginLeft: "-6vmin",
           borderRadius: "50%",
           background:
-            "radial-gradient(circle, rgba(253, 186, 116, 0.5), rgba(251, 146, 60, 0.18) 55%, transparent 75%)",
-          filter: "blur(2px)",
+            "radial-gradient(circle, rgba(255, 210, 140, 0.85), rgba(251, 146, 60, 0.35) 55%, transparent 78%)",
+          filter: "blur(3px)",
         }}
       />
     </motion.div>

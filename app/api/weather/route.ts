@@ -34,9 +34,16 @@ const UNAVAILABLE: WeatherPayload = { available: false };
 // degrade to { available: false } so the intro falls back to time-of-day tint.
 export async function GET(request: NextRequest) {
   try {
-    const lat = request.headers.get("x-vercel-ip-latitude");
-    const lon = request.headers.get("x-vercel-ip-longitude");
-    const cityRaw = request.headers.get("x-vercel-ip-city");
+    let lat = request.headers.get("x-vercel-ip-latitude");
+    let lon = request.headers.get("x-vercel-ip-longitude");
+    let cityRaw = request.headers.get("x-vercel-ip-city");
+    // Local dev never receives Vercel geo headers, which made the weather
+    // backdrop untestable with `pnpm dev` — fall back to Bengaluru there.
+    if ((!lat || !lon) && process.env.NODE_ENV === "development") {
+      lat = "12.97";
+      lon = "77.59";
+      cityRaw = cityRaw ?? "bengaluru";
+    }
     if (!lat || !lon) return NextResponse.json(UNAVAILABLE);
 
     const url =
