@@ -36,7 +36,7 @@ const GREETINGS: Greeting[] = [
   { lang: "sv", text: "Hej" },
 ];
 
-const WORD_MS = 1050;
+const WORD_MS = 1500;
 const SCRAMBLE_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789#$%&*+";
 
 // Visitor's language plays first; 4–5 shuffled others fill the middle; Hello closes.
