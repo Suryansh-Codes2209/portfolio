@@ -227,8 +227,8 @@ function RainLayer() {
     () =>
       Array.from({ length: 55 }, () => ({
         left: Math.random() * 100,
-        delay: Math.random() * 2,
-        dur: 0.7 + Math.random() * 0.6,
+        delay: Math.random() * 3,
+        dur: 1.8 + Math.random() * 1.2,
         h: 28 + Math.random() * 42,
         op: 0.08 + Math.random() * 0.18,
       })),
@@ -528,7 +528,7 @@ export function HeroIntro() {
 
           {/* Edge diagnostics — the "device scan" */}
           <motion.div
-            className="pointer-events-none absolute left-5 top-5 font-mono text-[10px] tracking-wider text-zinc-600 sm:text-[11px]"
+            className="pointer-events-none absolute left-5 top-5 font-mono text-[10px] tracking-wider text-sky-300/80 sm:text-[11px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.8 }}
@@ -537,7 +537,7 @@ export function HeroIntro() {
           </motion.div>
 
           <motion.div
-            className="pointer-events-none absolute right-5 top-5 text-right font-mono text-[10px] tracking-wider text-zinc-600 sm:text-[11px]"
+            className="pointer-events-none absolute right-5 top-5 text-right font-mono text-[10px] tracking-wider text-emerald-300/80 sm:text-[11px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.75, duration: 0.8 }}
@@ -547,7 +547,7 @@ export function HeroIntro() {
           </motion.div>
 
           <motion.div
-            className="pointer-events-none absolute bottom-5 left-5 font-mono text-[10px] tracking-wider text-zinc-600 sm:text-[11px]"
+            className="pointer-events-none absolute bottom-5 left-5 font-mono text-[10px] tracking-wider text-violet-300/80 sm:text-[11px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.9, duration: 0.8 }}
@@ -560,7 +560,7 @@ export function HeroIntro() {
               </div>
             )}
             {weather?.available && (
-              <div className="text-zinc-500">
+              <div className="text-amber-200/80">
                 {[weather.city, weather.tempC !== undefined ? `${weather.tempC}°C` : null, weather.condition]
                   .filter(Boolean)
                   .join(" · ")}
@@ -569,7 +569,7 @@ export function HeroIntro() {
           </motion.div>
 
           <motion.div
-            className="pointer-events-none absolute bottom-5 right-5 text-right font-mono text-[10px] tracking-wider text-claude-400/80 sm:text-[11px]"
+            className="pointer-events-none absolute bottom-5 right-5 text-right font-mono text-[10px] tracking-wider text-claude-300 sm:text-[11px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.45, duration: 0.8 }}
@@ -578,7 +578,7 @@ export function HeroIntro() {
           </motion.div>
 
           <motion.div
-            className="pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 font-mono text-[9px] uppercase tracking-[0.3em] text-zinc-700"
+            className="pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 font-mono text-[9px] uppercase tracking-[0.3em] text-zinc-500"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.4, duration: 1 }}
