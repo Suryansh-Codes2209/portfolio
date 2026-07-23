@@ -526,7 +526,7 @@ export function HeroIntro() {
           {showStars && <StarsLayer />}
 
           {/* Greeting */}
-          <div className="relative px-6 text-center font-display text-5xl leading-[1.4] sm:text-7xl sm:leading-[1.4]">
+          <div className="relative px-6 text-center font-display text-6xl leading-[1.4] sm:text-8xl sm:leading-[1.4]">
             <ScrambleWord key={wordIndex} word={sequence[wordIndex].text} shineDur={shineDur} />
           </div>
 
@@ -593,10 +593,10 @@ export function HeroIntro() {
           <style jsx global>{`
             @keyframes intro-shine {
               from {
-                background-position: 120% center;
+                background-position: 100% center;
               }
               to {
-                background-position: -20% center;
+                background-position: 0% center;
               }
             }
             @keyframes intro-fall {
