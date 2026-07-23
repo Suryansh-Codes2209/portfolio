@@ -406,6 +406,46 @@ function SunLayer() {
   );
 }
 
+// Golden-hour horizon glow — driven by the local clock, so it works even
+// without weather data. Suppressed during rain/snow.
+function SunsetLayer() {
+  return (
+    <motion.div
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 2 }}
+    >
+      <span
+        style={{
+          position: "absolute",
+          bottom: "-22vh",
+          left: "-10vw",
+          width: "120vw",
+          height: "58vh",
+          background:
+            "radial-gradient(ellipse at 50% 100%, rgba(251, 146, 60, 0.30), rgba(220, 80, 90, 0.13) 45%, transparent 72%)",
+          animation: "intro-sun-pulse 6s ease-in-out infinite",
+        }}
+      />
+      <span
+        style={{
+          position: "absolute",
+          bottom: "6vh",
+          left: "50%",
+          width: "9vmin",
+          height: "9vmin",
+          marginLeft: "-4.5vmin",
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(253, 186, 116, 0.5), rgba(251, 146, 60, 0.18) 55%, transparent 75%)",
+          filter: "blur(2px)",
+        }}
+      />
+    </motion.div>
+  );
+}
+
 function ScrambleWord({ word, shineDur }: { word: string; shineDur: number }) {
   const units = useMemo(() => splitUnits(word), [word]);
   const [display, setDisplay] = useState<string[]>(() => units.map(() => " "));
@@ -570,6 +610,9 @@ export function HeroIntro() {
       : "measuring…";
 
   const showStars = weather?.kind === "clear" && weather?.isNight;
+  const hour = new Date().getHours();
+  const goldenHour = (hour >= 17 && hour < 20) || (hour >= 5 && hour < 8);
+  const showSunset = goldenHour && weather?.kind !== "rain" && weather?.kind !== "snow";
 
   return (
     <AnimatePresence>
@@ -591,7 +634,8 @@ export function HeroIntro() {
           {weather?.kind === "rain" && <RainLayer />}
           {weather?.kind === "snow" && <SnowLayer />}
           {weather?.kind === "cloudy" && <CloudsLayer />}
-          {weather?.kind === "clear" && !weather.isNight && <SunLayer />}
+          {weather?.kind === "clear" && !weather.isNight && !goldenHour && <SunLayer />}
+          {showSunset && <SunsetLayer />}
           {showStars && <StarsLayer />}
 
           {/* Greeting */}
