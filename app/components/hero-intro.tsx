@@ -345,9 +345,9 @@ function CloudsLayer() {
       Array.from({ length: 5 }, (_, i) => ({
         top: 4 + Math.random() * 34,
         left: -10 + Math.random() * 90,
-        w: 28 + Math.random() * 26,
-        h: 8 + Math.random() * 7,
-        op: 0.05 + Math.random() * 0.05,
+        w: 32 + Math.random() * 28,
+        h: 10 + Math.random() * 8,
+        op: 0.18 + Math.random() * 0.14,
         dur: 26 + Math.random() * 20,
         delay: -(i * 6),
       })),
@@ -371,9 +371,9 @@ function CloudsLayer() {
             height: `${c.h}vh`,
             borderRadius: "50%",
             background:
-              "radial-gradient(ellipse at center, rgba(198, 208, 228, 0.9), transparent 70%)",
+              "radial-gradient(ellipse at center, rgba(205, 215, 235, 1), transparent 70%)",
             opacity: c.op,
-            filter: "blur(28px)",
+            filter: "blur(22px)",
             animation: `intro-cloud-drift ${c.dur}s ease-in-out ${c.delay}s infinite alternate`,
           }}
         />
@@ -398,7 +398,7 @@ function SunLayer() {
           width: "55vw",
           height: "55vh",
           background:
-            "radial-gradient(circle at 70% 25%, rgba(253, 200, 120, 0.22), rgba(217, 119, 87, 0.08) 45%, transparent 70%)",
+            "radial-gradient(circle at 70% 25%, rgba(253, 200, 120, 0.38), rgba(217, 119, 87, 0.14) 45%, transparent 70%)",
           animation: "intro-sun-pulse 5s ease-in-out infinite",
         }}
       />
