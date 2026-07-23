@@ -405,6 +405,10 @@ function ScrambleWord({ word, shineDur }: { word: string; shineDur: number }) {
           style={{
             display: "inline-block",
             whiteSpace: "pre",
+            // Padding extends the background box so descenders/matras aren't
+            // clipped by background-clip: text; negative margin cancels the gap.
+            padding: "0.3em 0.04em",
+            margin: "0 -0.04em",
             backgroundImage: gradient,
             backgroundSize: "250% 100%",
             backgroundRepeat: "no-repeat",
@@ -522,7 +526,7 @@ export function HeroIntro() {
           {showStars && <StarsLayer />}
 
           {/* Greeting */}
-          <div className="relative px-6 text-center font-display text-5xl sm:text-7xl">
+          <div className="relative px-6 text-center font-display text-5xl leading-[1.4] sm:text-7xl sm:leading-[1.4]">
             <ScrambleWord key={wordIndex} word={sequence[wordIndex].text} shineDur={shineDur} />
           </div>
 
