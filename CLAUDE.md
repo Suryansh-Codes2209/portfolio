@@ -22,7 +22,7 @@ Next.js 14 personal portfolio site using the App Router.
 **Blog content — Contentlayer:** Blog posts are MDX files in `content/blog/` processed by `contentlayer.config.js` (uses the `contentlayer2` fork aliased as `contentlayer` for Next 14 compatibility). The `Blog` document type defines fields `published`, `title`, `description`, `date`, `tags`, `readingTime`. Only posts with `published: true` are listed. Imported as `allBlogs` from `"contentlayer/generated"`.
 
 **Routing:**
-- `/` — Single-page scroll site (hero, about, stack, projects, recommendations, blog, resume, contact). Includes the `HeroIntro` cinematic terminal intro (auto-types a build prompt, streams a fake build log, boom flash, then reveals the site).
+- `/` — Single-page scroll site (hero, about, stack, projects, recommendations, blog, resume, contact). Includes the `HeroIntro` "recognition" intro (Apple-style multilingual greeting — visitor's language first — plus live device diagnostics: real speed test, screen/OS/battery/FPS readouts, weather-aware backdrop, upward wipe reveal).
 - `/projects` — Grid listing of all projects from static data
 - `/blog` — Blog index
 - `/blog/[slug]` — MDX blog post
@@ -30,7 +30,7 @@ Next.js 14 personal portfolio site using the App Router.
 
 **Fonts:** Inter (Google), a local CalSans SemiBold, and JetBrains Mono, all loaded via `next/font`. CSS variables `--font-inter`, `--font-calsans` (mapped to Tailwind's `font-display`), and `--font-mono` (mapped to Tailwind's `font-mono`).
 
-**Hero intro:** The hero intro is a fast, skippable terminal sequence (`hero-intro.tsx`), silent — the boom is a visual flash only.
+**Hero intro:** `hero-intro.tsx` — ~4.5s skippable "recognition" sequence, once per session (`sessionStorage["recognition-intro-seen"]`), skipped under reduced motion. Cycles ~6 greetings from a 25-language pool (visitor's `navigator.language` first, Hello last; scramble-decode + shine sweep + cursor-magnetic glyphs). Live edge diagnostics read from the visitor's device; bottom-right runs a real speed test against `public/probe.bin` (measured Mbps also drives the shine speed). `app/api/weather/route.ts` (Vercel geo headers → Open-Meteo, never throws) feeds an additive rain/snow/stars backdrop layer over a time-of-day tint. Exits with an upward wipe. Design spec: `docs/superpowers/specs/2026-07-23-recognition-intro-design.md`.
 
 **Hero (proof-driven):** `hero.tsx` is a client component. It renders immediately with zero stats, then `useEffect`-fetches `/api/stats` and fills in GitHub stars / MacGet downloads once the response lands — there's no server-rendered stats path. `app/api/stats/route.ts` (`revalidate: 86400`) calls `getProofStats()` in `app/data/stats.ts`, which hits the GitHub API for the MacGet repo (stars, release download counts) and never throws — a failed/rate-limited fetch falls back to zeros so the route always returns JSON.
 
