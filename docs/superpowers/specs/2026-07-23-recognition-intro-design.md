@@ -37,11 +37,15 @@ All terminal internals (typed prompt, build log, spinner, boom flash) are remove
 ## Greeting cycle
 
 - Large centered word in `font-display` (CalSans; non-Latin scripts fall back to system fonts — acceptable).
-- Language list (12 entries): Hello (en), नमस्ते (hi), Hola (es), Bonjour (fr), こんにちは (ja),
-  안녕하세요 (ko), 你好 (zh), مرحبا (ar), Ciao (it), Olá (pt), Hallo (de), Привет (ru).
-- **Visitor's language first:** `navigator.language` primary subtag is matched against the list;
-  its greeting is moved to position 0. Unmatched → default order (Hello first).
-- ~6 words shown total at ~650ms each. Per word:
+- Language pool (25 entries): Hello (en), नमस्ते (hi), Hola (es), Bonjour (fr), こんにちは (ja),
+  안녕하세요 (ko), 你好 (zh), مرحبا (ar), Ciao (it), Olá (pt), Hallo (de), Привет (ru),
+  নমস্কার (bn), வணக்கம் (ta), నమస్కారం (te), ਸਤ ਸ੍ਰੀ ਅਕਾਲ (pa), નમસ્તે (gu), Merhaba (tr),
+  Γεια σας (el), שלום (he), สวัสดี (th), Xin chào (vi), Halo (id), Cześć (pl), Hej (sv).
+- **Visitor's language first:** `navigator.language` primary subtag is matched against the pool;
+  its greeting plays first. Unmatched → Hello first.
+- ~6 words shown per visit at ~650ms each: the visitor's greeting + 5 drawn from the pool
+  (shuffled), always ending on Hello if it hasn't appeared — so each visit shows a
+  different mix, and the pool stays large without lengthening the intro. Per word:
   - **Scramble-morph in:** glyphs decode from random characters into the word over ~250ms.
   - **Shine sweep:** a warm gradient highlight sweeps across the glyphs
     (background-clip technique from `shine-text.tsx`). Sweep duration maps to measured
