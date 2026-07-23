@@ -339,6 +339,73 @@ function StarsLayer() {
 
 /** One greeting word: glyphs scramble-decode in, a shine sweeps across them
  *  (speed mapped to measured Mbps), and each glyph repels from the cursor. */
+function CloudsLayer() {
+  const clouds = useMemo(
+    () =>
+      Array.from({ length: 5 }, (_, i) => ({
+        top: 4 + Math.random() * 34,
+        left: -10 + Math.random() * 90,
+        w: 28 + Math.random() * 26,
+        h: 8 + Math.random() * 7,
+        op: 0.05 + Math.random() * 0.05,
+        dur: 26 + Math.random() * 20,
+        delay: -(i * 6),
+      })),
+    [],
+  );
+  return (
+    <motion.div
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.6 }}
+    >
+      {clouds.map((c, i) => (
+        <span
+          key={i}
+          style={{
+            position: "absolute",
+            top: `${c.top}%`,
+            left: `${c.left}%`,
+            width: `${c.w}vw`,
+            height: `${c.h}vh`,
+            borderRadius: "50%",
+            background:
+              "radial-gradient(ellipse at center, rgba(198, 208, 228, 0.9), transparent 70%)",
+            opacity: c.op,
+            filter: "blur(28px)",
+            animation: `intro-cloud-drift ${c.dur}s ease-in-out ${c.delay}s infinite alternate`,
+          }}
+        />
+      ))}
+    </motion.div>
+  );
+}
+
+function SunLayer() {
+  return (
+    <motion.div
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.8 }}
+    >
+      <span
+        style={{
+          position: "absolute",
+          top: "-18vh",
+          right: "-8vw",
+          width: "55vw",
+          height: "55vh",
+          background:
+            "radial-gradient(circle at 70% 25%, rgba(253, 200, 120, 0.22), rgba(217, 119, 87, 0.08) 45%, transparent 70%)",
+          animation: "intro-sun-pulse 5s ease-in-out infinite",
+        }}
+      />
+    </motion.div>
+  );
+}
+
 function ScrambleWord({ word, shineDur }: { word: string; shineDur: number }) {
   const units = useMemo(() => splitUnits(word), [word]);
   const [display, setDisplay] = useState<string[]>(() => units.map(() => " "));
@@ -523,6 +590,8 @@ export function HeroIntro() {
 
           {weather?.kind === "rain" && <RainLayer />}
           {weather?.kind === "snow" && <SnowLayer />}
+          {weather?.kind === "cloudy" && <CloudsLayer />}
+          {weather?.kind === "clear" && !weather.isNight && <SunLayer />}
           {showStars && <StarsLayer />}
 
           {/* Greeting */}
@@ -607,6 +676,23 @@ export function HeroIntro() {
             @keyframes intro-drift {
               to {
                 transform: translateY(112vh) translateX(24px);
+              }
+            }
+            @keyframes intro-cloud-drift {
+              from {
+                transform: translateX(-6vw);
+              }
+              to {
+                transform: translateX(6vw);
+              }
+            }
+            @keyframes intro-sun-pulse {
+              0%,
+              100% {
+                opacity: 0.75;
+              }
+              50% {
+                opacity: 1;
               }
             }
             @keyframes intro-twinkle {
