@@ -3,6 +3,7 @@
 import { allBlogs } from "contentlayer/generated";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Clock } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { SubscribeForm } from "../components/blog/subscribe-form";
@@ -105,6 +106,18 @@ export default function BlogPage() {
               href={`/blog/${featured.slug}`}
               className="group block rounded-2xl border border-accent/30 bg-accent-soft p-6 sm:p-8 transition-colors duration-200 hover:border-accent/50"
             >
+              {featured.image && (
+                <div className="relative mb-6 aspect-[16/9] w-full overflow-hidden rounded-xl border border-line bg-surface">
+                  <Image
+                    src={featured.image}
+                    alt=""
+                    fill
+                    priority
+                    sizes="(min-width: 768px) 700px, 100vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                  />
+                </div>
+              )}
               <span className="text-[10px] uppercase tracking-widest text-accent-text">Latest</span>
               <h2 className="mt-3 text-2xl sm:text-3xl font-display text-fg leading-snug transition-colors duration-200 group-hover:text-accent-text">
                 {featured.title}
@@ -168,6 +181,17 @@ export default function BlogPage() {
                       </div>
                     )}
                   </div>
+                  {post.image && (
+                    <div className="relative hidden sm:block w-32 shrink-0 aspect-[16/9] overflow-hidden rounded-lg border border-line bg-surface">
+                      <Image
+                        src={post.image}
+                        alt=""
+                        fill
+                        sizes="128px"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                  )}
                   <div className="flex shrink-0 items-center gap-2 sm:flex-col sm:items-end sm:gap-1.5">
                     <span className="font-mono text-[11px] text-fg-subtle">{formatDate(post.date)}</span>
                     {post.readingTime && (

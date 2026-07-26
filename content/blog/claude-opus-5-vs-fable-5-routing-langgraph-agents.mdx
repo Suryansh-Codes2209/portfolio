@@ -1,0 +1,117 @@
+---
+published: true
+title: "Claude Opus 5 vs Fable 5: how I'm routing nodes in a LangGraph agent"
+description: "Opus 5 landed at half Fable 5's price and claims to approach it on most tasks. For a multi-agent research desk the real question isn't which model wins — it's which node gets which, and the two API changes that will silently break your existing graph."
+date: "2026-07-26"
+tags: ["claude-opus-5", "claude-fable-5", "langgraph", "ai-agents", "model-selection"]
+readingTime: 6
+image: "/blog/claude-opus-5-vs-fable-5-routing-langgraph-agents.png"
+---
+
+Anthropic shipped **Claude Opus 5** on Thursday at $5/$25 per million tokens — half what
+**Claude Fable 5** costs, with the claim that it approaches Fable across many tasks. Fable 5
+itself is only six weeks old, launched June 9 as the first model in a "Mythos-class" tier
+sitting above the Opus line at $10/$50.
+
+Two frontier tiers, six weeks apart, 2× price gap. For a
+[multi-agent research desk](/blog/how-we-architect-a-financial-ai-analyst-multi-agent) the
+useful question isn't "which is better." It's **which node in the graph gets which model** —
+and that answer is mostly decided by constraints that have nothing to do with benchmarks.
+
+Two caveats up front: Opus 5 is two days old, so nothing here is production-hardened
+throughput data. And "cheaper model, same quality" is a marketing claim until your own evals
+say otherwise. What follows is a routing plan and the migration hazards I found reading the
+API surface — not a benchmark.
+
+## Route by node, not by project
+
+A LangGraph agent isn't one workload. Mine has a planner, a set of retrieval nodes, a
+[handful of gates](/blog/langgraph-prompt-injection-hard-soft-gates), and a synthesis node
+that writes the analyst-facing answer. Those have wildly different failure costs. The planner
+being slightly worse means a suboptimal query plan. The synthesis node being slightly worse
+means a wrong number in front of someone making a trade.
+
+So the split I'm starting from:
+
+| Node | Model | Why |
+|---|---|---|
+| Router / classifier | Opus 5, `effort: "low"` | Cheap, bounded, no reasoning depth needed |
+| Retrieval + tool nodes | Opus 5, `effort: "medium"` | High call volume — this is where 2× hurts |
+| Synthesis / final answer | Fable 5 | Lowest error tolerance in the graph |
+| Long-horizon batch runs | Fable 5 | Built for multi-day autonomous sessions |
+
+The economics are the whole argument. Retrieval and tool nodes fire many times per query;
+synthesis fires once. Paying Mythos-tier rates on the chatty nodes is where the bill actually
+comes from, and it buys the least.
+
+## The change that will silently break your graph
+
+Here's the migration hazard nobody's going to notice until the bill or the truncation shows
+up. **On Opus 5, thinking is on by default.** On Opus 4.8 and 4.7, omitting the `thinking`
+parameter meant no thinking. Same wire value, opposite default.
+
+That matters because `max_tokens` is a hard cap on thinking *plus* response text. A node that
+ran thinking-off on 4.8 and had `max_tokens` sized snugly around its answer now truncates
+mid-response:
+
+```python
+# Ran fine on Opus 4.8 — no thinking, 2K was plenty for a JSON verdict
+resp = client.messages.create(
+    model="claude-opus-5",   # <- only line changed
+    max_tokens=2048,
+    messages=[{"role": "user", "content": gate_prompt}],
+)
+# Now: thinking eats the budget, stop_reason == "max_tokens", JSON comes back half-written
+```
+
+The fix is either raising `max_tokens` or disabling thinking explicitly — but disabling has a
+new constraint of its own. `thinking: {"type": "disabled"}` is only accepted at `effort` of
+`high` or below; pair it with `xhigh` or `max` and you get a 400. It's validated per request,
+so a later call that bumps effort fails even though earlier ones in the same conversation
+worked.
+
+Fable 5 goes further: thinking is **always** on and `{"type": "disabled"}` returns a 400 at
+any effort. There's no thinking-off path at all. For a cheap high-volume classifier node,
+that alone rules it out — which is a second, independent reason those nodes land on Opus 5.
+
+## The clause that decides it for regulated data
+
+The constraint that actually settles this for anyone working with financial filings, health
+data, or anything under a strict retention agreement: **Fable 5 requires 30-day data
+retention and is not available under zero data retention.** An org configured for ZDR gets a
+`400 invalid_request_error` on *every* Fable 5 request — a perfectly valid payload, rejected
+on org policy.
+
+If you hit an unexplained 400 with a request body you've triple-checked, check the org's
+retention configuration before you debug the payload. And if you're under ZDR, the model
+selection question is already answered: Opus 5 is your ceiling, and the routing table above
+collapses to one row.
+
+I'd treat this as the first thing to check, not the last. It's a contract-level constraint, so
+it outranks every benchmark — no eval result changes whether the request is allowed through.
+
+## Delegation flips direction
+
+One behavioural note worth knowing before you port prompts across. Opus 4.8 **under**-reached
+for subagents — the standard advice was to prompt it to delegate more. Opus 5 reverses this
+and delegates freely, which multiplies cost and latency: each subagent re-establishes context,
+re-explores, reports back, and the coordinator re-reads the report.
+
+So any "delegate more" guidance you wrote for 4.8 should come out, and you probably want a
+hard cap in its place. Same story with verification — Opus 5 checks its own work unprompted,
+so instructions telling it to verify now cause redundant work. That one's a delete, not a
+rewrite.
+
+## What's next
+
+I'm running the routing table above against my own eval set before committing to it — the
+node boundaries are a hypothesis, and the "Opus 5 approaches Fable" claim needs to survive
+contact with actual filings before I trust it on the synthesis node. The thing I most want to
+measure is whether `effort: "medium"` on retrieval nodes holds quality, since that's where
+most of the token spend lives.
+
+If you've already got Opus 5 traffic in a real agent graph, I'd genuinely like to hear where
+the routing line landed for you — especially if you found a node where the cheaper tier
+visibly wasn't enough.
+
+_Building in public — follow along on [X](https://x.com/Suryansh_2001)._

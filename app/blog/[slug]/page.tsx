@@ -1,6 +1,7 @@
 import { allBlogs } from "contentlayer/generated";
 import type { Metadata } from "next";
 import { ArrowLeft, ArrowRight, Clock, Tag } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Mdx } from "@/app/components/mdx";
@@ -44,6 +45,8 @@ export function generateMetadata({ params }: Props): Metadata {
       publishedTime: new Date(post.date).toISOString(),
       authors: ["Suryansh Chaudhary"],
       tags: post.tags,
+      // Falls back to the generated opengraph-image route when a post has no cover.
+      ...(post.image ? { images: [`https://suryansh.work${post.image}`] } : {}),
     },
     twitter: {
       card: "summary_large_image",
@@ -68,16 +71,44 @@ export default function BlogPostPage({ params }: Props) {
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: post.title,
-    description: post.description,
-    datePublished: new Date(post.date).toISOString(),
-    dateModified: new Date(post.date).toISOString(),
-    author: { "@type": "Person", name: "Suryansh Chaudhary", url: "https://suryansh.work" },
-    publisher: { "@type": "Person", name: "Suryansh Chaudhary" },
-    mainEntityOfPage: { "@type": "WebPage", "@id": `https://suryansh.work/blog/${post.slug}` },
-    image: [`https://suryansh.work/blog/${post.slug}/opengraph-image`],
-    keywords: post.tags?.join(", "),
+    "@graph": [
+      {
+        "@type": "BlogPosting",
+        "@id": `${url}#post`,
+        headline: post.title,
+        description: post.description,
+        datePublished: new Date(post.date).toISOString(),
+        dateModified: new Date(post.date).toISOString(),
+        // Point at the site-wide Person entity instead of re-declaring a loose
+        // copy, so authorship consolidates onto one node.
+        author: {
+          "@type": "Person",
+          "@id": "https://suryansh.work/#person",
+          name: "Suryansh Chaudhary",
+          url: "https://suryansh.work",
+        },
+        publisher: { "@id": "https://suryansh.work/#person" },
+        mainEntityOfPage: { "@type": "WebPage", "@id": url },
+        isPartOf: { "@id": "https://suryansh.work/#website" },
+        image: [
+          post.image
+            ? `https://suryansh.work${post.image}`
+            : `https://suryansh.work/blog/${post.slug}/opengraph-image`,
+        ],
+        keywords: post.tags?.join(", "),
+        articleSection: post.tags?.[0],
+        inLanguage: "en-US",
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${url}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: "https://suryansh.work" },
+          { "@type": "ListItem", position: 2, name: "Blog", item: "https://suryansh.work/blog" },
+          { "@type": "ListItem", position: 3, name: post.title, item: url },
+        ],
+      },
+    ],
   };
 
   return (
@@ -153,6 +184,20 @@ export default function BlogPostPage({ params }: Props) {
                 )}
               </div>
             </div>
+
+            {/* cover */}
+            {post.image && (
+              <div className="relative mb-8 aspect-[16/9] w-full overflow-hidden rounded-xl border border-line bg-surface">
+                <Image
+                  src={post.image}
+                  alt=""
+                  fill
+                  priority
+                  sizes="(min-width: 1280px) 680px, 100vw"
+                  className="object-cover"
+                />
+              </div>
+            )}
 
             {/* inline actions (mobile / non-xl) */}
             <div className="mb-8 flex items-center justify-between gap-4 border-y border-line py-3 xl:hidden">

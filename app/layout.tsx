@@ -10,14 +10,18 @@ import { BackToTop } from "./components/back-to-top";
 import { MotionProvider } from "./components/motion-provider";
 import { ThemeProvider } from "./components/theme-provider";
 
+const SITE_TITLE =
+  "Suryansh Chaudhary — Full-Stack AI Engineer & creator of MacGet";
+const SITE_DESCRIPTION =
+  "Suryansh Chaudhary is a Full-Stack AI Engineer building LangGraph agents in production and MacGet, a free open-source download manager for macOS. Build logs, projects, and engineering notes.";
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://suryansh.work"),
   title: {
-    default: "Suryansh Chaudhary | Builds & ships products in public",
+    default: SITE_TITLE,
     template: "%s | Suryansh Chaudhary",
   },
-  description:
-    "Suryansh Chaudhary builds and ships products in public — creator of MacGet (open-source macOS download manager) and AI agents in production.",
+  description: SITE_DESCRIPTION,
   keywords: [
     "Suryansh Chaudhary",
     "build in public",
@@ -30,13 +34,20 @@ export const metadata: Metadata = {
     "Full Stack AI Engineer",
     "yt-dlp GUI Mac",
   ],
+  applicationName: "Suryansh Chaudhary",
+  authors: [{ name: "Suryansh Chaudhary", url: "https://suryansh.work" }],
   creator: "Suryansh Chaudhary",
+  publisher: "Suryansh Chaudhary",
+  category: "technology",
+  // Set GOOGLE_SITE_VERIFICATION in Vercel to emit the Search Console meta tag.
+  ...(process.env.GOOGLE_SITE_VERIFICATION
+    ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } }
+    : {}),
   openGraph: {
-    title: "Suryansh Chaudhary | Builds & ships products in public",
-    description:
-      "Suryansh Chaudhary builds and ships products in public — creator of MacGet (open-source macOS download manager) and AI agents in production.",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
     url: "https://suryansh.work",
-    siteName: "Suryansh Chaudhary's Portfolio",
+    siteName: "Suryansh Chaudhary",
     images: [
       {
         url: "https://suryansh.work/og.png",
@@ -60,12 +71,12 @@ export const metadata: Metadata = {
     },
   },
   twitter: {
-    title: "Suryansh Chaudhary | Builds & ships products in public",
+    title: SITE_TITLE,
     card: "summary_large_image",
-    description:
-      "Creator of MacGet (open-source macOS download manager). I build and ship products in public — open-source tools + AI systems.",
+    description: SITE_DESCRIPTION,
     images: ["https://suryansh.work/og.png"],
     creator: "@Suryansh_2001",
+    site: "@Suryansh_2001",
   },
   icons: {
     shortcut: "/favicon.png",
@@ -101,31 +112,68 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={[inter.variable, calSans.variable, jetbrainsMono.variable].join(" ")}>
       <head>
         <Analytics />
-        {/* Add JSON-LD structured data */}
+        {/* JSON-LD entity graph — one stable @id per entity so Google can
+            disambiguate this Suryansh Chaudhary from the many others. */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "Person",
-              name: "Suryansh Chaudhary",
-              url: "https://suryansh.work",
-              jobTitle: "Software Engineer & Indie Builder",
-              description:
-                "Builds and ships products in public — creator of MacGet (open-source macOS download manager) and AI agents in production.",
-              sameAs: [
-                "https://github.com/Suryansh-Codes2209",
-                "https://www.linkedin.com/in/suryansh-chaudhary-2209/",
-                "https://x.com/Suryansh_2001",
-              ],
-              knowsAbout: [
-                "Build in Public",
-                "Open Source Software",
-                "macOS Development",
-                "Swift",
-                "AI Agents",
-                "LangGraph",
-                "Full Stack Development",
+              "@graph": [
+                {
+                  "@type": "Person",
+                  "@id": "https://suryansh.work/#person",
+                  name: "Suryansh Chaudhary",
+                  url: "https://suryansh.work",
+                  image: "https://suryansh.work/Profile.png",
+                  jobTitle: "Full-Stack AI Engineer",
+                  description: SITE_DESCRIPTION,
+                  email: "mailto:suryansh.codes2001@gmail.com",
+                  worksFor: {
+                    "@type": "Organization",
+                    name: "Spiral Kite Labs",
+                  },
+                  alumniOf: {
+                    "@type": "CollegeOrUniversity",
+                    name: "Poornima Group",
+                  },
+                  sameAs: [
+                    "https://github.com/Suryansh-Codes2209",
+                    "https://www.linkedin.com/in/suryansh-chaudhary-2209/",
+                    "https://x.com/Suryansh_2001",
+                  ],
+                  knowsAbout: [
+                    "Build in Public",
+                    "Open Source Software",
+                    "macOS Development",
+                    "Swift",
+                    "AI Agents",
+                    "LangGraph",
+                    "LangChain",
+                    "Retrieval-Augmented Generation",
+                    "FastAPI",
+                    "Next.js",
+                    "Full Stack Development",
+                  ],
+                },
+                {
+                  "@type": "WebSite",
+                  "@id": "https://suryansh.work/#website",
+                  url: "https://suryansh.work",
+                  name: "Suryansh Chaudhary",
+                  description: SITE_DESCRIPTION,
+                  inLanguage: "en-US",
+                  publisher: { "@id": "https://suryansh.work/#person" },
+                },
+                {
+                  "@type": "ProfilePage",
+                  "@id": "https://suryansh.work/#profilepage",
+                  url: "https://suryansh.work",
+                  name: SITE_TITLE,
+                  isPartOf: { "@id": "https://suryansh.work/#website" },
+                  about: { "@id": "https://suryansh.work/#person" },
+                  inLanguage: "en-US",
+                },
               ],
             }),
           }}

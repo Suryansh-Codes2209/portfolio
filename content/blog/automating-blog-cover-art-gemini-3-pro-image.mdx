@@ -1,0 +1,127 @@
+---
+published: true
+title: "Automating blog cover art with Gemini 3 Pro Image: my 'no legible text' rule was the bug"
+description: "I wrote a Node script to generate whiteboard-sketch covers for every post on this blog, and banned the model from drawing readable text. Nano Banana Pro ignored the ban, spelled everything correctly, and proved the constraint was a leftover assumption from 2023."
+date: "2026-07-26"
+tags: ["gemini", "nano-banana-pro", "ai-image-generation", "nextjs", "build-in-public"]
+readingTime: 5
+image: "/blog/automating-blog-cover-art-gemini-3-pro-image.png"
+---
+
+Seven of the eight published posts on this blog had no cover image. Worse, the `image` field
+had been sitting in `contentlayer.config.js` the whole time, and **nothing in the app rendered
+it** — one post set it, no component read it. A dead field and a text-only index.
+
+So I wrote two scripts to fix it. The image one shipped a bug, and the bug was a sentence I
+wrote myself.
+
+## Two scripts, zero dependencies
+
+Both live in a gitignored `scripts/` folder — they're authoring tools, not part of the deployed
+site, and nothing in the build depends on them. That constraint drove one useful decision:
+**no npm dependencies**. Adding a package would write an entry into the committed
+`package.json` for code that isn't in the repo, which is a broken checkout for anyone who
+clones it. So: plain Node ESM, global `fetch`, a twelve-line `.env.local` parser, and a
+frontmatter patcher that rewrites `image:` in place while preserving key order.
+
+The image call itself is unremarkable:
+
+```js
+const json = await call(model, {
+  contents: [{ role: "user", parts: [{ text: prompt }] }],
+  generationConfig: {
+    responseModalities: ["TEXT", "IMAGE"],
+    imageConfig: { aspectRatio: "16:9" },
+  },
+});
+const image = (json.candidates?.[0]?.content?.parts ?? [])
+  .find((p) => p.inlineData?.data);
+```
+
+The interesting part is the prompt. I wanted a consistent set — hand-drawn whiteboard
+architecture sketches, dark ground, chalky off-white marker, one burnt-orange focal element.
+Consistency comes from a fixed style preamble; variety comes from a per-post subject clause
+built out of the post's title, description, and tags.
+
+## The rule I got wrong
+
+I ended that preamble with this:
+
+> CRITICAL: No readable words, no letters, no numbers. Where text would go, draw only
+> illegible squiggle marks standing in for handwriting. Any legible character is a failure.
+
+The reasoning felt obvious. Image models garble text. Everyone knows this. The post title
+already renders in HTML directly above the cover, so baked-in words are redundant at best and
+misspelled at worst.
+
+That reasoning was three years stale. **Nano Banana Pro ignored the ban on four of seven
+covers — and spelled every word correctly when it did.** Current benchmarks put Gemini 3 Pro
+Image's text rendering in the mid-90s percent range, well past the point where "models can't
+spell" is a useful heuristic. It drew `CLAUDE.md`, `/clear`, `HARD GATE`, `SOFT GATE (LLM)`,
+`LANGGRAPH AGENT`. All correct. All genuinely better than the squiggle-only covers sitting
+next to them.
+
+## What actually broke
+
+The constraint didn't produce a text-free set. It produced an *inconsistent* one, plus two
+real artefacts:
+
+- On the Vertex RAG post, the model drew the literal word **"annotation"** — my own prompt
+  wording ("include sketchy annotation marks") leaking straight into the art.
+- On the system-design post it rendered "Queue" correctly once, then produced **"Ungune"** a
+  few inches away.
+
+That second one is the classic failure everyone expects. The first one isn't — it's a
+*prompt-hygiene* bug, and it's the more interesting of the two. When you tell a model not to
+draw text, you're still feeding it a page of English, and some of that English is describing
+the drawing itself. Half-suppressed instructions surface as vocabulary.
+
+## The fix: let it label, ban the meta-words
+
+I inverted the rule. Instead of fighting for zero text, ask for a small amount of *correct*
+text, and explicitly ban the words that describe the drawing:
+
+```
+LABELS — the diagram is labelled, like a real whiteboard:
+- Hand-print 3 to 6 SHORT labels (1-3 words each) in the same chalky marker.
+- Every label must be spelled correctly and must come from the label list below.
+- Any other place text would appear gets illegible squiggle marks, never real words.
+
+ABSOLUTELY DO NOT draw any word describing the drawing itself. The words "annotation",
+"label", "sketch", "diagram", "title", "summary", "topics", "focal", "subject" must
+never appear in the image.
+```
+
+Then I regenerated all eight covers with `--force`. Both artefacts are gone, and the MacGet
+cover now reads `Swift Actor Engine`, `yt-dlp`, `Chunked HTTP` — accurate to
+[the actual engine](/blog/building-macget-download-engine).
+
+**The trade-off I bought:** the style preamble is now load-bearing across the whole set. Edit
+it and you must regenerate everything, or the blog index looks like two different blogs. The
+script takes `--force` for exactly this reason, and the README says so in bold.
+
+## The other thing that broke
+
+The second script drafts posts from a topic string plus recent `git log` context. It works —
+well-formed frontmatter, right voice, correct length. Its first output was also confidently
+wrong about *this very post*: it invented "three hours of prompt-engineering loops," cited
+Imagen 3 and FLUX (I used neither), and concluded with a CSS-overlay approach that is the
+opposite of what I actually did.
+
+Which is why that script hardcodes `published: false` and I don't let it override that. Web
+research fills in external facts; it does not license a model to invent my Tuesday. **A
+drafting tool that can't be wrong isn't a drafting tool, it's a liability** — the guardrail is
+that a human reads it before the flag flips.
+
+## What's next
+
+The covers are wired into the post header, the blog index, `openGraph.images`, and the
+`BlogPosting` JSON-LD, with the existing generated OG route as fallback for any post without
+one. Next up: teaching the image script to read the post *body* rather than just its
+frontmatter, so the diagram reflects the architecture the post actually describes instead of
+what the description implies.
+
+If a cover on this blog contains a misspelled word I missed, tell me — I'd genuinely like to
+know which one.
+
+_Building in public — follow along on [X](https://x.com/Suryansh_2001)._

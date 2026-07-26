@@ -113,7 +113,9 @@ export function Hero() {
                      text-[14vw] sm:-mt-[4vh] sm:text-[12vw] lg:text-[9.5vw]"
         >
           <ShineText highlight="var(--accent)">
-            Suryansh
+            {/* The space before the <br> keeps the accessible/extracted text
+                "Suryansh Chaudhary" rather than "SuryanshChaudhary". */}
+            Suryansh{" "}
             <br />
             Chaudhary
           </ShineText>
