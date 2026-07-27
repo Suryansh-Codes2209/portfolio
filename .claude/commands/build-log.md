@@ -45,7 +45,8 @@ Ground the post in what actually happened. Before writing, pull context from:
    - `git log --oneline -15`
    - `git diff HEAD~5 --stat` (and read the interesting diffs)
 2. If the topic names another project/repo (e.g. MacGet), read whatever source is available here —
-   `app/macget/page.tsx`, `app/data/projects.ts` — for accurate feature/architecture details.
+   `app/data/projects.ts` — for accurate feature/architecture details. MacGet lives in its own
+   repo/deployment now, so link it as `https://macget.suryansh.work`, not a relative path.
 3. If you still don't have enough concrete detail (what was built, what broke, what you learned),
    **ask the user 2–3 short questions** before writing. Do not fabricate technical specifics,
    benchmarks, or APIs. Web research fills in *external* facts; it does **not** license inventing
@@ -83,7 +84,8 @@ image: "/some-og.png"   # OPTIONAL — a 1200×630 social card in public/; omit 
 - **Honesty over polish**: name the trade-off, what you'd do differently, what you bought vs built.
   The "what broke" section is what makes it a build-log instead of a tutorial.
 - **Scannable**: short paragraphs, occasional bold takeaways, tight bullet lists. Keep it ≈600–1000
-  words. Link related work with relative links (`/macget`, `/blog/<other-slug>`) and the GitHub repo.
+  words. Link related work with relative links (`/blog/<other-slug>`), MacGet as
+  `https://macget.suryansh.work`, and the GitHub repo.
 - End with a short **"what's next"** + an invitation (bug reports / ideas) — it's building in public.
 - Match the existing posts' sign-off style (e.g. the `_Building in public — follow along on X…_` line).
 

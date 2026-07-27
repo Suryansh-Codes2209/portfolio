@@ -377,9 +377,9 @@ export default function Home() {
                         <Github className="w-4 h-4" /> GitHub
                       </a>
                     )}
-                    <Link href="/macget" className="flex items-center gap-1.5 px-3 py-2.5 text-sm text-fg-muted hover:text-accent-text transition-colors">
+                    <a href="https://macget.suryansh.work" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2.5 text-sm text-fg-muted hover:text-accent-text transition-colors">
                       Learn more <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
+                    </a>
                   </div>
                 </div>
 

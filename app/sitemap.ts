@@ -22,16 +22,9 @@ type Route = {
 export default function sitemap(): MetadataRoute.Sitemap {
 	const staticRoutes: Route[] = [
 		{ path: "", priority: 1.0, changeFrequency: "weekly", lastModified: latestPostDate },
-		{ path: "/macget", priority: 0.9, changeFrequency: "weekly", lastModified: latestPostDate },
 		{ path: "/blog", priority: 0.9, changeFrequency: "weekly", lastModified: latestPostDate },
 		{ path: "/projects", priority: 0.7, changeFrequency: "monthly", lastModified: latestPostDate },
 		{ path: "/contact", priority: 0.4, changeFrequency: "yearly", lastModified: latestPostDate },
-		{
-			path: "/macget/privacy",
-			priority: 0.2,
-			changeFrequency: "yearly",
-			lastModified: latestPostDate,
-		},
 	];
 
 	const blogRoutes: Route[] = published.map((post) => ({

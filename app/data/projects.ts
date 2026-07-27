@@ -13,7 +13,7 @@ export const projects: Project[] = [
 		title: "Macget — macOS Download Manager",
 		description:
 			"Multi-threaded macOS download manager: chunked HTTP downloads, browser-extension capture, and YouTube/HLS video via bundled yt-dlp. SwiftUI + an actor-based download engine.",
-		url: "/macget",
+		url: "https://macget.suryansh.work",
 		github: "https://github.com/Suryansh-Codes2209/Macget",
 		tags: ["SwiftUI", "macOS", "Swift", "yt-dlp"],
 		date: "2026",

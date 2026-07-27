@@ -25,7 +25,7 @@ export function GET() {
 
 ## Key pages
 - [Home](${BASE}): Overview, current work, experience, and contact.
-- [MacGet](${BASE}/macget): Free open-source multi-threaded download manager for macOS — chunked HTTP downloads, browser-extension capture, YouTube/HLS via bundled yt-dlp.
+- [MacGet](https://macget.suryansh.work): Free open-source multi-threaded download manager for macOS — chunked HTTP downloads, browser-extension capture, YouTube/HLS via bundled yt-dlp.
 - [Projects](${BASE}/projects): Full list of shipped projects.
 - [Blog](${BASE}/blog): Build logs and engineering notes.
 - [Contact](${BASE}/contact): Email and social links.
