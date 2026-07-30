@@ -1,0 +1,140 @@
+---
+title: "MacGet 1.3.0: BitTorrent, book catalogs, and deleting my own adaptive concurrency"
+description: "MacGet 1.3.0 adds BitTorrent and OPDS book catalogs to the macOS download manager — and rips out the adaptive connection ramp I shipped as a headline feature in 1.1.0, because the heuristic read a saturated link as a failed experiment."
+date: "2026-07-30"
+tags: ["MacGet", "Swift", "macOS", "BitTorrent", "build-in-public"]
+published: true
+readingTime: 7
+image: "/blog/macget-1-3-0-bittorrent-book-catalogs-adaptive-concurrency.png"
+---
+
+In 1.1.0 I shipped "adaptive concurrency" as a headline feature of MacGet: a download opens 4
+connections, probes upward one at a time, and keeps each new connection only if aggregate throughput
+improves by 15%. It sounded principled. It was also the reason MacGet was slower than it should have
+been on exactly the connections where it had the most to gain.
+
+1.3.0 deletes it.
+
+## The heuristic that measured the wrong thing
+
+The bug is in the premise. The probe asks "did adding a connection make this faster?" and treats
+*no* as evidence the connection is useless. But once a link is saturated, "no improvement" is the
+**expected** reading for every additional connection — the pipe is already full, so of course the
+number doesn't move. The probe couldn't distinguish "this host refuses more connections" from "you
+already have all the bandwidth there is," and it read both as failure.
+
+So it settled low precisely when the extra connections were free, and the users who'd benefit most
+from a multi-threaded downloader — fat pipe, per-connection-throttling server — got the most
+conservative behavior.
+
+The fix isn't a better probe. It's not probing. A download now opens at its full effective thread
+count immediately, staggered 100 ms apart:
+
+```swift
+/// Delay between consecutive worker spawns. Anti-abuse middleboxes pattern-
+/// match a burst of N TCP SYNs from one IP; staggering defeats that. With
+/// the default 8 workers this is 700 ms to fully spawn.
+private static let spawnStaggerNanos: UInt64 = 100_000_000  // 100 ms
+```
+
+**The stagger isn't throughput tuning — it's evasion.** Eight simultaneous SYNs from one IP is a
+recognizable shape to anti-abuse middleboxes. Spread over 700 ms, it isn't.
+
+## Backing off on evidence instead of guesswork
+
+Removing the ramp only works if the *downward* path is trustworthy, because now there's no gentle
+approach to hide behind. The old demotion logic counted failures and shrank. The problem: MacGet
+persists what it learns, so blaming a host for your Wi-Fi dropping leaves a permanent cap on a
+server that did nothing wrong.
+
+`DemotionPolicy` now demands a second signal — bytes still moving:
+
+```swift
+static func shouldDemote(
+    failureCount: Int,
+    throughputBytesPerSecond: Double,
+    threshold: Int = threshold,
+    healthyThroughput: Double = healthyThroughputBytesPerSecond
+) -> Bool {
+    guard failureCount >= threshold else { return false }
+    return throughputBytesPerSecond >= healthyThroughput
+}
+```
+
+A hostile host RSTs *some* workers while serving the rest at full speed — failures **and**
+throughput. A dead local link fails every worker at once and throughput collapses to zero. Same
+failure count, opposite diagnosis. Four no-progress attempts in 10 seconds while bytes flow halves
+the worker count; the same four with nothing moving is just the retry path doing its job.
+
+Learned caps now also expire after 7 days and can be cleared in Settings › Network. A cap mislearned
+during an outage heals itself instead of throttling that host forever.
+
+## The endgame: nobody idles
+
+With work-stealing chunking there's still a tail — the point where every remaining piece is already
+assigned, so a freed worker has nothing to steal. It used to just idle while the slowest chunk set
+the finish time. Now it splits the largest in-flight piece in half, floored at 1 MB:
+
+```swift
+/// Splitting cancels a live worker and reconnects, and a TLS handshake
+/// costs 100–300 ms — not worth spending to rescue 64 KB.
+static let defaultMinimumSplitBytes: Int64 = 1024 * 1024
+```
+
+That floor is the whole design. Without it, every freed worker splits ever-smaller tails and churns
+connections through the last second of the download. The selection heuristic is bytes remaining, not
+*time* remaining — which is technically wrong (a fast worker that started late can hold more bytes
+than a slow one nearly done), and I shipped it anyway. Tracking per-chunk speed puts more state on
+the hot path, and at the tail the two measures mostly agree. `DownloadInspection.splitCount` is
+exposed specifically so I can find out if I'm wrong.
+
+## BitTorrent, off by default
+
+Magnet links and `.torrent` files now run in the same queue as everything else — same concurrency
+limit, same pause/resume, same quiet-hours scheduling. Two deliberate constraints:
+
+- **Off by default.** Turning it on shows a one-time explanation that BitTorrent *uploads* as well as
+  downloads, opens a listening port, and makes your IP visible to the swarm. That's not a footnote.
+- **Seeding is bounded** — ratio 1.0 or 60 minutes, whichever comes first. MacGet does not search for
+  or index torrents.
+
+The engine is aria2, and it is **not** bundled. Unlike the static `ffmpeg`/`yt-dlp` builds, aria2
+links against five system libraries, so MacGet installs it via Homebrew on first use. That's a real
+regression against the zero-setup promise I made in [the engine post](/blog/building-macget-download-engine)
+— and the trade I took, because it also means MacGet never redistributes GPL software.
+
+## Book catalogs over OPDS
+
+⇧⌘B opens a browser for Project Gutenberg (~75k public-domain titles) and the Internet Archive; any
+OPDS feed works, including your own Calibre server. Files land as `Title - Author.epub` instead of
+the catalog's `2701.epub`. DRM-wrapped, priced, and loan-only editions are shown but never fetched.
+
+Neither headline catalog actually goes through OPDS. Gutenberg's own feed returns one sub-feed per
+book rather than direct download links, so MacGet reads Gutendex instead. And the Internet Archive
+retired its OPDS BookServer entirely — `bookserver.archive.org` no longer resolves — so that path is
+IA's JSON search and metadata APIs. **The generic OPDS support is real; the two catalogs people
+actually want are the exceptions to it.**
+
+## The bug that made all of this worth shipping
+
+Media downloads from logged-in pages were 403ing, and the failure was maddening because the *probe*
+succeeded and the download that followed died. Cookies captured by the extension were handed to
+yt-dlp as `--add-header "Cookie: …"`, which applies them to **every** request — including the CDN
+fetch. YouTube rejects an authenticated `googlevideo.com` request carrying no proof-of-origin token.
+The cookies weren't missing; they were being sent somewhere they shouldn't be.
+
+Cookies now go through a domain-scoped Netscape cookie jar, deliberately scoped so it covers the page
+host and its subdomains but *not* `googlevideo.com`.
+
+## What's next
+
+Homebrew cask install (`brew install --cask suryansh-codes2209/macget/macget`) is on `main` but
+didn't make the 1.3.0 tag — it goes out with the next release. After that: notarization, so the
+"Open Anyway" dance on first launch finally goes away.
+
+If you're on a fast connection, I'd genuinely like to know whether removing the ramp helped or
+whether some host punishes you for it — that's the failure mode I traded for, and I don't have
+enough machines to find it myself. [MacGet is here](https://macget.suryansh.work); source and issues
+on [GitHub](https://github.com/Suryansh-Codes2209/Macget).
+
+_Building in public — follow along on [X](https://x.com/Suryansh_2001)._
