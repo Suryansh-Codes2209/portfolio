@@ -4,6 +4,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import LocalFont from "next/font/local";
 import type { Metadata } from "next";
 import { Analytics } from "./components/analytics";
+import { GoogleAnalytics } from "./components/google-analytics";
 import { ScrollProgress } from "./components/scroll-progress";
 import { CursorGlow } from "./components/cursor-glow";
 import { BackToTop } from "./components/back-to-top";
@@ -184,6 +185,7 @@ export default function RootLayout({
           process.env.NODE_ENV === "development" ? "debug-screens" : undefined
         }`}
       >
+        <GoogleAnalytics />
         <ThemeProvider>
           <ScrollProgress />
           <CursorGlow />
