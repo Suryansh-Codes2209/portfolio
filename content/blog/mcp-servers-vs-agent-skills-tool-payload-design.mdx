@@ -1,0 +1,88 @@
+---
+published: true
+title: "MCP servers vs agent skills: the payload is the integration"
+description: "Shipping an MCP server is the easy half. The work that decides whether an agent can actually drive your product is payload design — closed vocabularies, schema-constrained returns, and tool descriptions written for a reader who will not ask a follow-up question."
+date: "2026-08-03"
+tags: ["mcp", "model-context-protocol", "agent-skills", "ai-agents", "build-in-public"]
+readingTime: 6
+image: "/blog/mcp-servers-vs-agent-skills-tool-payload-design.png"
+---
+
+The integration nobody wants to write is the one where your product is the *thirteenth* checkbox in someone else's settings page. You build a REST API, you document it, and then you wait for a partner engineer to care enough to wire it up. That was the deal for a decade, and the deal was bad.
+
+**MCP changes the direction of that work.** You expose one server, and every MCP-compatible client — Claude, Cursor, VS Code, whatever ships next quarter — can drive your product without you writing a line of client code. The connector is the integration. That's genuinely a better deal.
+
+What I didn't expect is that the protocol turns out to be the easy half. The hard half is the payload.
+
+## MCP and skills solve different halves
+
+The distinction that finally stuck for me:
+
+- An **MCP server** is a running program. It's capability — query this, fetch that, change this state. It's live, it can fail, it needs an owner and a hosting bill.
+- A **skill** is static text the agent reads when a task matches. It's procedural knowledge — *how we do this here*, conventions, the order of operations. It costs nothing to run and it works offline.
+
+The mistake is treating them as competitors. They're not: a skill without tools is a nicely-worded suggestion, and tools without a skill are a drawer of unlabelled instruments. Ask what you're short on. Short on *capability* — the agent can't reach the thing — build the server. Short on *knowledge* — the agent can reach it but keeps doing it wrong — write the skill.
+
+The `/build-log` command that generated this post is the skill half. It has no special powers. It just encodes the sequence I'd otherwise re-explain every time.
+
+## The payload is where it actually breaks
+
+Here's the thing I keep relearning, and I relearned it today on a problem that has nothing to do with MCP.
+
+This blog's cover images are generated. The old pipeline fed the image model a post's title and tags and asked for "a diagram." The results were vague — not because the model was weak, but because I'd handed it a payload with nothing in it to be specific *about*. It had no material, so it produced mush.
+
+The fix wasn't a better prompt. It was putting a **structured payload** in between. A cheap text pass now reads the post body and returns a schema-constrained brief — every string that will appear in the image, and nothing else:
+
+```js
+const SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    title: { type: "STRING" },
+    nodes: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          label: { type: "STRING" },
+          note:  { type: "STRING" },
+          color: { type: "STRING", enum: ["white", "orange", "blue", "green"] },
+        },
+        required: ["label", "note", "color"],
+      },
+    },
+    arrows: { /* from, to, caption */ },
+    banner: { type: "STRING" },
+  },
+  required: ["title", "nodes", "arrows", "banner"],
+};
+```
+
+Then the consuming call ends with that payload flattened into an explicit allowlist and one instruction: **render these, invent nothing.**
+
+That's the same shape as a well-designed MCP tool. A constrained schema so the caller can't hand you nonsense, an enum instead of a free string wherever the set is actually finite, and a return value specific enough that the next step doesn't have to guess.
+
+## What broke, and what it taught me
+
+Two things, and they generalise.
+
+**The allowlist leaked.** Despite an explicit "invent nothing," one render added annotations that weren't in the brief. They happened to be correct and useful, so I kept them — but the lesson is that *a constraint stated in prose is a preference, not a guarantee*. If it matters, it belongs in the schema where it can be validated, not in the instructions where it can be interpreted. The same is true of an MCP tool: `enum` is enforcement, "please pass one of the following" is a wish.
+
+**Descriptions are the real API surface.** An agent picks your tool based on its description and nothing else. It won't read your docs site, and it can't ask a clarifying question. A description that reads fine to a human — "manages resources" — is unusable to a caller that has to decide, right now, between it and four siblings. The rewrite that fixed my brief pass wasn't structural; it was replacing every vague field instruction with a bounded one ("2 to 5 words", "must exactly match a label above").
+
+I also validate on the way back in, because the model *will* drift: exactly one accent element enforced, references that don't resolve dropped, a hard error under three nodes. Trust the schema, verify the payload.
+
+## The trade-off I took
+
+I went with **remote HTTP and an API key header** rather than OAuth. It's honestly the worse choice for end users — they paste a key into a config file instead of clicking through a consent screen — and I'd steer a real product toward OAuth, which is the direction the spec is clearly pushing. I took the key because it was a day of work instead of a week, and I wanted the thing running before I optimised the front door.
+
+Worth knowing if you're starting now: the **2026-07-28 spec** made the protocol core stateless and dropped the session header, formalised extensions, and put the legacy HTTP+SSE transport on a year-long offramp. Build against the current spec. The migration is real work you can simply not incur.
+
+## What's next
+
+I want to collapse the tool surface. My instinct was to expose everything and let the agent sort it out, which is exactly backwards — every tool definition is context spent before the agent has done anything, and more choices makes the choosing worse. Fewer, better-described tools beat a complete catalogue.
+
+If you've shipped an MCP server and found a tool-description pattern that reliably stops mis-selection, I'd like to hear it — that's the part I'm still guessing at.
+
+---
+
+_This is a build log — I'm building these in public. Follow along on [X](https://x.com/Suryansh_2001) or grab [MacGet](https://macget.suryansh.work)._
