@@ -1,0 +1,135 @@
+---
+title: "Signal Boy: a zero-dependency WiFi survey tool you run with npx"
+description: "I wanted to find the dead zone in my flat without installing a heatmap app or signing up for anything. So I built Signal Boy — one npx command, a live dBm readout on a Game Boy LCD, and no dependencies at all. Here's what that constraint cost me."
+date: "2026-08-07"
+tags: ["signal-boy", "nodejs", "wifi", "cli", "build-in-public"]
+published: true
+readingTime: 6
+---
+
+There is one corner of my flat where video calls die. I wanted a number for it — how bad, exactly,
+and does it get better if the router moves. Every tool I found wanted something first: a Play Store
+download, an account, a paid heatmap license, a floor plan traced before it would show me a single
+reading.
+
+And on macOS the obvious CLI answer is gone. Apple removed `airport` in Sonoma 14.4 and told
+everyone to use `wdutil` instead — which needs `sudo` to say anything useful. So the shortest path
+to "what's my dBm right now" on a Mac in 2026 is genuinely worse than it was in 2015.
+
+I wanted this instead:
+
+```
+npx signalboy
+```
+
+That's the whole product decision. Everything below is downstream of it.
+
+## What it is
+
+One Node process. It reads the WiFi signal strength of the machine it's running on once a second,
+pushes readings to the browser over Server-Sent Events, and renders them on a Game Boy-style LCD.
+Open the LAN URL on your phone, carry the laptop, walk around. Anything at −67 dBm or better is
+comfortable; below −80 you're in trouble.
+
+**Zero runtime dependencies and zero dev dependencies.** Not as a flex — as the thing that makes
+`npx` fast enough to be worth typing. The whole install is what npm can fetch and run before you get
+bored.
+
+The internals are boring on purpose. A pub/sub hub sits between the sensors and the HTTP layer, and
+neither knows the other exists:
+
+```js
+export function publish(channel, payload) {
+  const event = { channel, payload, t: Date.now() };
+  lastByChannel.set(channel, event);
+  emitter.emit('event', event);
+}
+```
+
+`lastByChannel` is the only clever bit: a new browser tab gets replayed the latest value per channel
+immediately, so the LCD is never blank for a second while it waits for the next poll.
+
+## Two filters, because one couldn't do both jobs
+
+Raw RSSI jitters ±5 dBm when the receiver is *completely still*. Show that number raw and it's
+unreadable garbage. Smooth it hard and the display lags a full second behind your feet, which is
+useless when the whole activity is walking.
+
+I tried to tune one filter to do both and it's not possible — those are opposite requirements. So
+there are two, fed the same sample:
+
+```js
+// Kalman drives the displayed number (steady, converges on the true value);
+// EWMA drives the sparkline (responsive enough to show you walking).
+const kalman = new Kalman1D({ processNoise: 0.01, measurementNoise: 6 });
+const ewma = new Ewma(0.3);
+```
+
+A scalar Kalman over a near-constant signal is about fifteen lines — predict, gain, update. Process
+noise is tiny because true RSSI barely moves while you stand still; measurement noise sits around
+4–9 dBm² for consumer WiFi hardware. The result is a number that settles instead of flickering, and
+a trace underneath it that still shows the moment you stepped through a doorway.
+
+## What broke
+
+**The interface picker worked by accident.** Macs report more than one wireless interface. Next to
+`en0` there's `awdl0`, Apple Wireless Direct Link — the thing AirDrop uses. It reports itself as
+connected and carries no signal data at all. Selecting by index passed on my machine and would have
+failed on someone else's. The fix is to pick the first interface that actually yields a reading:
+
+```js
+const withSignal = interfaces.find((iface) =>
+  SIGNAL_NOISE.test(iface.spairport_current_network_information?.spairport_signal_noise ?? ''),
+);
+```
+
+**macOS just won't tell you some things.** `system_profiler` gives you your own network's signal and
+noise without sudo, which is enough to survey your own WiFi. But neighbouring SSIDs come back
+`<redacted>` with no signal values, and even your own SSID is hidden from an unsigned process —
+Apple reclassified WiFi metadata as location data.
+
+The tempting move is to fill the gap with something plausible. I built a capability matrix instead:
+the app reads what your platform can actually do and greys out the rest with the reason printed next
+to it. Windows is the strongest platform here — `netsh` lists every visible access point with no
+admin rights — and it's the one that can't report a noise floor, so SNR goes dark there instead.
+**It never shows you a number it had to invent.**
+
+**I can't host it, ever.** This was the one that reframed the project. A page served from an HTTPS
+origin cannot fetch `http://192.168.1.14:3000` — browsers block mixed content with no override. A
+hosted copy of the UI would get a secure context and lose every single reading. The daemon has to
+serve the page it wants your phone to use. That's not a workaround; it's the architecture.
+
+Which drags in the next one: over plain HTTP the Wake Lock API doesn't exist, so the phone screen
+sleeps mid-survey. There's a fallback (a muted looping video) but it isn't guaranteed on every
+device. It took me three rounds to make that button stop *claiming* a mechanism it no longer held
+after an involuntary downgrade. Lying about a capability is worse than not having it.
+
+## The cost of the constraint
+
+Printing a QR code for the LAN URL at startup is a two-line problem if you `npm install qrcode`. With
+a zero-dependency rule it's GF(256) arithmetic, Reed-Solomon remainders, matrix construction, mask
+penalty scoring, and golden fixtures for versions 1 through 4.
+
+Was that simple? Not for me. It was simple for the person typing `npx signalboy` — and that's the
+budget I was actually spending. When your product decision is "one command, nothing to install," the
+user's simplicity is the thing you're buying, and you pay for it out of your own weekend. Worth
+naming honestly: if that rule ever costs a *feature* rather than a weekend, the rule goes.
+
+## What's next
+
+0.2.0 added a native Android app, which sidesteps the browser limitation entirely — it reads
+`WifiManager` directly, so the phone measures where *you're* standing rather than where the laptop is
+sitting. It's also the only platform that scans neighbouring APs with exact per-AP dBm.
+
+iPhone will never have an equivalent. Apple exposes no public API for WiFi signal strength, so walk
+mode over the LAN stays the way to carry the number around on iOS.
+
+The thing I keep circling is turning a walk into a floor plan — the survey points already carry a
+standard deviation, so the data's there. I haven't convinced myself it's worth the complexity yet.
+
+If you run it on a Linux box with an unusual driver, or a Windows build where `netsh` reports
+something odd, I'd like to see it — those are the paths I can't test enough of.
+[signalboy.suryansh.work](https://signalboy.suryansh.work); source and issues on
+[GitHub](https://github.com/Suryansh-Codes2209/Signal-Boy).
+
+_Building in public — follow along on [X](https://x.com/Suryansh_2001)._
