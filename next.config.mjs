@@ -5,6 +5,14 @@ const nextConfig = {
 	// MacGet moved to its own Vercel deployment. These paths were indexed and
 	// are linked from old posts/releases, so send them on instead of 404ing.
 	redirects: async () => [
+		// www answered 307 (temporary), which leaves Google treating the two
+		// hosts as separate candidates. 308 states the canonical host outright.
+		{
+			source: "/:path*",
+			has: [{ type: "host", value: "www.suryansh.work" }],
+			destination: "https://suryansh.work/:path*",
+			permanent: true,
+		},
 		{
 			source: "/macget",
 			destination: "https://macget.suryansh.work",

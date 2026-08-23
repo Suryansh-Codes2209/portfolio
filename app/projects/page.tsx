@@ -2,11 +2,12 @@
 
 import { projects } from "../data/projects";
 import { motion } from "framer-motion";
-import { ArrowLeft, ExternalLink, Github } from "lucide-react";
+import { ExternalLink, Github, Rocket } from "lucide-react";
 import Link from "next/link";
 import { Card } from "../components/card";
 import { ShineText } from "../components/shine-text";
-import { ThemeToggle } from "../components/theme-toggle";
+import { PageNav } from "../components/page-nav";
+import { SiteFooter } from "../components/site-footer";
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 18 },
@@ -18,22 +19,7 @@ const fadeUp = (delay = 0) => ({
 export default function ProjectsPage() {
   return (
     <div className="bg-bg text-fg min-h-screen">
-      {/* nav */}
-      <header className="fixed inset-x-0 top-0 z-50 backdrop-blur-md border-b border-line bg-bg/70">
-        <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-xs text-fg-subtle hover:text-fg transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            Back home
-          </Link>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-fg-faint">Projects</span>
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
+      <PageNav current="Projects" />
 
       <div className="max-w-5xl mx-auto px-4 pt-28 pb-24">
         <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-fg-faint mb-2">
@@ -85,6 +71,18 @@ export default function ProjectsPage() {
                     {project.description}
                   </p>
 
+                  {project.productHunt && (
+                    <a
+                      href={project.productHunt}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-full border border-accent/30 bg-accent-soft px-2.5 py-1 font-mono text-[10px] text-accent-text transition-colors hover:border-accent/60"
+                    >
+                      <Rocket className="h-3 w-3" />
+                      Live on Product Hunt
+                    </a>
+                  )}
+
                   <div className="mt-5 flex flex-wrap gap-1.5">
                     {project.tags.map((tag) => (
                       <span
@@ -103,6 +101,8 @@ export default function ProjectsPage() {
           ))}
         </div>
       </div>
+
+      <SiteFooter />
     </div>
   );
 }

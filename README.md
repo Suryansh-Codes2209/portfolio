@@ -169,13 +169,16 @@ Degradation matrix:
 │   │       ├── opengraph-image.tsx# Generated 1200×630 OG fallback
 │   │       └── mdx.css            # Prose/code styling for rendered MDX
 │   │
+│   ├── about/{layout,page}.tsx    # Entity page — 850-word bio, AboutPage + Person schema
+│   ├── skills/{layout,page,skills-data}.ts(x) # Skills, each with what shipped on it
 │   ├── projects/{layout,page}.tsx # Standalone projects page
 │   ├── contact/{layout,page}.tsx  # Standalone contact page
 │   │
 │   ├── components/
 │   │   ├── hero.tsx               # Proof-driven hero (client-fetches /api/stats)
-│   │   ├── hero-intro.tsx         # ~4.5s recognition intro (776 lines, see below)
 │   │   ├── now-bento.tsx          # #now bento grid — static curated copy
+│   │   ├── page-nav.tsx           # Shared header for standalone routes
+│   │   ├── site-footer.tsx        # Shared footer + internal link row
 │   │   ├── tech-stack.tsx         # Categorised stack grid with brand-hue hovers
 │   │   ├── mdx.tsx                # MDX component map (headings, links, Callout, Pre)
 │   │   ├── card.tsx, particles.tsx, shine-text.tsx, cursor-glow.tsx
@@ -236,23 +239,12 @@ Degradation matrix:
 > leaks into the route and Google deindexes it as a duplicate. **Any new client-component route
 > needs its own `layout.tsx`.**
 
-### The recognition intro
+### Removed: the recognition intro
 
-`app/components/hero-intro.tsx` — a ~4.5s skippable "recognition" sequence that plays **once per
-session** (`sessionStorage["recognition-intro-seen"]`) and is skipped entirely under
-`prefers-reduced-motion`.
-
-- Cycles ~6 greetings drawn from a **25-language pool**. The visitor's `navigator.language` plays
-  first; 4–5 shuffled others fill the middle; `Hello` always closes.
-- Each greeting scramble-decodes into place, with a shine sweep and cursor-magnetic glyphs.
-- **Live edge diagnostics** read from the visitor's own device.
-- Bottom-right runs a **real speed test** against `public/probe.bin` (200 KB). The measured Mbps also
-  drives the shine sweep speed — the animation literally runs at your connection's pace.
-- `app/api/weather/route.ts` (Vercel geo headers → Open-Meteo) feeds an additive
-  rain / snow / clouds / sun-glow / stars backdrop layered over a time-of-day tint.
-- Exits with an upward wipe into the hero.
-
-Full design spec: [`docs/superpowers/specs/2026-07-23-recognition-intro-design.md`](./docs/superpowers/specs/2026-07-23-recognition-intro-design.md).
+The ~4.5s "recognition" intro (`hero-intro.tsx`) was removed, along with `app/api/weather/route.ts`
+and `public/probe.bin`, which existed only to feed it. It played a full-screen black overlay before
+the hero for every first-time visitor — including every visitor arriving from search, since it keyed
+off an empty `sessionStorage`. Recover it from git history if it's ever wanted back.
 
 ### Hero & proof stats
 
@@ -371,7 +363,6 @@ Two texture layers ship globally: `.grain` (fixed SVG `feTurbulence` noise overl
 | Route | Method | Auth | Runtime | Response |
 |---|---|---|---|---|
 | `/api/stats` | GET | — | default, `revalidate 86400` | `{ githubStars, macgetDownloads }` |
-| `/api/weather` | GET | — | default, per-request geo | `{ available, city?, tempC?, condition?, kind?, isNight? }` |
 | `/api/likes/[slug]` | GET | — | nodejs, dynamic | `{ count, liked, enabled }` |
 | `/api/likes/[slug]` | POST | visitor hash | nodejs, dynamic | `{ count, liked, enabled }` · 404 unknown slug · 429 rate limited |
 | `/api/subscribe` | POST | — | nodejs, dynamic | `{ ok, message }` · 400 bad email · 502 send failed · 503 unconfigured |
@@ -479,7 +470,7 @@ More detail, including credential rotation notes: [`docs/blog-platform-setup.md`
 | **Projects** | Static typed array in `app/data/projects.ts`. No MDX, no Redis, no view counts. |
 | **Contentlayer** | It's the `contentlayer2` fork aliased as `contentlayer`. Run `pnpm build` after frontmatter changes. |
 | **Node runtime** | Redis/Postgres routes must keep `export const runtime = "nodejs"`. |
-| **Never throw** | `/api/stats` and `/api/weather` are explicitly written to always return JSON. Keep it that way — the hero and the intro depend on it. |
+| **Never throw** | `/api/stats` is explicitly written to always return JSON. Keep it that way — the hero depends on it. |
 | **MacGet** | Lives in its own repo and deployment. Link `https://macget.suryansh.work`, never a relative `/macget` path. |
 | **`scripts/`** | Gitignored, local-only authoring tooling. Nothing deployed reads it. |
 | **Tests** | There are none. `pnpm build` plus a look at `pnpm dev` is the verification loop. |

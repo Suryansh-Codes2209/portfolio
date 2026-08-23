@@ -13,8 +13,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Card } from "./components/card";
 import { Hero } from "./components/hero";
-import { HeroIntro } from "./components/hero-intro";
 import { NowBento } from "./components/now-bento";
+import { SiteFooter } from "./components/site-footer";
 import { TechStack } from "./components/tech-stack";
 import { ShineText } from "./components/shine-text";
 import { ThemeToggle } from "./components/theme-toggle";
@@ -43,14 +43,16 @@ function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
 }
 
 // ─── data ─────────────────────────────────────────────────────────────────────
+// Anchors only where no standalone page exists. Everything else points at the
+// real URL so the top nav is a crawl path, not just a scroll control.
 const navLinks = [
   { label: "Now",      href: "#now"      },
-  { label: "About",    href: "#about"    },
-  { label: "Stack",    href: "#stack"    },
-  { label: "Projects", href: "#projects" },
+  { label: "About",    href: "/about"    },
+  { label: "Skills",   href: "/skills"   },
+  { label: "Projects", href: "/projects" },
   { label: "Blog",     href: "/blog"     },
   { label: "Resume",   href: "#resume"   },
-  { label: "Contact",  href: "#contact"  },
+  { label: "Contact",  href: "/contact"  },
 ];
 
 const recommendations = [
@@ -171,7 +173,6 @@ export default function Home() {
 
   return (
     <div className="overflow-x-hidden">
-      <HeroIntro />
       {/* ── Sticky nav ─────────────────────────────────────────────────────── */}
       <nav className="fixed inset-x-0 top-0 z-50 backdrop-blur-md border-b border-line bg-bg/70">
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
@@ -324,11 +325,22 @@ export default function Home() {
               </motion.div>
             ))}
           </div>
+
+          <motion.p {...fadeUp(0.1)} className="mt-8 text-sm">
+            <Link href="/about" className="inline-flex items-center gap-1.5 text-accent-text hover:underline">
+              Read the full story <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </motion.p>
         </div>
       </section>
 
       {/* ── Tech Stack ──────────────────────────────────────────────────────── */}
       <TechStack />
+      <div className="px-4 pb-4 text-center">
+        <Link href="/skills" className="inline-flex items-center gap-1.5 text-sm text-accent-text hover:underline">
+          Full skills breakdown, with what shipped on each <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
 
       {/* ── Projects ────────────────────────────────────────────────────────── */}
       <section id="projects" className="relative py-24 px-4 border-t border-line overflow-hidden">
@@ -728,29 +740,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Footer ──────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-line py-8 px-4">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p className="text-[11px] text-fg-faint">
-            © {new Date().getFullYear()} Suryansh Chaudhary
-            <span className="text-fg-faint"> · </span>
-            <span className="text-fg-faint">Open to interesting collaborations</span>
-          </p>
-          <div className="flex items-center gap-4">
-            {socials.map((s) => (
-              <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="text-fg-faint hover:text-fg-muted transition-colors">
-                {s.icon}
-              </a>
-            ))}
-          </div>
-          <p className="text-[11px] text-fg-faint">
-            Typed by me <span className="text-accent-text">·</span> Paired with{" "}
-            <span className="text-accent-text font-medium">Claude</span>{" "}
-            <span className="text-accent-text">·</span> Deployed at{" "}
-            <span className="text-accent-text font-medium">3am</span>
-          </p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

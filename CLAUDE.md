@@ -17,9 +17,13 @@ There are no tests in this project.
 
 **Blog content — Contentlayer:** Blog posts are MDX files in `content/blog/` processed by `contentlayer.config.js` (uses the `contentlayer2` fork aliased as `contentlayer` for Next 14 compatibility). Only posts with `published: true` are listed. Imported as `allBlogs` from `"contentlayer/generated"`.
 
-**Routing:** `/` is a single-page scroll site (hero, about, stack, projects, recommendations, blog, resume, contact) and includes the `HeroIntro` "recognition" intro.
+**Routing:** `/` is a single-page scroll site (hero, now, about, stack, projects, recommendations, blog, resume, contact). Standalone routes: `/about` (entity page), `/skills`, `/projects`, `/blog`, `/contact`. The top nav links to the real pages; anchors are only used where no page exists (`#now`, `#resume`).
 
-**Hero intro:** `hero-intro.tsx` — ~4.5s skippable "recognition" sequence, once per session (`sessionStorage["recognition-intro-seen"]`), skipped under reduced motion. Cycles ~6 greetings from a 25-language pool (visitor's `navigator.language` first, Hello last; scramble-decode + shine sweep + cursor-magnetic glyphs). Live edge diagnostics read from the visitor's device; bottom-right runs a real speed test against `public/probe.bin` (measured Mbps also drives the shine speed). `app/api/weather/route.ts` (Vercel geo headers → Open-Meteo, never throws) feeds an additive rain/snow/clouds/sun-glow/stars backdrop layer over a time-of-day tint. Exits with an upward wipe. Design spec: `docs/superpowers/specs/2026-07-23-recognition-intro-design.md`.
+**New routes need their own `layout.tsx`** exporting `metadata` with `alternates.canonical`. Without one they inherit the root layout's canonical, which points at the homepage, and Google drops them as duplicates.
+
+**Shared chrome:** `page-nav.tsx` (header + cross-page links) and `site-footer.tsx` (internal link row) are used by every standalone route. The footer link row is the crawl path for those pages — don't remove it.
+
+**Shared facts:** `app/data/site.ts` holds URLs, socials, `sameAs`, and product links used by metadata, JSON-LD and page copy at once. Edit facts there, not in three places.
 
 **Hero (proof-driven):** `hero.tsx` is a client component. It renders immediately with zero stats, then `useEffect`-fetches `/api/stats` and fills in GitHub stars / MacGet downloads once the response lands — there's no server-rendered stats path. `app/api/stats/route.ts` (`revalidate: 86400`) calls `getProofStats()` in `app/data/stats.ts`, which hits the GitHub API for the MacGet repo (stars, release download counts) and never throws — a failed/rate-limited fetch falls back to zeros so the route always returns JSON.
 

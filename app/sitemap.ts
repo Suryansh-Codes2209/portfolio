@@ -23,7 +23,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
 	const staticRoutes: Route[] = [
 		{ path: "", priority: 1.0, changeFrequency: "weekly", lastModified: latestPostDate },
 		{ path: "/blog", priority: 0.9, changeFrequency: "weekly", lastModified: latestPostDate },
+		// The entity page: the URL that should win a search for the name itself.
+		{ path: "/about", priority: 0.9, changeFrequency: "monthly", lastModified: latestPostDate },
 		{ path: "/projects", priority: 0.7, changeFrequency: "monthly", lastModified: latestPostDate },
+		{ path: "/skills", priority: 0.7, changeFrequency: "monthly", lastModified: latestPostDate },
 		{ path: "/contact", priority: 0.4, changeFrequency: "yearly", lastModified: latestPostDate },
 	];
 

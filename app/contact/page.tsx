@@ -1,11 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, ExternalLink, Github, Linkedin, Mail, Twitter } from "lucide-react";
+import { ExternalLink, Github, Linkedin, Mail, Twitter } from "lucide-react";
 import Link from "next/link";
 import { Card } from "../components/card";
 import { ShineText } from "../components/shine-text";
-import { ThemeToggle } from "../components/theme-toggle";
+import { PageNav } from "../components/page-nav";
+import { SiteFooter } from "../components/site-footer";
 
 const socials = [
   {
@@ -48,22 +49,7 @@ const fadeUp = (delay = 0) => ({
 export default function ContactPage() {
   return (
     <div className="bg-bg text-fg min-h-screen">
-      {/* nav */}
-      <header className="fixed inset-x-0 top-0 z-50 backdrop-blur-md border-b border-line bg-bg/70">
-        <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-xs text-fg-subtle hover:text-fg transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            Back home
-          </Link>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-fg-faint">Contact</span>
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
+      <PageNav current="Contact" />
 
       <div className="max-w-5xl mx-auto px-4 pt-28 pb-24">
         <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-fg-faint mb-2">
@@ -117,6 +103,8 @@ export default function ContactPage() {
           ))}
         </div>
       </div>
+
+      <SiteFooter />
     </div>
   );
 }

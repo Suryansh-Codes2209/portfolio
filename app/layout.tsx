@@ -10,6 +10,7 @@ import { CursorGlow } from "./components/cursor-glow";
 import { BackToTop } from "./components/back-to-top";
 import { MotionProvider } from "./components/motion-provider";
 import { ThemeProvider } from "./components/theme-provider";
+import { PRODUCTS, SAME_AS } from "./data/site";
 
 const SITE_TITLE =
   "Suryansh Chaudhary — Full-Stack AI Engineer & creator of MacGet";
@@ -79,8 +80,18 @@ export const metadata: Metadata = {
     creator: "@Suryansh_2001",
     site: "@Suryansh_2001",
   },
+  // Google only shows a favicon in Search when it is square AND a multiple of
+  // 48px, so every icon here sits on the 48px grid. /favicon.ico (16/32/48) is
+  // the path Google probes even when no <link> points at it — keep it in place.
   icons: {
-    shortcut: "/favicon.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
+      { url: "/icon-48.png", sizes: "48x48", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-480.png", sizes: "480x480", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   alternates: {
     canonical: "https://suryansh.work",
@@ -130,6 +141,9 @@ export default function RootLayout({
                   jobTitle: "Full-Stack AI Engineer",
                   description: SITE_DESCRIPTION,
                   email: "mailto:suryansh.codes2001@gmail.com",
+                  // The single strongest disambiguation signal on the page:
+                  // states which Suryansh Chaudhary this is by what he built.
+                  mainEntityOfPage: { "@id": "https://suryansh.work/#profilepage" },
                   worksFor: {
                     "@type": "Organization",
                     name: "Spiral Kite Labs",
@@ -138,11 +152,7 @@ export default function RootLayout({
                     "@type": "CollegeOrUniversity",
                     name: "Poornima Group",
                   },
-                  sameAs: [
-                    "https://github.com/Suryansh-Codes2209",
-                    "https://www.linkedin.com/in/suryansh-chaudhary-2209/",
-                    "https://x.com/Suryansh_2001",
-                  ],
+                  sameAs: SAME_AS,
                   knowsAbout: [
                     "Build in Public",
                     "Open Source Software",
@@ -156,6 +166,49 @@ export default function RootLayout({
                     "Next.js",
                     "Full Stack Development",
                   ],
+                  knowsLanguage: "en",
+                },
+                {
+                  // Names the product as its own entity and hangs it off the
+                  // Person, so "creator of MacGet" is a stated fact rather than
+                  // something Google has to infer from prose.
+                  "@type": "SoftwareApplication",
+                  "@id": "https://suryansh.work/#macget",
+                  name: "MacGet",
+                  url: "https://macget.suryansh.work",
+                  applicationCategory: "UtilitiesApplication",
+                  operatingSystem: "macOS",
+                  description:
+                    "A free, open-source download manager for macOS — chunked parallel downloads, browser capture, BitTorrent, and bundled yt-dlp for video.",
+                  image: "https://suryansh.work/macget-og.png",
+                  author: { "@id": "https://suryansh.work/#person" },
+                  creator: { "@id": "https://suryansh.work/#person" },
+                  // The Product Hunt listing is a second, independent page about
+                  // the same product — naming it here links the two entities.
+                  sameAs: [PRODUCTS.macget.productHunt, PRODUCTS.macget.github],
+                  offers: {
+                    "@type": "Offer",
+                    price: "0",
+                    priceCurrency: "USD",
+                  },
+                },
+                {
+                  "@type": "WebApplication",
+                  "@id": "https://suryansh.work/#oratora",
+                  name: "Oratora",
+                  url: PRODUCTS.oratora.url,
+                  applicationCategory: "BusinessApplication",
+                  operatingSystem: "Any (web browser)",
+                  browserRequirements: "Requires JavaScript",
+                  description:
+                    "Live audience engagement for talks, classes and events — polls, word clouds, Q&A and quizzes the room joins from a phone browser with a code. No app, no account.",
+                  author: { "@id": "https://suryansh.work/#person" },
+                  creator: { "@id": "https://suryansh.work/#person" },
+                  offers: {
+                    "@type": "Offer",
+                    price: "0",
+                    priceCurrency: "USD",
+                  },
                 },
                 {
                   "@type": "WebSite",
@@ -172,7 +225,7 @@ export default function RootLayout({
                   url: "https://suryansh.work",
                   name: SITE_TITLE,
                   isPartOf: { "@id": "https://suryansh.work/#website" },
-                  about: { "@id": "https://suryansh.work/#person" },
+                  mainEntity: { "@id": "https://suryansh.work/#person" },
                   inLanguage: "en-US",
                 },
               ],
@@ -182,7 +235,7 @@ export default function RootLayout({
       </head>
       <body
         className={`grain bg-bg text-fg ${
-          process.env.NODE_ENV === "development" ? "debug-screens" : undefined
+          process.env.NODE_ENV === "development" ? "debug-screens" : ""
         }`}
       >
         <GoogleAnalytics />
