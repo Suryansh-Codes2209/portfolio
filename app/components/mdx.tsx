@@ -13,7 +13,7 @@ const components = {
 	h1: ({ className, ...props }) => (
 		<h1
 			className={clsx(
-				"mt-2 scroll-m-20 text-4xl font-display tracking-tight text-fg",
+				"mt-2 scroll-m-20 text-4xl font-serif tracking-tight text-fg",
 				className,
 			)}
 			{...props}
@@ -22,7 +22,7 @@ const components = {
 	h2: ({ className, ...props }) => (
 		<h2
 			className={clsx(
-				"mt-10 scroll-m-20 border-b border-line pb-2 text-2xl sm:text-3xl font-display tracking-tight text-fg first:mt-0",
+				"mt-10 scroll-m-20 border-b border-line pb-2 text-2xl sm:text-3xl font-serif tracking-tight text-fg first:mt-0",
 				className,
 			)}
 			{...props}
@@ -31,7 +31,7 @@ const components = {
 	h3: ({ className, ...props }) => (
 		<h3
 			className={clsx(
-				"mt-8 scroll-m-20 text-xl sm:text-2xl font-display tracking-tight text-fg",
+				"mt-8 scroll-m-20 text-xl sm:text-2xl font-serif tracking-tight text-fg",
 				className,
 			)}
 			{...props}
@@ -40,7 +40,7 @@ const components = {
 	h4: ({ className, ...props }) => (
 		<h4
 			className={clsx(
-				"mt-8 scroll-m-20 text-lg font-display tracking-tight text-fg",
+				"mt-8 scroll-m-20 text-lg font-serif tracking-tight text-fg",
 				className,
 			)}
 			{...props}

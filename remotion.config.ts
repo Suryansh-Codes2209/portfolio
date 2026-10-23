@@ -1,0 +1,6 @@
+// Remotion CLI config. The Next app doesn't read this.
+import { Config } from "@remotion/cli/config";
+
+Config.setVideoImageFormat("jpeg");
+Config.setOverwriteOutput(true);
+Config.setPublicDir("./public");

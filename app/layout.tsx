@@ -1,12 +1,11 @@
 import type React from "react";
 import "../global.css";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Instrument_Serif, Inter, JetBrains_Mono } from "next/font/google";
 import LocalFont from "next/font/local";
 import type { Metadata } from "next";
 import { Analytics } from "./components/analytics";
 import { GoogleAnalytics } from "./components/google-analytics";
 import { ScrollProgress } from "./components/scroll-progress";
-import { CursorGlow } from "./components/cursor-glow";
 import { BackToTop } from "./components/back-to-top";
 import { MotionProvider } from "./components/motion-provider";
 import { ThemeProvider } from "./components/theme-provider";
@@ -109,6 +108,15 @@ const calSans = LocalFont({
   variable: "--font-calsans",
 });
 
+// Vox-style headline serif.
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-serif",
+  display: "swap",
+});
+
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
@@ -121,7 +129,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={[inter.variable, calSans.variable, jetbrainsMono.variable].join(" ")}>
+    <html lang="en" suppressHydrationWarning className={[inter.variable, calSans.variable, instrumentSerif.variable, jetbrainsMono.variable].join(" ")}>
       <head>
         <Analytics />
         {/* JSON-LD entity graph — one stable @id per entity so Google can
@@ -241,7 +249,6 @@ export default function RootLayout({
         <GoogleAnalytics />
         <ThemeProvider>
           <ScrollProgress />
-          <CursorGlow />
           <MotionProvider>{children}</MotionProvider>
           <BackToTop />
         </ThemeProvider>

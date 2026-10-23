@@ -5,6 +5,7 @@ module.exports = {
 	darkMode: "class",
 	content: [
 		"./app/**/*.{js,ts,jsx,tsx}",
+		"./video/**/*.{ts,tsx}",
 		"./content/**/*.mdx",
 	],
 
@@ -35,6 +36,12 @@ module.exports = {
 					soft: "var(--accent-soft)",
 					fg: "var(--accent-fg)",
 				},
+				highlight: {
+					DEFAULT: "var(--highlight)",
+					ink: "var(--highlight-ink)",
+				},
+				tape: "var(--tape)",
+				sticker: "var(--sticker)",
 				claude: {
 					50:  "#FCF3EE",
 					100: "#F8E3D7",
@@ -69,19 +76,33 @@ module.exports = {
 			fontFamily: {
 				sans: ["var(--font-inter)", ...defaultTheme.fontFamily.sans],
 				display: ["var(--font-calsans)"],
+				serif: ["var(--font-serif)", ...defaultTheme.fontFamily.serif],
 				mono: ["var(--font-mono)", ...defaultTheme.fontFamily.mono],
 			},
 			backgroundImage: {
 				"gradient-radial":
 					"radial-gradient(50% 50% at 50% 50%, var(--tw-gradient-stops))",
 			},
+			boxShadow: {
+				paper: "var(--shadow-paper)",
+			},
 			animation: {
+				marquee: "marquee var(--duration) linear infinite",
+				"marquee-vertical": "marquee-vertical var(--duration) linear infinite",
 				"fade-in": "fade-in 3s ease-in-out forwards",
 				title: "title 3s ease-out forwards",
 				"fade-left": "fade-left 3s ease-in-out forwards",
 				"fade-right": "fade-right 3s ease-in-out forwards",
 			},
 			keyframes: {
+				marquee: {
+					from: { transform: "translateX(0)" },
+					to: { transform: "translateX(calc(-100% - var(--gap)))" },
+				},
+				"marquee-vertical": {
+					from: { transform: "translateY(0)" },
+					to: { transform: "translateY(calc(-100% - var(--gap)))" },
+				},
 				"fade-in": {
 					"0%": {
 						opacity: "0%",
@@ -146,5 +167,6 @@ module.exports = {
 	plugins: [
 		require("@tailwindcss/typography"),
 		require("tailwindcss-debug-screens"),
+		require("tailwindcss-animate"),
 	],
 };

@@ -6,11 +6,19 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "fmt": "pnpm rome check . --apply-unsafe && pnpm rome format . --write"
+    "fmt": "pnpm rome check . --apply-unsafe && pnpm rome format . --write",
+    "video:studio": "remotion studio video/index.ts",
+    "video:render": "remotion render video/index.ts PortfolioExplainer out/portfolio-explainer.mp4 --port=3311 && remotion render video/index.ts PortfolioExplainerVertical out/portfolio-explainer-vertical.mp4 --port=3311",
+    "video:still": "remotion still video/index.ts --port=3311 ColdOpen public/video/posters/cold-open.jpg --frame=200 --image-format=jpeg --jpeg-quality=82 && remotion still video/index.ts --port=3311 MacGet public/video/posters/macget.jpg --frame=400 --image-format=jpeg --jpeg-quality=82 && remotion still video/index.ts --port=3311 Timeline public/video/posters/timeline.jpg --frame=340 --image-format=jpeg --jpeg-quality=82 && remotion still video/index.ts --port=3311 PortfolioExplainer public/video/posters/explainer.jpg --frame=200 --image-format=jpeg --jpeg-quality=82"
   },
   "dependencies": {
+    "@remotion/google-fonts": "4.0.538",
+    "@remotion/player": "4.0.538",
+    "@remotion/transitions": "4.0.538",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "contentlayer": "npm:contentlayer2@^0.5.8",
-    "framer-motion": "^10.18.0",
+    "framer-motion": "^11.18.2",
     "ioredis": "^5.11.1",
     "lucide-react": "^0.469.0",
     "next": "^14.2.24",
@@ -24,10 +32,14 @@
     "rehype-pretty-code": "^0.14.1",
     "rehype-slug": "^6.0.0",
     "remark-gfm": "^4.0.1",
+    "remotion": "4.0.538",
     "resend": "^6.17.2",
+    "tailwind-merge": "^2.6.1",
+    "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.7.3"
   },
   "devDependencies": {
+    "@remotion/cli": "4.0.538",
     "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^22.10.5",
     "@types/react": "^18.3.18",

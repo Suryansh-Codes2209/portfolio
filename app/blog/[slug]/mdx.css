@@ -52,3 +52,29 @@
   .mdx > p:first-of-type {
     @apply text-[1.15rem] leading-relaxed text-fg;
   }
+
+  /* Vox annotations inside articles: <mark> is a highlighter swipe, quotes are
+     clipped notes pinned in the margin. Static — no motion in the body. */
+  .mdx mark {
+    background-image: linear-gradient(104deg, transparent 0.6%, var(--highlight) 2.4%, var(--highlight) 97%, transparent 99%);
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: 0 62%;
+    background-size: 100% 72%;
+    color: var(--highlight-ink);
+    padding: 0 0.15em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+  .mdx blockquote {
+    @apply my-8 border-l-0 bg-surface px-6 py-5 font-serif text-xl not-italic text-fg shadow-paper;
+    transform: rotate(-0.4deg);
+    border-left: 4px solid var(--accent);
+  }
+  .mdx h2,
+  .mdx h3 {
+    @apply font-serif font-normal tracking-tight;
+  }
+  .mdx h2 {
+    @apply text-3xl;
+  }
