@@ -7,7 +7,7 @@ import { SiGithub, SiX } from "react-icons/si";
 export function AuthorBit() {
   return (
     <div className="flex items-center gap-4 rounded-2xl border border-line bg-surface/50 p-5">
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent-soft font-display text-lg text-accent-text">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent-soft font-serif text-lg text-accent-text">
         SC
       </div>
       <div className="min-w-0">

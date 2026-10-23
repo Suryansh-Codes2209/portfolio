@@ -1,108 +1,105 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ExternalLink, Github, Linkedin, Mail, Twitter } from "lucide-react";
-import Link from "next/link";
-import { Card } from "../components/card";
-import { ShineText } from "../components/shine-text";
+import { ArrowUpRight, Github, Linkedin, Mail, Twitter } from "lucide-react";
+import { SOCIALS } from "../data/site";
 import { PageNav } from "../components/page-nav";
+import { Postcard } from "../components/sections/contact";
 import { SiteFooter } from "../components/site-footer";
+import { KineticHeading } from "../components/vox/kinetic-heading";
+import { Stamp } from "../components/vox/stamp";
+import { tiltFor } from "../components/vox/taped-card";
 
 const socials = [
   {
-    icon: <Github className="w-5 h-5" />,
+    icon: <Github className="h-5 w-5" />,
     label: "GitHub",
-    handle: "Suryansh-Codes2209",
-    href: "https://github.com/Suryansh-Codes2209",
+    handle: SOCIALS.github.split("/").pop(),
+    href: SOCIALS.github,
     description: "Check out my open-source work and contributions.",
+    tint: "bg-surface",
   },
   {
-    icon: <Twitter className="w-5 h-5" />,
+    icon: <Twitter className="h-5 w-5" />,
     label: "Twitter / X",
-    handle: "@Suryansh_2001",
-    href: "https://x.com/Suryansh_2001",
+    handle: `@${SOCIALS.x.split("/").pop()}`,
+    href: SOCIALS.x,
     description: "Follow me for dev thoughts and updates.",
+    tint: "bg-[#d8e8f0] dark:bg-[#1c2a31]",
   },
   {
-    icon: <Linkedin className="w-5 h-5" />,
+    icon: <Linkedin className="h-5 w-5" />,
     label: "LinkedIn",
     handle: "suryansh-chaudhary-2209",
-    href: "https://www.linkedin.com/in/suryansh-chaudhary-2209/",
+    href: SOCIALS.linkedin,
     description: "Let's connect professionally.",
+    tint: "bg-[#fff3b0] dark:bg-[#3a3418]",
   },
   {
-    icon: <Mail className="w-5 h-5" />,
+    icon: <Mail className="h-5 w-5" />,
     label: "Email",
-    handle: "suryansh.codes2001@gmail.com",
-    href: "mailto:suryansh.codes2001@gmail.com",
+    handle: SOCIALS.email,
+    href: `mailto:${SOCIALS.email}`,
     description: "Best way to reach me for work enquiries.",
+    tint: "bg-[#ffd9cf] dark:bg-[#3a221c]",
   },
 ];
 
-const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 18 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true } as const,
-  transition: { duration: 0.42, delay, ease: "easeOut" as const },
-});
-
 export default function ContactPage() {
   return (
-    <div className="bg-bg text-fg min-h-screen">
+    <div className="min-h-screen bg-bg text-fg">
       <PageNav current="Contact" />
 
-      <div className="max-w-5xl mx-auto px-4 pt-28 pb-24">
-        <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-fg-faint mb-2">
-          Say Hello
-        </motion.p>
-        <motion.h1 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display mb-3">
-          <ShineText>Get in Touch</ShineText>
-        </motion.h1>
-        <motion.p {...fadeUp(0.08)} className="text-sm text-fg-subtle mb-12 max-w-md leading-relaxed">
-          Open to new opportunities, freelance projects, and interesting collaborations.
-          Drop me a line — I&apos;ll get back to you quickly.
-        </motion.p>
-
-        {/* primary email CTA */}
-        <motion.div {...fadeUp(0.12)} className="mb-14">
-          <a
-            href="mailto:suryansh.codes2001@gmail.com"
-            className="group inline-flex items-center gap-3 px-6 py-3.5 rounded-full border border-line bg-surface text-fg-muted text-sm hover:border-line-strong hover:text-fg hover:bg-surface-2 transition-all duration-200"
-          >
-            <Mail className="w-4 h-4" />
-            suryansh.codes2001@gmail.com
-            <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
-          </a>
-        </motion.div>
-
-        {/* socials grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {socials.map((s, i) => (
-            <motion.div key={s.label} {...fadeUp(i * 0.07)}>
-              <Card>
-                <a
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-start gap-4 p-6 group cursor-pointer"
-                >
-                  <span className="flex items-center justify-center w-10 h-10 rounded-full border border-line text-fg-subtle group-hover:border-line-strong group-hover:text-fg-muted flex-shrink-0 transition-all duration-200">
-                    {s.icon}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-fg-muted group-hover:text-fg transition-colors">
-                      {s.label}
-                    </p>
-                    <p className="text-xs text-fg-faint mt-0.5 mb-2 truncate">{s.handle}</p>
-                    <p className="text-xs text-fg-subtle leading-relaxed">{s.description}</p>
-                  </div>
-                  <ExternalLink className="w-3.5 h-3.5 text-fg-faint group-hover:text-fg-subtle flex-shrink-0 mt-0.5 transition-colors" />
-                </a>
-              </Card>
-            </motion.div>
-          ))}
+      <main className="mx-auto max-w-6xl px-5 pb-24 pt-28 sm:px-8">
+        <div className="mb-6 flex flex-wrap items-center gap-5">
+          <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-fg-subtle">
+            <span className="text-accent-text">Say hello</span> — the mailroom
+          </p>
+          <Stamp rotate={-5}>Replies within a day or two</Stamp>
         </div>
-      </div>
+        <KineticHeading as="h1" text="Got something worth building? Write in." highlight="Write in." className="sm:text-7xl" />
+        <p className="mb-16 mt-6 max-w-xl text-[17px] leading-relaxed text-fg-muted">
+          Open to new opportunities, freelance projects, and interesting collaborations. Drop a postcard — I&apos;ll get back to
+          you quickly.
+        </p>
+
+        <Postcard />
+
+        {/* the address book: one business card per channel */}
+        <section aria-labelledby="elsewhere" className="mt-24">
+          <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.3em] text-accent-text">Fig. 02 — The address book</p>
+          <h2 id="elsewhere" className="mb-12 font-serif text-4xl text-fg sm:text-5xl">
+            Or find me elsewhere
+          </h2>
+          <div className="grid gap-8 sm:grid-cols-2">
+            {socials.map((s, i) => (
+              <motion.a
+                key={s.label}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                initial={{ opacity: 0, y: -30, rotate: tiltFor(s.label, 8) }}
+                whileInView={{ opacity: 1, y: 0, rotate: tiltFor(s.label, 2) }}
+                whileHover={{ rotate: 0, y: -4 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ type: "spring", damping: 14, stiffness: 150, delay: i * 0.06 }}
+                className={`group relative flex items-start gap-5 p-7 shadow-paper ${s.tint}`}
+              >
+                <span aria-hidden className="tape absolute -top-3 left-1/2 h-6 w-20 -translate-x-1/2 -rotate-2" />
+                <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border-2 border-fg text-fg">
+                  {s.icon}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-fg-subtle">{s.label}</p>
+                  <p className="mt-1 truncate font-serif text-2xl text-fg">{s.handle}</p>
+                  <p className="mt-2 text-[13px] leading-relaxed text-fg-muted">{s.description}</p>
+                </div>
+                <ArrowUpRight className="h-5 w-5 flex-shrink-0 text-fg-faint transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent-text" />
+              </motion.a>
+            ))}
+          </div>
+        </section>
+      </main>
 
       <SiteFooter />
     </div>

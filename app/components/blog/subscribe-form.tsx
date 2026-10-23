@@ -43,7 +43,7 @@ export function SubscribeForm({ compact = false }: { compact?: boolean }) {
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-display text-xl text-fg">Get new build logs in your inbox</h3>
+          <h3 className="font-serif text-xl text-fg">Get new build logs in your inbox</h3>
           <p className="mt-1.5 text-sm text-fg-muted">
             New engineering write-ups on MacGet and AI systems. No spam, unsubscribe anytime.
           </p>

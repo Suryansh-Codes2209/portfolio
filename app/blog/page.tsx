@@ -2,19 +2,16 @@
 
 import { allBlogs } from "contentlayer/generated";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Clock } from "lucide-react";
+import { ArrowRight, Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { SubscribeForm } from "../components/blog/subscribe-form";
-import { ThemeToggle } from "../components/theme-toggle";
-
-const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 18 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true } as const,
-  transition: { duration: 0.42, delay, ease: "easeOut" as const },
-});
+import { PageNav } from "../components/page-nav";
+import { SiteFooter } from "../components/site-footer";
+import { Highlight } from "../components/vox/highlight";
+import { Stamp } from "../components/vox/stamp";
+import { tiltFor } from "../components/vox/taped-card";
 
 const published = allBlogs
   .filter((p) => p.published)
@@ -26,9 +23,28 @@ function formatDate(date: string) {
   return new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
+/** Cover art, or a typeset headline standing in when a post has none. */
+function Cover({ post, sizes, priority }: { post: (typeof published)[number]; sizes: string; priority?: boolean }) {
+  return post.image ? (
+    <Image
+      src={post.image}
+      alt=""
+      fill
+      priority={priority}
+      sizes={sizes}
+      className="object-cover grayscale-[30%] sepia-[18%] transition duration-500 group-hover:scale-[1.03] group-hover:grayscale-0 group-hover:sepia-0"
+    />
+  ) : (
+    // no cover art yet: the headline, typeset big on ruled paper
+    <div className="ruled absolute inset-0 flex flex-col justify-between bg-surface p-5">
+      <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-text">No. {published.indexOf(post) + 1} · cover pending</span>
+      <p className="font-serif text-3xl italic leading-[1.05] text-fg-muted sm:text-4xl">{post.title}</p>
+    </div>
+  );
+}
+
 export default function BlogPage() {
   const [activeTag, setActiveTag] = useState<string>("All");
-
   const [featured, ...rest] = published;
 
   const filtered = useMemo(() => {
@@ -37,48 +53,32 @@ export default function BlogPage() {
   }, [activeTag, rest]);
 
   const showFeatured = activeTag === "All" && featured;
+  const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
 
   return (
-    <div className="bg-bg text-fg min-h-screen">
-      {/* ambient glow */}
-      <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full bg-claude-600/[0.06] blur-[120px]" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-claude-700/[0.05] blur-[100px]" />
-      </div>
+    <div className="min-h-screen bg-bg text-fg">
+      <PageNav current="Blog" />
 
-      {/* nav */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-bg/70 backdrop-blur-md">
-        <div className="max-w-3xl mx-auto px-5 h-14 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-xs text-fg-subtle hover:text-fg transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            Back home
-          </Link>
-          <ThemeToggle />
-        </div>
-      </header>
+      <main className="mx-auto max-w-6xl px-5 pb-24 pt-28 sm:px-8">
+        {/* ── masthead ─────────────────────────────────────────────────── */}
+        <header className="border-y-4 border-double border-fg py-6 text-center">
+          <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-fg-subtle">
+            Vol. 1 · No. {published.length} · {today}
+          </p>
+          <h1 className="my-3 font-serif text-6xl leading-none tracking-tight text-fg sm:text-8xl">
+            The Build <Highlight>Log</Highlight>
+          </h1>
+          <p className="mx-auto max-w-xl text-[15px] leading-relaxed text-fg-muted">
+            Build logs from shipping MacGet and AI systems in public — the engineering, the trade-offs, and what broke along
+            the way.
+          </p>
+        </header>
 
-      <div className="max-w-3xl mx-auto px-4 pt-28 pb-24 relative">
-        <motion.p {...fadeUp(0)} className="text-[10px] uppercase tracking-widest text-accent-text mb-2">
-          Writing
-        </motion.p>
-        <motion.h1 {...fadeUp(0.05)} className="text-3xl sm:text-4xl font-display mb-3 text-fg">
-          Build logs
-        </motion.h1>
-        <motion.p {...fadeUp(0.08)} className="text-sm text-fg-muted mb-8 max-w-md">
-          Build logs from shipping MacGet and AI systems in public — the engineering, the trade-offs, and what
-          broke along the way.
-        </motion.p>
+        {published.length === 0 && <p className="mt-10 text-sm text-fg-subtle">No posts yet — check back soon.</p>}
 
-        {published.length === 0 && (
-          <p className="text-sm text-fg-subtle">No posts yet — check back soon.</p>
-        )}
-
-        {/* tag filter */}
+        {/* ── sections (tag filter) ────────────────────────────────────── */}
         {allTags.length > 0 && (
-          <motion.div {...fadeUp(0.1)} className="mb-10 flex flex-wrap gap-2">
+          <nav aria-label="Filter by tag" className="flex flex-wrap justify-center gap-x-4 gap-y-2 border-b border-fg py-3">
             {["All", ...allTags].map((tag) => {
               const active = tag === activeTag;
               return (
@@ -86,137 +86,122 @@ export default function BlogPage() {
                   key={tag}
                   type="button"
                   onClick={() => setActiveTag(tag)}
-                  className={`rounded-full border px-3 py-1 text-xs transition-colors duration-150 ${
-                    active
-                      ? "border-accent/40 bg-accent-soft text-accent-text"
-                      : "border-line text-fg-subtle hover:border-line-strong hover:text-fg"
+                  aria-pressed={active}
+                  className={`font-mono text-[11px] uppercase tracking-widest transition-colors ${
+                    active ? "marker" : "text-fg-subtle hover:text-fg"
                   }`}
                 >
                   {tag}
                 </button>
               );
             })}
-          </motion.div>
+          </nav>
         )}
 
-        {/* featured */}
+        {/* ── front page: the lead story ───────────────────────────────── */}
         {showFeatured && (
-          <motion.div {...fadeUp(0.1)} className="mb-14">
-            <Link
-              href={`/blog/${featured.slug}`}
-              className="group block rounded-2xl border border-accent/30 bg-accent-soft p-6 sm:p-8 transition-colors duration-200 hover:border-accent/50"
-            >
-              {featured.image && (
-                <div className="relative mb-6 aspect-[16/9] w-full overflow-hidden rounded-xl border border-line bg-surface">
-                  <Image
-                    src={featured.image}
-                    alt=""
-                    fill
-                    priority
-                    sizes="(min-width: 768px) 700px, 100vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                  />
+          <motion.article
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="border-b border-fg py-10"
+          >
+            <Link href={`/blog/${featured.slug}`} className="group grid gap-10 lg:grid-cols-12">
+              <div className="relative lg:col-span-7">
+                <div className="halftone relative aspect-[16/10] w-full overflow-hidden bg-bg-2 shadow-paper">
+                  <Cover post={featured} sizes="(min-width: 1024px) 640px, 100vw" priority />
                 </div>
-              )}
-              <span className="text-[10px] uppercase tracking-widest text-accent-text">Latest</span>
-              <h2 className="mt-3 text-2xl sm:text-3xl font-display text-fg leading-snug transition-colors duration-200 group-hover:text-accent-text">
-                {featured.title}
-              </h2>
-              <p className="mt-3 text-sm sm:text-base text-fg-muted leading-relaxed max-w-2xl">
-                {featured.description}
-              </p>
-              <div className="mt-5 flex flex-wrap items-center gap-3">
-                {featured.tags?.slice(0, 3).map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full bg-accent-soft border border-accent/20 px-2.5 py-1 text-[10px] text-accent-text"
-                  >
-                    {tag}
-                  </span>
-                ))}
-                <span className="flex items-center gap-1 font-mono text-[11px] text-fg-subtle">
+                <Stamp className="absolute -right-3 -top-4 bg-bg" rotate={8}>
+                  Latest edition
+                </Stamp>
+              </div>
+              <div className="lg:col-span-5">
+                <div className="mb-3 flex flex-wrap gap-3">
+                  {featured.tags?.slice(0, 3).map((tag) => (
+                    <span key={tag} className="font-mono text-[10px] uppercase tracking-widest text-accent-text">
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+                <h2 className="font-serif text-4xl leading-[1.05] text-fg decoration-highlight decoration-[8px] underline-offset-[-3px] group-hover:underline sm:text-5xl">
+                  {featured.title}
+                </h2>
+                <p className="mt-5 text-[16px] leading-relaxed text-fg-muted first-letter:float-left first-letter:mr-2 first-letter:font-serif first-letter:text-6xl first-letter:leading-[0.85] first-letter:text-accent">
+                  {featured.description}
+                </p>
+                <p className="mt-6 flex items-center gap-3 font-mono text-[11px] uppercase tracking-widest text-fg-subtle">
                   {formatDate(featured.date)}
                   {featured.readingTime ? ` · ${featured.readingTime} min read` : ""}
-                </span>
-                <ArrowRight className="w-3.5 h-3.5 text-accent-text transition-transform duration-200 group-hover:translate-x-1" />
+                  <ArrowRight className="h-3.5 w-3.5 text-accent-text transition-transform group-hover:translate-x-1" />
+                </p>
               </div>
             </Link>
-          </motion.div>
+          </motion.article>
         )}
 
-        {/* list */}
-        <div className="border-t border-line">
+        {/* ── the clippings ────────────────────────────────────────────── */}
+        <p className="mb-8 mt-12 font-mono text-[11px] uppercase tracking-[0.3em] text-fg-subtle">
+          {activeTag === "All" ? "Earlier editions" : `Filed under #${activeTag}`} — {filtered.length}
+        </p>
+        <motion.div layout className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
           <AnimatePresence mode="popLayout" initial={false}>
             {filtered.map((post) => (
-              <motion.div
+              <motion.article
                 key={post.slug}
                 layout
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                className="border-b border-line"
+                initial={{ opacity: 0, y: -20, rotate: tiltFor(post.slug, 6) }}
+                animate={{ opacity: 1, y: 0, rotate: tiltFor(post.slug, 1.5) }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                whileHover={{ rotate: 0, y: -4 }}
+                transition={{ type: "spring", damping: 18, stiffness: 160 }}
+                className="paper relative p-3"
               >
-                <Link
-                  href={`/blog/${post.slug}`}
-                  className="group flex flex-col sm:flex-row sm:items-start justify-between gap-3 py-5 sm:py-6 transition-transform duration-200 hover:-translate-y-0.5"
-                >
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-lg sm:text-xl font-display text-fg leading-snug transition-colors duration-150 group-hover:text-accent-text">
+                <span aria-hidden className="tape absolute -top-3 left-1/2 z-10 h-6 w-20 -translate-x-1/2 -rotate-2" />
+                <Link href={`/blog/${post.slug}`} className="group block">
+                  <div className="halftone relative aspect-[16/10] overflow-hidden bg-bg-2">
+                    <Cover post={post} sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" />
+                  </div>
+                  <div className="px-2 pb-2 pt-4">
+                    <div className="mb-2 flex flex-wrap gap-2">
+                      {post.tags?.slice(0, 2).map((tag) => (
+                        <span key={tag} className="font-mono text-[10px] uppercase tracking-widest text-accent-text">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                    <h3 className="font-serif text-2xl leading-tight text-fg decoration-highlight decoration-[6px] underline-offset-[-2px] group-hover:underline">
                       {post.title}
                     </h3>
-                    <p className="mt-1.5 text-sm text-fg-muted leading-relaxed line-clamp-2 max-w-xl">
-                      {post.description}
+                    <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-fg-subtle">{post.description}</p>
+                    <p className="mt-4 flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-fg-faint">
+                      {formatDate(post.date)}
+                      {post.readingTime && (
+                        <>
+                          <Clock className="h-3 w-3" /> {post.readingTime} min
+                        </>
+                      )}
                     </p>
-                    {post.tags && post.tags.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {post.tags.slice(0, 3).map((tag) => (
-                          <span
-                            key={tag}
-                            className="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] text-accent-text"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  {post.image && (
-                    <div className="relative hidden sm:block w-32 shrink-0 aspect-[16/9] overflow-hidden rounded-lg border border-line bg-surface">
-                      <Image
-                        src={post.image}
-                        alt=""
-                        fill
-                        sizes="128px"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
-                  )}
-                  <div className="flex shrink-0 items-center gap-2 sm:flex-col sm:items-end sm:gap-1.5">
-                    <span className="font-mono text-[11px] text-fg-subtle">{formatDate(post.date)}</span>
-                    {post.readingTime && (
-                      <span className="flex items-center gap-1 font-mono text-[11px] text-fg-faint">
-                        <Clock className="w-3 h-3" />
-                        {post.readingTime} min read
-                      </span>
-                    )}
-                    <ArrowRight className="hidden sm:block w-3.5 h-3.5 text-fg-faint transition-all duration-150 group-hover:translate-x-1 group-hover:text-accent-text" />
                   </div>
                 </Link>
-              </motion.div>
+              </motion.article>
             ))}
           </AnimatePresence>
-        </div>
+        </motion.div>
 
         {filtered.length === 0 && published.length > 0 && (
           <p className="py-8 text-sm text-fg-subtle">No posts tagged “{activeTag}”.</p>
         )}
 
-        {/* subscribe CTA */}
-        <div className="mt-16">
-          <SubscribeForm />
-        </div>
-      </div>
+        {/* ── subscribe: the classifieds box ───────────────────────────── */}
+        <section className="mt-24 border-4 border-double border-fg p-2">
+          <div className="border border-fg p-6 sm:p-8">
+            <p className="mb-4 text-center font-mono text-[11px] uppercase tracking-[0.35em] text-fg-subtle">Classifieds — delivery</p>
+            <SubscribeForm />
+          </div>
+        </section>
+      </main>
+
+      <SiteFooter />
     </div>
   );
 }

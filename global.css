@@ -3,44 +3,56 @@
 @tailwind utilities;
 
 /* ── Design tokens ─────────────────────────────────────────────────────────
-   Light is the default (:root); dark is applied via the `.dark` class that
-   next-themes toggles on <html>. Every component styles against these tokens
-   (bg / surface / line / fg-* / accent) so both themes stay in sync. */
+   "Vox edit" palette: newsprint paper, ink, highlighter, red pen.
+   Light is the default (:root, "Newsprint"); dark is the `.dark` class that
+   next-themes toggles on <html> ("Darkroom"). Every component styles against
+   these tokens (bg / surface / line / fg-* / accent / highlight / tape) so
+   both themes stay in sync. */
 :root {
-  --bg: #faf9f7;          /* warm off-white */
-  --bg-2: #f3f1ec;
-  --surface: #ffffff;
-  --surface-2: #f4f2ee;
-  --line: rgba(28, 25, 23, 0.10);
-  --line-strong: rgba(28, 25, 23, 0.16);
-  --fg: #1c1a17;          /* near-black, warm */
-  --fg-muted: #57534e;
-  --fg-subtle: #78716c;
-  --fg-faint: #a8a29e;
-  --accent: #c15f3c;      /* darker orange for contrast on light */
-  --accent-text: #be5a38; /* links / small accent text — AA on cream */
-  --accent-soft: rgba(193, 95, 60, 0.10);
+  --bg: #f2ecdf;          /* newsprint */
+  --bg-2: #ebe3d2;
+  --surface: #faf6ee;     /* fresh sheet laid on the page */
+  --surface-2: #efe8d9;
+  --line: rgba(26, 23, 20, 0.14);
+  --line-strong: rgba(26, 23, 20, 0.28);
+  --fg: #1a1714;          /* ink */
+  --fg-muted: #4a443c;
+  --fg-subtle: #6b6357;
+  --fg-faint: #978d7e;
+  --accent: #c15f3c;      /* red pen */
+  --accent-text: #a94e2f; /* links / small accent text — AA on newsprint */
+  --accent-soft: rgba(193, 95, 60, 0.12);
   --accent-fg: #ffffff;
-  --grain-opacity: 0.03;
-  --edge-outline: rgba(28, 25, 23, 0.28);
+  --highlight: #ffe14d;   /* highlighter swipe — ink always sits on top */
+  --highlight-ink: #1a1714;
+  --tape: rgba(233, 223, 199, 0.82);
+  --sticker: #ffffff;     /* cut-out outline */
+  --shadow-paper: 0 1px 0 rgba(26, 23, 20, 0.06), 0 10px 24px -12px rgba(26, 23, 20, 0.35);
+  --grain-opacity: 0.09;
+  --edge-outline: rgba(26, 23, 20, 0.28);
 }
 
 .dark {
-  --bg: #08070a;
-  --bg-2: #0d0c10;
-  --surface: #141216;
-  --surface-2: #1b191f;
-  --line: rgba(255, 255, 255, 0.09);
-  --line-strong: rgba(255, 255, 255, 0.16);
-  --fg: #f5f4f2;
-  --fg-muted: #b4b1ab;
-  --fg-subtle: #8a8883;
-  --fg-faint: #63615d;
+  --bg: #16130f;          /* charcoal card stock */
+  --bg-2: #1c1813;
+  --surface: #221d17;
+  --surface-2: #2a241c;
+  --line: rgba(237, 230, 216, 0.12);
+  --line-strong: rgba(237, 230, 216, 0.24);
+  --fg: #ede6d8;
+  --fg-muted: #c9c0af;
+  --fg-subtle: #a1978a;
+  --fg-faint: #786f63;
   --accent: #d97757;
   --accent-text: #e68a6b; /* links / small accent text — brightened for dark */
-  --accent-soft: rgba(217, 119, 87, 0.12);
+  --accent-soft: rgba(217, 119, 87, 0.14);
   --accent-fg: #ffffff;
-  --grain-opacity: 0.04;
+  --highlight: rgba(232, 197, 71, 0.85);
+  --highlight-ink: #16130f;
+  --tape: rgba(233, 223, 199, 0.55);
+  --sticker: #ede6d8;
+  --shadow-paper: 0 1px 0 rgba(0, 0, 0, 0.3), 0 14px 28px -14px rgba(0, 0, 0, 0.8);
+  --grain-opacity: 0.12;
   --edge-outline: rgba(255, 255, 255, 0.30);
 }
 
@@ -57,7 +69,8 @@
   to { background-position: 26px 26px; }
 }
 
-/* subtle film grain — premium editorial feel */
+/* paper fibre — a coarse turbulence layer fixed over the whole page so every
+   section reads as one printed sheet */
 .grain::before {
   content: "";
   position: fixed;
@@ -65,7 +78,68 @@
   z-index: 1;
   pointer-events: none;
   opacity: var(--grain-opacity);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.25 0 0 0 0 0.2 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.dark .grain::before,
+.dark.grain::before {
+  mix-blend-mode: screen;
+}
+
+/* ── Vox devices ───────────────────────────────────────────────────────── */
+
+/* a sheet of paper laid on the page */
+.paper {
+  background-color: var(--surface);
+  box-shadow: var(--shadow-paper);
+}
+
+/* torn paper edges — a jagged SVG mask along one side */
+.torn-bottom {
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 12' preserveAspectRatio='none'%3E%3Cpath d='M0 0h200v6l-6 4-9-5-7 6-10-4-8 5-11-6-7 4-9-3-8 5-10-5-6 4-11-4-8 5-9-6-7 5-10-3-9 4-8-5-11 5-6-3-10 4-8-5-9 3-7-2V0z'/%3E%3C/svg%3E") bottom / 100% 14px no-repeat,
+    linear-gradient(#000, #000) top / 100% calc(100% - 13px) no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 12' preserveAspectRatio='none'%3E%3Cpath d='M0 0h200v6l-6 4-9-5-7 6-10-4-8 5-11-6-7 4-9-3-8 5-10-5-6 4-11-4-8 5-9-6-7 5-10-3-9 4-8-5-11 5-6-3-10 4-8-5-9 3-7-2V0z'/%3E%3C/svg%3E") bottom / 100% 14px no-repeat,
+    linear-gradient(#000, #000) top / 100% calc(100% - 13px) no-repeat;
+}
+
+/* halftone dots laid over an image */
+.halftone {
+  position: relative;
+}
+.halftone::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(26, 23, 20, 0.28) 0.9px, transparent 1.3px);
+  background-size: 5px 5px;
+  mix-blend-mode: multiply;
+}
+
+/* a strip of masking tape — position it with utilities */
+.tape {
+  background: var(--tape);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  /* zig-zag torn ends */
+  clip-path: polygon(0 8%, 3% 0, 6% 10%, 9% 0, 91% 2%, 94% 12%, 97% 0, 100% 8%, 100% 92%, 97% 100%, 94% 90%, 91% 100%, 9% 98%, 6% 88%, 3% 100%, 0 92%);
+}
+
+/* the marker swipe behind a run of text */
+.marker {
+  background-image: linear-gradient(104deg, transparent 0.6%, var(--highlight) 2.4%, var(--highlight) 97%, transparent 99%);
+  background-repeat: no-repeat;
+  background-position: 0 62%;
+  background-size: 100% 72%;
+  color: var(--highlight-ink);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  padding: 0 0.15em;
+}
+
+/* faint ruled-notebook lines */
+.ruled {
+  background-image: repeating-linear-gradient(transparent 0 27px, var(--line) 27px 28px);
 }
 
 @media (prefers-reduced-motion: reduce) {

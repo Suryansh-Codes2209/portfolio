@@ -9,27 +9,27 @@ import { ThemeToggle } from "./theme-toggle";
  */
 export function PageNav({ current }: { current: string }) {
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-bg/70 backdrop-blur-md">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-bg/85 backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5">
         <Link
           href="/"
-          className="flex items-center gap-2 text-xs text-fg-subtle transition-colors hover:text-fg"
+          className="flex items-center gap-2 font-serif text-lg text-fg transition-colors hover:text-accent-text"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          Back home
+          Suryansh<span className="text-accent">.</span>
         </Link>
 
         <nav aria-label="Pages" className="hidden items-center gap-5 sm:flex">
           {NAV_PAGES.map((p) =>
             p.label === current ? (
-              <span key={p.href} className="text-xs text-fg-faint">
+              <span key={p.href} className="marker font-mono text-[11px] uppercase tracking-widest">
                 {p.label}
               </span>
             ) : (
               <Link
                 key={p.href}
                 href={p.href}
-                className="text-xs text-fg-subtle transition-colors hover:text-fg"
+                className="font-mono text-[11px] uppercase tracking-widest text-fg-subtle transition-colors hover:text-fg"
               >
                 {p.label}
               </Link>
@@ -38,7 +38,7 @@ export function PageNav({ current }: { current: string }) {
         </nav>
 
         <div className="flex items-center gap-3">
-          <span className="text-xs text-fg-faint sm:hidden">{current}</span>
+          <span className="font-mono text-[11px] uppercase tracking-widest text-fg-faint sm:hidden">{current}</span>
           <ThemeToggle />
         </div>
       </div>

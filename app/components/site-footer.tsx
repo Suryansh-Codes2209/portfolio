@@ -16,8 +16,11 @@ const socials = [
  */
 export function SiteFooter() {
   return (
-    <footer className="border-t border-line px-4 py-10">
-      <div className="mx-auto flex max-w-5xl flex-col gap-6">
+    <footer className="relative border-t-2 border-dashed border-line-strong bg-bg-2 px-4 py-12">
+      <div className="mx-auto flex max-w-5xl flex-col gap-7">
+        <p className="font-serif text-3xl text-fg sm:text-4xl">
+          That&apos;s the <span className="marker">whole story</span> — for now.
+        </p>
         <nav aria-label="Site pages" className="flex flex-wrap items-center gap-x-6 gap-y-2">
           {NAV_PAGES.map((p) => (
             <Link
@@ -30,7 +33,7 @@ export function SiteFooter() {
           ))}
         </nav>
 
-        <div className="flex flex-col items-start justify-between gap-3 border-t border-line pt-6 sm:flex-row sm:items-center">
+        <div className="flex flex-col items-start justify-between gap-3 border-t border-dashed border-line-strong pt-6 sm:flex-row sm:items-center">
           <p className="text-[11px] text-fg-faint">
             © {new Date().getFullYear()} Suryansh Chaudhary
             <span> · </span>

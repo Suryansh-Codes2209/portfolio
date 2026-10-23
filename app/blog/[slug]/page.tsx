@@ -164,7 +164,7 @@ export default function BlogPostPage({ params }: Props) {
                 </div>
               )}
 
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-display text-fg mb-4 leading-snug">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-fg mb-4 leading-snug">
                 {post.title}
               </h1>
               <p className="text-lg text-fg-muted leading-relaxed mb-4">{post.description}</p>
