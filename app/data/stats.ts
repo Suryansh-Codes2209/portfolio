@@ -1,14 +1,20 @@
 // Build-time proof stats for the hero. Never throws — falls back to static
 // numbers so a failed/ratelimited fetch can't break the build or the hero.
-const FALLBACK = { githubStars: 0, macgetDownloads: 0 };
+// Unauthenticated GitHub calls from Vercel's shared IPs get rate-limited, so
+// set GITHUB_TOKEN in prod; the fallback is the last known count, not zero.
+const FALLBACK = { githubStars: 2, macgetDownloads: 114 };
 
 type Stats = { githubStars: number; macgetDownloads: number };
 
 async function safeJson(url: string): Promise<any | null> {
   try {
     const res = await fetch(url, {
-      headers: { Accept: "application/vnd.github+json", "User-Agent": "suryansh-portfolio" },
-      next: { revalidate: 86400 },
+      headers: {
+        Accept: "application/vnd.github+json",
+        "User-Agent": "suryansh-portfolio",
+        ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}),
+      },
+      next: { revalidate: 3600 },
     });
     if (!res.ok) return null;
     return await res.json();
@@ -26,7 +32,7 @@ export async function getProofStats(): Promise<Stats> {
   const githubStars = typeof repo?.stargazers_count === "number" ? repo.stargazers_count : FALLBACK.githubStars;
 
   let macgetDownloads = FALLBACK.macgetDownloads;
-  if (Array.isArray(releases)) {
+  if (Array.isArray(releases) && releases.length > 0) {
     macgetDownloads = releases.reduce((sum: number, r: any) => {
       const assets = Array.isArray(r?.assets) ? r.assets : [];
       return sum + assets.reduce((s: number, a: any) => s + (a?.download_count ?? 0), 0);
